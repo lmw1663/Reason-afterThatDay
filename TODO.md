@@ -95,13 +95,13 @@
 
 ---
 
-### Phase 5 — 오프라인 / 에러 / 배포 🔄 `1 / 3`
+### Phase 5 — 오프라인 / 에러 / 배포 🔄 `2 / 3`
 참조: [docs/phases/phase-5.md](docs/phases/phase-5.md)
 
 | 서브태스크 | 상태 | 비고 |
 |-----------|------|------|
 | 5-1. 오프라인 캐시 + 동기화 | ✅ | AsyncStorage 큐, last-write-wins upsert, 포그라운드 flush |
-| 5-2. 에러 핸들링 + 로딩 상태 | ⬜ | AppError 코드 · fallback UX |
+| 5-2. 에러 핸들링 + 로딩 상태 | ✅ | ErrorToast, useErrorHandler, LoadingOverlay |
 | 5-3. 앱스토어 배포 | ⬜ | EAS build · 체크리스트 |
 
 ---
