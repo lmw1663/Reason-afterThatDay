@@ -8,7 +8,7 @@
 > **상태 범례:** ✅ 완료 · 🔄 진행 중 · ⬜ 대기 · ❌ 블로킹
 
 ```
-전체  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░  80%   Phase 3-2 완료
+전체  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░  85%   Phase 3 완료
 ```
 
 ---
@@ -73,14 +73,14 @@
 
 ---
 
-### Phase 3 — GPT Edge Functions / AI 🔄 `2 / 3`
+### Phase 3 — GPT Edge Functions / AI ✅ `3 / 3`
 참조: [docs/phases/phase-3.md](docs/phases/phase-3.md)
 
 | 서브태스크 | 상태 | 비고 |
 |-----------|------|------|
 | 3-1. Edge Functions 구조 | ✅ | 4개 함수 · npm:openai · fallback · gpt-4o 졸업편지 |
 | 3-2. 클라이언트 AI API 레이어 | ✅ | api/ai.ts 4개 함수 · 5초 타임아웃 · AppError 코드 |
-| 3-3. AI 응답 지연 대응 | ⬜ | 스트리밍 · 사전생성 · Retry |
+| 3-3. AI 응답 지연 대응 | ✅ | SSE 스트리밍(일기), 사전생성(홈), 지수 백오프 Retry |
 
 ---
 

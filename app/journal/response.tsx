@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Text, View, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
@@ -7,7 +7,7 @@ import { InsightCard } from '@/components/ui/InsightCard';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
-import { fetchJournalResponse } from '@/api/ai';
+import { useStreamingJournalResponse } from '@/hooks/useStreamingAI';
 import { upsertJournalEntry } from '@/api/journal';
 
 export default function JournalResponseScreen() {
@@ -19,67 +19,55 @@ export default function JournalResponseScreen() {
     questionAnswer: string;
   }>();
 
-  const [response, setResponse] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
   const { userId, daysElapsed } = useUserStore();
   const { entries, setTodayEntry } = useJournalStore();
+  const { text, loading, done, fetchStream } = useStreamingJournalResponse();
 
   const score = Number(params.score ?? '5');
   const direction = (params.direction ?? 'undecided') as Direction;
-  const tags = params.tags ? params.tags.split(',') : [];
+  const tags = params.tags ? params.tags.split(',').filter(Boolean) : [];
   const recentMoods = entries.slice(0, 3).map((e) => e.moodScore);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const aiResponse = await fetchJournalResponse({
-          moodScore: score,
-          direction,
-          freeText: params.freeText || params.questionAnswer || undefined,
-          recentMoods,
-          daysElapsed,
-        });
-        setResponse(aiResponse);
+    const ctx = {
+      moodScore: score,
+      direction,
+      freeText: params.freeText || params.questionAnswer || undefined,
+      recentMoods,
+      daysElapsed,
+    };
 
-        if (userId) {
-          const entry = await upsertJournalEntry({
-            userId,
-            moodScore: score,
-            moodLabel: tags,
-            direction,
-            freeText: params.freeText || undefined,
-            aiResponse,
-          });
-          setTodayEntry(entry);
-        }
-      } catch {
-        setResponse('지금 잠깐 연결이 안 됐어. 그래도 오늘 기록은 잘 저장됐어.');
-      } finally {
-        setLoading(false);
-      }
-    })();
+    fetchStream(ctx);
   }, []);
+
+  // 스트리밍 완료 후 DB 저장
+  useEffect(() => {
+    if (!done || !text || !userId) return;
+    upsertJournalEntry({
+      userId,
+      moodScore: score,
+      moodLabel: tags,
+      direction,
+      freeText: params.freeText || undefined,
+      aiResponse: text,
+    })
+      .then(setTodayEntry)
+      .catch(() => {});
+  }, [done]);
 
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
         <Text className="text-gray-400 text-sm mb-2">이별 일기 · 4 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-8">
-          오늘 기록 완료 🌙
-        </Text>
+        <Text className="text-white text-2xl font-bold mb-8">오늘 기록 완료 🌙</Text>
 
-        {loading ? (
+        {loading && !text ? (
           <View className="items-center py-12">
             <ActivityIndicator color="#7F77DD" size="large" />
             <Text className="text-gray-400 text-sm mt-4">잠깐, 들어볼게 …</Text>
           </View>
         ) : (
-          <InsightCard
-            tag="오늘의 한마디"
-            body={response ?? ''}
-            accent="purple"
-          />
+          <InsightCard tag="오늘의 한마디" body={text} accent="purple" />
         )}
 
         <View className="mt-6 p-4 rounded-2xl" style={{ backgroundColor: '#1A1A22' }}>
@@ -98,7 +86,11 @@ export default function JournalResponseScreen() {
 
       <View className="px-6 pb-10 gap-4">
         <ProgressDots total={4} current={3} />
-        <PrimaryButton label="홈으로" onPress={() => router.replace('/(tabs)')} />
+        <PrimaryButton
+          label="홈으로"
+          onPress={() => router.replace('/(tabs)')}
+          disabled={!done && !text}
+        />
       </View>
     </ScreenWrapper>
   );

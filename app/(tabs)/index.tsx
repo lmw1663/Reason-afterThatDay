@@ -1,14 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View, Pressable, ScrollView, AppState } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
+import { fetchDailyQuote } from '@/api/ai';
+import { withRetry } from '@/utils/retry';
 
 export default function HomeScreen() {
-  const { daysElapsed, refreshDaysElapsed } = useUserStore();
+  const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
   const { todayEntry } = useJournalStore();
+  const [dailyQuote, setDailyQuote] = useState<string>('');
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {
@@ -18,6 +21,14 @@ export default function HomeScreen() {
     });
     return () => sub.remove();
   }, []);
+
+  // 오늘의 한마디 사전생성 — 홈 진입 시 미리 로드
+  useEffect(() => {
+    if (!userId) return;
+    withRetry(() => fetchDailyQuote(daysElapsed, userId))
+      .then(setDailyQuote)
+      .catch(() => setDailyQuote('오늘도 한 걸음씩. 네 속도가 맞는 속도야.'));
+  }, [userId, daysElapsed]);
 
   return (
     <ScreenWrapper>
@@ -39,7 +50,8 @@ export default function HomeScreen() {
           <InsightCard
             tag="오늘의 한마디"
             body={
-              todayEntry?.aiResponse ??
+              dailyQuote ||
+              todayEntry?.aiResponse ||
               '오늘 하루는 어땠어? 일기를 쓰면 조금 더 가까이 들을 수 있어.'
             }
             accent="purple"
