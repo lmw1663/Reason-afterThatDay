@@ -2,6 +2,21 @@
 -- Migration 002 — RLS 정책 + updated_at 트리거
 -- ============================================================
 
+-- cooling_ends_at 자동 설정 (generated column 대체)
+create or replace function set_cooling_ends_at()
+returns trigger language plpgsql as $$
+begin
+  if new.cooling_ends_at is null then
+    new.cooling_ends_at = new.requested_at + interval '7 days';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger graduation_cooling_ends_at
+  before insert on public.graduation_cooling
+  for each row execute function set_cooling_ends_at();
+
 -- updated_at 자동 갱신 함수
 create or replace function update_updated_at()
 returns trigger language plpgsql as $$

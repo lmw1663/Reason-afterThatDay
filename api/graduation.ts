@@ -55,11 +55,17 @@ export async function cancelCooling(id: string): Promise<void> {
     .eq('id', id);
 }
 
-// 7일 연장 — requested_at 재설정, notifications_sent 리셋, 체크인 보존
+// 7일 연장 — requested_at + cooling_ends_at 재설정, notifications_sent 리셋, 체크인 보존
 export async function resetCooling(id: string): Promise<void> {
+  const now = new Date();
+  const endsAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   await supabase
     .from('graduation_cooling')
-    .update({ requested_at: new Date().toISOString(), notifications_sent: 0 })
+    .update({
+      requested_at: now.toISOString(),
+      cooling_ends_at: endsAt.toISOString(),
+      notifications_sent: 0,
+    })
     .eq('id', id);
 }
 

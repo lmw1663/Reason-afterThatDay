@@ -82,7 +82,7 @@ create table public.graduation_cooling (
   id                  uuid primary key default gen_random_uuid(),
   user_id             uuid references public.users not null,
   requested_at        timestamptz default now(),
-  cooling_ends_at     timestamptz generated always as (requested_at + interval '7 days') stored,
+  cooling_ends_at     timestamptz,
   status              text default 'cooling' check (status in ('cooling', 'confirmed', 'cancelled')),
   checkin_responses   jsonb default '[]',
   notifications_sent  int default 0
