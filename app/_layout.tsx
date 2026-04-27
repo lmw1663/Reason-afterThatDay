@@ -4,11 +4,13 @@ import { StatusBar } from 'expo-status-bar';
 import { useQuestionPool } from '@/hooks/useQuestionPool';
 import { useAuth } from '@/hooks/useAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { useOfflineSync } from '@/hooks/useOfflineSync';
 
 function AppBootstrap() {
   useAuth();
   useQuestionPool();
   usePushNotifications();
+  useOfflineSync();
   return null;
 }
 
