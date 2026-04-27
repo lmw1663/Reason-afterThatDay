@@ -3,10 +3,12 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useQuestionPool } from '@/hooks/useQuestionPool';
 import { useAuth } from '@/hooks/useAuth';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 function AppBootstrap() {
   useAuth();
   useQuestionPool();
+  usePushNotifications();
   return null;
 }
 
