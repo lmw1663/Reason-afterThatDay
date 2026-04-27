@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "reason",
+    "slug": "reason",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "reason",
+    "userInterfaceStyle": "dark",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.reason.afterhatday"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#3C3489"
+      },
+      "package": "com.reason.afterhatday"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3C3489",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "newArchEnabled": true
+  }
+}

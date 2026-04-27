@@ -1,0 +1,51 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './app/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+  ],
+  presets: [require('nativewind/preset')],
+  theme: {
+    extend: {
+      colors: {
+        purple: {
+          50: '#EEEDFE',
+          400: '#7F77DD',
+          600: '#534AB7',
+          800: '#3C3489',
+        },
+        teal: {
+          50: '#E1F5EE',
+          400: '#1D9E75',
+          600: '#0F6E56',
+          800: '#085041',
+        },
+        coral: {
+          50: '#FAECE7',
+          400: '#D85A30',
+          600: '#993C1D',
+          800: '#712B13',
+        },
+        pink: {
+          50: '#FBEAF0',
+          400: '#D4537E',
+          600: '#993556',
+          800: '#72243E',
+        },
+        amber: {
+          50: '#FAEEDA',
+          400: '#BA7517',
+          600: '#854F0B',
+          800: '#633806',
+        },
+        gray: {
+          50: '#F1EFE8',
+          400: '#888780',
+          600: '#5F5E5A',
+          800: '#444441',
+        },
+      },
+    },
+  },
+  plugins: [],
+};
