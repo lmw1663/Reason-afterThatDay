@@ -39,7 +39,7 @@ export default function HomeScreen() {
       >
         {/* 헤더 */}
         <View className="flex-row justify-between items-center px-6 pt-14 pb-6">
-          <Text className="text-white text-2xl font-bold">reason</Text>
+          <Text className="text-white text-2xl font-bold">Reason - 그날 이후</Text>
           <View className="bg-purple-800 rounded-full px-3 py-1">
             <Text className="text-purple-400 text-sm font-semibold">D+{daysElapsed}</Text>
           </View>
