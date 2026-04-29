@@ -23,7 +23,7 @@ export function ChoiceButton({ label, sublabel, selected = false, onPress, icon 
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {icon && <Text style={{ fontSize: 24 }}>{icon}</Text>}
-        <View style={{ flex: 1 }}>
+        <View>
           <Text style={{ fontSize: 16, fontWeight: '600', color: selected ? '#A5A0F0' : '#F1EFE8' }}>
             {label}
           </Text>

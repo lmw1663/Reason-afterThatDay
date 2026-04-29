@@ -29,14 +29,15 @@ export default function GraduationConfirmScreen() {
         {QUESTIONS.map((q) => (
           <View key={q.id} className="mb-6">
             <Text className="text-white text-base font-medium mb-3">{q.text}</Text>
-            <View className="flex-row gap-3">
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               {(['yes', 'no'] as const).map((val) => (
-                <ChoiceButton
-                  key={val}
-                  label={val === 'yes' ? '그래' : '아직 아니야'}
-                  selected={answers[q.id] === val}
-                  onPress={() => setAnswers((prev) => ({ ...prev, [q.id]: val }))}
-                />
+                <View key={val} style={{ flex: 1 }}>
+                  <ChoiceButton
+                    label={val === 'yes' ? '그래' : '아직 아니야'}
+                    selected={answers[q.id] === val}
+                    onPress={() => setAnswers((prev) => ({ ...prev, [q.id]: val }))}
+                  />
+                </View>
               ))}
             </View>
           </View>
