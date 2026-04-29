@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Alert } from 'react-native';
+import { Text, View, ScrollView, Alert, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { CoolingTimer } from '@/components/ui/CoolingTimer';
@@ -48,6 +48,9 @@ export default function CoolingDashboardScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
+        <Pressable onPress={() => router.replace('/(tabs)')} className="mb-4" style={{ alignSelf: 'flex-start' }}>
+          <Text className="text-gray-400 text-base">← 홈</Text>
+        </Pressable>
         <Text className="text-gray-400 text-sm mb-2">유예 기간</Text>
         <Text className="text-white text-2xl font-bold mb-6">마음을 다시 들여다봐</Text>
 
