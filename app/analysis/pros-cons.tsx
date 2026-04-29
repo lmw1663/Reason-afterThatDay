@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Text, View, TextInput, Pressable, ScrollView } from 'react-native';
+import { Text, View, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -37,6 +37,10 @@ export default function AnalysisProsCons() {
 
   return (
     <ScreenWrapper>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
       <View className="flex-1 px-6 pt-14">
         <Text className="text-gray-400 text-sm mb-2">관계 분석 · 2 / 4</Text>
         <Text className="text-white text-2xl font-bold mb-6">
@@ -101,6 +105,7 @@ export default function AnalysisProsCons() {
         <ProgressDots total={4} current={1} />
         <PrimaryButton label="다음" onPress={handleNext} />
       </View>
+      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }
