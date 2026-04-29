@@ -64,7 +64,7 @@ export default function AnalysisTabScreen() {
 
             <PrimaryButton
               label="다시 분석하기"
-              onPress={() => router.push('/analysis')}
+              onPress={() => router.push('/analysis/reasons')}
               variant="ghost"
             />
           </>
@@ -75,7 +75,7 @@ export default function AnalysisTabScreen() {
             <Text className="text-gray-400 text-sm text-center mb-8">
               헤어진 이유, 장단점, 솔직한 점수를{'\n'}입력하면 가망 진단을 볼 수 있어.
             </Text>
-            <PrimaryButton label="분석 시작하기" onPress={() => router.push('/analysis')} />
+            <PrimaryButton label="분석 시작하기" onPress={() => router.push('/analysis/reasons')} />
           </View>
         )}
 
@@ -84,7 +84,7 @@ export default function AnalysisTabScreen() {
             emoji="📝"
             title="헤어진 이유"
             desc={profile.reasons.length > 0 ? profile.reasons.join(', ') : '아직 입력 안 했어'}
-            onPress={() => router.push('/analysis')}
+            onPress={() => router.push('/analysis/reasons')}
           />
           <AnalysisCard
             emoji="⚖️"
