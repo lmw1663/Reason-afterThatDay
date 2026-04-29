@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Text, View, Pressable, Alert } from 'react-native';
+import { Text, View, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { useUserStore } from '@/store/useUserStore';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/api/supabase';
 import { formatDateStr, parseDateStr } from '@/utils/dateUtils';
 
@@ -13,7 +12,6 @@ export default function OnboardingDateScreen() {
   const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(false);
   const { setBreakupDate } = useUserStore();
-  const { signInAnonymously } = useAuth();
 
   const today = formatDateStr(new Date());
 
@@ -23,21 +21,26 @@ export default function OnboardingDateScreen() {
       return;
     }
     setLoading(true);
+    const breakupDate = parseDateStr(selectedDate);
     try {
-      const session = await signInAnonymously();
-      const userId = session.user?.id;
-      if (!userId) throw new Error('auth failed');
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
 
-      await supabase.from('users').upsert({
-        id: userId,
-        breakup_date: selectedDate,
-        onboarding_completed: false,
-      });
+      if (userId) {
+        const { error } = await supabase.from('users').upsert({
+          id: userId,
+          breakup_date: selectedDate,
+          onboarding_completed: false,
+        });
+        if (error) throw error;
+      }
 
-      setBreakupDate(parseDateStr(selectedDate));
+      setBreakupDate(breakupDate);
       router.push('/onboarding/mood');
     } catch (e) {
-      Alert.alert('잠깐, 오류가 생겼어', '다시 시도해줄래?');
+      console.warn('onboarding date save failed:', e);
+      setBreakupDate(breakupDate);
+      router.push('/onboarding/mood');
     } finally {
       setLoading(false);
     }
