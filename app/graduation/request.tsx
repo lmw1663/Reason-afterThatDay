@@ -21,19 +21,32 @@ export default function GraduationRequestScreen() {
   }
 
   async function handleRequest() {
-    if (!userId) return;
     setLoading(true);
     setError('');
     try {
-      const row = await requestGraduation(userId);
-      setCooling({
-        id: row.id,
-        status: row.status,
-        requestedAt: row.requestedAt,
-        coolingEndsAt: row.coolingEndsAt,
-        checkinResponses: row.checkinResponses,
-        notificationsSent: row.notificationsSent,
-      });
+      if (userId) {
+        const row = await requestGraduation(userId);
+        setCooling({
+          id: row.id,
+          status: row.status,
+          requestedAt: row.requestedAt,
+          coolingEndsAt: row.coolingEndsAt,
+          checkinResponses: row.checkinResponses,
+          notificationsSent: row.notificationsSent,
+        });
+      } else {
+        // 로그인 없이 로컬 상태로 유예 시작
+        const now = new Date();
+        const endsAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        setCooling({
+          id: `local-${Date.now()}`,
+          status: 'cooling',
+          requestedAt: now.toISOString(),
+          coolingEndsAt: endsAt.toISOString(),
+          checkinResponses: [],
+          notificationsSent: 0,
+        });
+      }
       router.replace('/cooling');
     } catch (e: unknown) {
       const err = e as { code?: string };
