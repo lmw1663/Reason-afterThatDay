@@ -50,6 +50,9 @@ export default function JournalHistoryScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
+        <Pressable onPress={() => router.back()} className="mb-4" style={{ alignSelf: 'flex-start' }}>
+          <Text className="text-gray-400 text-base">← 뒤로</Text>
+        </Pressable>
         <Text className="text-gray-400 text-sm mb-2">이별 일기</Text>
         <Text className="text-white text-2xl font-bold mb-6">지나온 기록들</Text>
 
