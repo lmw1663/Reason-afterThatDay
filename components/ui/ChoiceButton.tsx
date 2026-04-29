@@ -12,32 +12,32 @@ export function ChoiceButton({ label, sublabel, selected = false, onPress, icon 
   return (
     <Pressable
       onPress={onPress}
-      className={[
-        'rounded-2xl p-4 mb-3 border',
-        selected
-          ? 'bg-purple-800/40 border-purple-600'
-          : 'border-gray-800 active:border-gray-600',
-      ].join(' ')}
-      style={{ backgroundColor: selected ? 'rgba(83,74,183,0.15)' : '#1A1A22' }}
+      style={{
+        borderRadius: 16,
+        padding: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        backgroundColor: selected ? 'rgba(83,74,183,0.15)' : '#1A1A22',
+        borderColor: selected ? '#7F77DD' : '#2C2C38',
+      }}
     >
-      <View className="flex-row items-center gap-3">
-        {icon && <Text className="text-2xl">{icon}</Text>}
-        <View className="flex-1">
-          <Text
-            className={[
-              'text-base font-semibold',
-              selected ? 'text-purple-400' : 'text-white',
-            ].join(' ')}
-          >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {icon && <Text style={{ fontSize: 24 }}>{icon}</Text>}
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 16, fontWeight: '600', color: selected ? '#A5A0F0' : '#F1EFE8' }}>
             {label}
           </Text>
           {sublabel && (
-            <Text className="text-gray-400 text-sm mt-0.5">{sublabel}</Text>
+            <Text style={{ fontSize: 14, color: '#888780', marginTop: 2 }}>{sublabel}</Text>
           )}
         </View>
         {selected && (
-          <View className="w-5 h-5 rounded-full bg-purple-600 items-center justify-center">
-            <Text className="text-white text-xs">✓</Text>
+          <View style={{
+            width: 20, height: 20, borderRadius: 10,
+            backgroundColor: '#7F77DD',
+            alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Text style={{ color: '#FFFFFF', fontSize: 12 }}>✓</Text>
           </View>
         )}
       </View>
