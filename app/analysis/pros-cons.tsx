@@ -52,7 +52,7 @@ export default function AnalysisProsCons() {
           {(['pros', 'cons'] as Tab[]).map((t) => (
             <Pressable
               key={t}
-              onPress={() => setTab(t)}
+              onPress={() => { setTab(t); setInput(''); }}
               className="flex-1 py-3 items-center"
               style={tab === t ? { backgroundColor: '#534AB7' } : {}}
             >
