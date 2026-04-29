@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Text, View, Pressable } from 'react-native';
 
 interface Props {
@@ -28,10 +27,9 @@ export function MoodSlider({ value, onChange }: Props) {
           <Pressable
             key={score}
             onPress={() => onChange(score)}
-            className="items-center"
+            style={{ alignItems: 'center' }}
           >
             <View
-              className="rounded-sm"
               style={{
                 width: 24,
                 height: score === value ? 56 : 32,
