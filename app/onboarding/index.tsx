@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { colors } from '@/constants/colors';
 import { Text, View, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Display } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { supabase } from '@/api/supabase';
 import { formatDateStr, parseDateStr } from '@/utils/dateUtils';
@@ -49,33 +52,31 @@ export default function OnboardingDateScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-16">
-        <Text className="text-gray-400 text-sm mb-2">reason</Text>
-        <Text className="text-white text-3xl font-bold mb-2">
-          언제 헤어졌어?
-        </Text>
-        <Text className="text-gray-400 text-base mb-8">
+        <Caption className="mb-2">reason</Caption>
+        <Display className="mb-2">언제 헤어졌어?</Display>
+        <Body className="text-gray-400 mb-8">
           날짜를 알면 네가 걸어온 거리를 함께 볼 수 있어.
-        </Text>
+        </Body>
 
         <Calendar
           onDayPress={(day) => setSelectedDate(day.dateString)}
           markedDates={
             selectedDate
-              ? { [selectedDate]: { selected: true, selectedColor: '#7F77DD' } }
+              ? { [selectedDate]: { selected: true, selectedColor: colors.purple[400] } }
               : {}
           }
           maxDate={today}
           theme={{
             backgroundColor: 'transparent',
             calendarBackground: 'transparent',
-            textSectionTitleColor: '#5F5E5A',
-            selectedDayBackgroundColor: '#7F77DD',
-            selectedDayTextColor: '#FFFFFF',
-            todayTextColor: '#7F77DD',
-            dayTextColor: '#F1EFE8',
-            textDisabledColor: '#444441',
-            arrowColor: '#7F77DD',
-            monthTextColor: '#F1EFE8',
+            textSectionTitleColor: colors.gray[600],
+            selectedDayBackgroundColor: colors.purple[400],
+            selectedDayTextColor: colors.white,
+            todayTextColor: colors.purple[400],
+            dayTextColor: colors.gray[50],
+            textDisabledColor: colors.gray[800],
+            arrowColor: colors.purple[400],
+            monthTextColor: colors.gray[50],
             textMonthFontWeight: '600',
             textDayFontSize: 15,
             textMonthFontSize: 17,
@@ -83,10 +84,10 @@ export default function OnboardingDateScreen() {
         />
 
         {selectedDate ? (
-          <View className="mt-6 p-4 rounded-2xl items-center" style={{ backgroundColor: '#1A1A22' }}>
-            <Text className="text-gray-400 text-sm">선택한 날짜</Text>
+          <Card className="mt-6 items-center">
+            <Caption>선택한 날짜</Caption>
             <Text className="text-white text-lg font-semibold mt-1">{selectedDate}</Text>
-          </View>
+          </Card>
         ) : null}
       </View>
 

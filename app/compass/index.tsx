@@ -1,19 +1,17 @@
-import { Text, View, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
-import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useDecisionStore } from '@/store/useDecisionStore';
 import { VERDICT_LABEL } from '@/utils/diagnosis';
 
 export default function CompassSummaryScreen() {
   const { daysElapsed } = useUserStore();
   const { stats, entries } = useJournalStore();
-  const { profile } = useRelationshipStore();
   const { latestVerdict } = useDecisionStore();
 
   const moodAvg = stats?.moodTrend.length
@@ -31,13 +29,11 @@ export default function CompassSummaryScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">결정 나침반 · 0 / 5</Text>
-        <Text className="text-white text-2xl font-bold mb-2">
-          지금까지의 여정을 먼저 볼게
-        </Text>
-        <Text className="text-gray-400 text-sm mb-8">
+        <Caption className="mb-2">결정 나침반</Caption>
+        <Heading className="mb-2">지금까지의 여정을 먼저 볼게</Heading>
+        <Body className="text-gray-400 mb-8">
           데이터를 바탕으로 방향을 탐색해 나갈 거야.
-        </Text>
+        </Body>
 
         <View className="gap-3 mb-6">
           <InsightCard
@@ -67,8 +63,6 @@ export default function CompassSummaryScreen() {
             />
           )}
         </View>
-
-        <ProgressDots total={5} current={0} />
       </ScrollView>
 
       <View className="px-6 pb-10">

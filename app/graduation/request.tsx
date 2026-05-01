@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
+import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon, type IconName } from '@/components/ui/Icon';
+import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { requestGraduation } from '@/api/graduation';
@@ -63,28 +67,33 @@ export default function GraduationRequestScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">졸업 · 4 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-2">졸업 신청</Text>
+        <Caption className="mb-2">졸업 · 4 / 4</Caption>
+        <Heading className="mb-2">졸업 신청</Heading>
 
-        <View className="rounded-2xl p-5 mb-6" style={{ backgroundColor: '#1A1A22' }}>
-          <Text className="text-white font-semibold text-base mb-3">📋 유예 기간 안내</Text>
-          <View className="gap-3">
-            <InfoRow emoji="⏳" text="졸업 신청 후 7일간 유예 기간이 시작돼." />
-            <InfoRow emoji="🔕" text="유예 기간 중 일반 알림은 모두 중지돼." />
-            <InfoRow emoji="🔔" text="Day 7에 최종 확인 알림 1회만 발송돼." />
-            <InfoRow emoji="↩️" text="마음이 바뀌면 언제든 취소할 수 있어." />
-            <InfoRow emoji="💾" text="체크인 기록은 취소해도 보존돼." />
+        <Card className="p-5 mb-6">
+          <View className="flex-row items-center gap-2 mb-3">
+            <Icon name="clipboard" size={18} color={colors.gray[50]} />
+            <Text className="text-white font-semibold text-base">유예 기간 안내</Text>
           </View>
-        </View>
+          <View className="gap-3">
+            <InfoRow icon="hourglass" text="졸업 신청 후 7일간 유예 기간이 시작돼." />
+            <InfoRow icon="bell-off"  text="유예 기간 중 일반 알림은 모두 중지돼." />
+            <InfoRow icon="bell"      text="Day 7에 최종 확인 알림 1회만 발송돼." />
+            <InfoRow icon="undo"      text="마음이 바뀌면 언제든 취소할 수 있어." />
+            <InfoRow icon="save"      text="체크인 기록은 취소해도 보존돼." />
+          </View>
+        </Card>
 
-        <View className="rounded-xl px-4 py-3 mb-6" style={{ backgroundColor: 'rgba(83,74,183,0.1)', borderWidth: 1, borderColor: '#534AB7' }}>
-          <Text className="text-purple-400 text-sm text-center leading-relaxed">
+        <Card variant="subtle" accent="purple" className="mb-6">
+          <Caption className="text-purple-400 text-center leading-relaxed">
             졸업은 끝이 아니야.{'\n'}이 시간을 통해 성장한 너의 새로운 시작이야.
-          </Text>
-        </View>
+          </Caption>
+        </Card>
 
         {error ? (
-          <Text className="text-coral-400 text-sm text-center mb-4">{error}</Text>
+          <Caption className="text-coral-400 text-center mb-4" accessibilityRole="alert">
+            {error}
+          </Caption>
         ) : null}
       </View>
 
@@ -104,11 +113,13 @@ export default function GraduationRequestScreen() {
   );
 }
 
-function InfoRow({ emoji, text }: { emoji: string; text: string }) {
+function InfoRow({ icon, text }: { icon: IconName; text: string }) {
   return (
-    <View className="flex-row items-start gap-3">
-      <Text>{emoji}</Text>
-      <Text className="text-gray-400 text-sm flex-1 leading-relaxed">{text}</Text>
+    <View className="flex-row items-start gap-3" accessibilityRole="text">
+      <View className="mt-0.5">
+        <Icon name={icon} size={16} color={colors.gray[400]} />
+      </View>
+      <Body className="text-gray-400 flex-1">{text}</Body>
     </View>
   );
 }

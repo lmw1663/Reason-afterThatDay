@@ -20,6 +20,9 @@ export function Pill({ label, selected = false, onPress, color = 'purple' }: Pro
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
       className={[
         'rounded-full px-4 py-2 mr-2 mb-2',
         selected ? c.activeBg : c.bg,

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { colors } from '@/constants/colors';
 import { Animated, Text, View } from 'react-native';
 
 interface Props {
@@ -25,7 +26,7 @@ export function ErrorToast({ message, visible, onHide }: Props) {
     <Animated.View
       style={{ opacity, position: 'absolute', bottom: 100, left: 24, right: 24, zIndex: 999 }}
     >
-      <View className="rounded-2xl px-4 py-3" style={{ backgroundColor: '#712B13' }}>
+      <View className="rounded-2xl px-4 py-3" style={{ backgroundColor: colors.coral[800] }}>
         <Text className="text-white text-sm text-center">{message}</Text>
       </View>
     </Animated.View>

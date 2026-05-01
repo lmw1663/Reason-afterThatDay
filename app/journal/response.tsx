@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
-import { Text, View, ActivityIndicator } from 'react-native';
+import { colors } from '@/constants/colors';
+import { View, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { InsightCard } from '@/components/ui/InsightCard';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
@@ -20,7 +24,7 @@ export default function JournalResponseScreen() {
   }>();
 
   const { userId, daysElapsed } = useUserStore();
-  const { entries, setTodayEntry } = useJournalStore();
+  const { entries, upsertEntry } = useJournalStore();
   const { text, loading, done, fetchStream } = useStreamingJournalResponse();
 
   const score = Number(params.score ?? '5');
@@ -40,9 +44,26 @@ export default function JournalResponseScreen() {
     fetchStream(ctx);
   }, []);
 
-  // 스트리밍 완료 후 DB 저장
+  // 스트리밍 완료 후 로컬 즉시 반영 + DB 저장
+  // 1) userId 유무와 상관없이 로컬 entries 에 먼저 prepend → history에 즉시 보이게.
+  // 2) userId 가 있으면 DB 저장 후 서버 응답(id/createdAt) 으로 로컬 엔트리 교체.
   useEffect(() => {
-    if (!done || !text || !userId) return;
+    if (!done || !text) return;
+
+    const localEntry = {
+      id: `local-${Date.now()}`,
+      userId: userId ?? 'local',
+      createdAt: new Date().toISOString(),
+      moodScore: score,
+      moodLabel: tags,
+      direction,
+      freeText: params.freeText || undefined,
+      aiResponse: text,
+    };
+    upsertEntry(localEntry);
+
+    if (!userId) return;
+
     upsertJournalEntry({
       userId,
       moodScore: score,
@@ -51,37 +72,43 @@ export default function JournalResponseScreen() {
       freeText: params.freeText || undefined,
       aiResponse: text,
     })
-      .then(setTodayEntry)
-      .catch(() => {});
+      .then((saved) => upsertEntry(saved))
+      .catch((e) => {
+        const err = e as { code?: string; message?: string };
+        console.warn('[journal] save failed:', err.code ?? err.message ?? e);
+      });
   }, [done]);
 
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">이별 일기 · 4 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-8">오늘 기록 완료 🌙</Text>
+        <Caption className="mb-2">이별 일기 · 4 / 4</Caption>
+        <View className="flex-row items-center gap-2 mb-8">
+          <Heading>오늘 기록 완료</Heading>
+          <Icon name="moon" size={22} color={colors.purple[400]} />
+        </View>
 
         {loading && !text ? (
           <View className="items-center py-12">
-            <ActivityIndicator color="#7F77DD" size="large" />
-            <Text className="text-gray-400 text-sm mt-4">잠깐, 들어볼게 …</Text>
+            <ActivityIndicator color={colors.purple[400]} size="large" />
+            <Caption className="mt-4">잠깐, 들어볼게 …</Caption>
           </View>
         ) : (
           <InsightCard tag="오늘의 한마디" body={text} accent="purple" />
         )}
 
-        <View className="mt-6 p-4 rounded-2xl" style={{ backgroundColor: '#1A1A22' }}>
+        <Card className="mt-6">
           <View className="flex-row justify-between">
-            <Text className="text-gray-400 text-sm">감정 온도</Text>
-            <Text className="text-white font-semibold">{score}°</Text>
+            <Caption>감정 온도</Caption>
+            <Body className="text-white font-semibold">{score}°</Body>
           </View>
           <View className="flex-row justify-between mt-2">
-            <Text className="text-gray-400 text-sm">방향</Text>
-            <Text className="text-purple-400 font-semibold">
+            <Caption>방향</Caption>
+            <Body className="text-purple-400 font-semibold">
               {direction === 'catch' ? '잡고 싶어' : direction === 'let_go' ? '보내고 싶어' : '모르겠어'}
-            </Text>
+            </Body>
           </View>
-        </View>
+        </Card>
       </View>
 
       <View className="px-6 pb-10 gap-4">

@@ -1,14 +1,18 @@
 import { useEffect } from 'react';
+import { colors } from '@/constants/colors';
 import { Text, View, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useDecisionStore } from '@/store/useDecisionStore';
 import { useUserStore } from '@/store/useUserStore';
 import { compassVerdict, VERDICT_LABEL, VERDICT_COLOR } from '@/utils/diagnosis';
 import { supabase } from '@/api/supabase';
 import type { Direction } from '@/store/useJournalStore';
+import { disclaimer } from '@/constants/copy';
 
 export default function CompassNeedleScreen() {
   const params = useLocalSearchParams<{ want: string; finalScore: string }>();
@@ -34,12 +38,12 @@ export default function CompassNeedleScreen() {
     addDecision(record);
 
     if (userId) {
-      supabase.from('decision_history').insert({
+      void Promise.resolve(supabase.from('decision_history').insert({
         user_id: userId,
         direction: record.direction,
         verdict,
         diff_score: diff,
-      }).then(() => {}).catch(() => {});
+      }));
     }
   }, []);
 
@@ -50,14 +54,14 @@ export default function CompassNeedleScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">결정 나침반 · 4 / 5</Text>
-        <Text className="text-white text-2xl font-bold mb-8">나침반이야</Text>
+        <Caption className="mb-2">결정 나침반 · 4 / 5</Caption>
+        <Heading className="mb-8">나침반이야</Heading>
 
         {/* 나침반 시각화 */}
         <View className="items-center mb-8">
           <View
             className="w-48 h-48 rounded-full items-center justify-center"
-            style={{ backgroundColor: '#1A1A22', borderWidth: 2, borderColor: '#2C2C38' }}
+            style={{ backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border }}
           >
             {/* 나침반 바늘 */}
             <View
@@ -70,12 +74,12 @@ export default function CompassNeedleScreen() {
               />
               <View
                 className="rounded-full"
-                style={{ width: 4, height: 36, backgroundColor: '#444441' }}
+                style={{ width: 4, height: 36, backgroundColor: colors.gray[800] }}
               />
             </View>
             <View
               className="absolute w-4 h-4 rounded-full"
-              style={{ backgroundColor: '#2C2C38', borderWidth: 2, borderColor: '#888780' }}
+              style={{ backgroundColor: colors.border, borderWidth: 2, borderColor: colors.gray[400] }}
             />
           </View>
 
@@ -85,31 +89,25 @@ export default function CompassNeedleScreen() {
           </View>
         </View>
 
-        {/* 결과 */}
+        {/* 결과 — verdict별 동적 색상이라 인라인 borderLeftColor 유지 */}
         <View
-          className="rounded-2xl p-5 mb-4"
-          style={{ backgroundColor: '#1A1A22', borderLeftWidth: 4, borderLeftColor: color }}
+          className="bg-surface rounded-2xl p-5 mb-4"
+          style={{ borderLeftWidth: 4, borderLeftColor: color }}
         >
           <Text className="text-base font-semibold mb-2" style={{ color }}>
             {label}
           </Text>
-          <Text className="text-gray-400 text-sm leading-relaxed">
-            {getDescription(verdict)}
-          </Text>
+          <Body className="text-gray-400">{getDescription(verdict)}</Body>
         </View>
 
         {/* 절대 규칙: "정답이 아니야" 문구 필수 */}
-        <View
-          className="rounded-xl px-4 py-3 mb-6"
-          style={{ backgroundColor: 'rgba(127,119,221,0.08)', borderWidth: 1, borderColor: '#3C3489' }}
-        >
-          <Text className="text-purple-400 text-sm text-center">
-            이건 정답이 아니야. 지금 이 순간 네 마음의 경향을 비춰본 거야.{'\n'}
-            방향은 언제든 바뀔 수 있어. 그게 자연스러운 거야.
-          </Text>
-        </View>
+        <Card variant="subtle" accent="purple" tone="weak" className="mb-6">
+          <Caption className="text-purple-400 text-center">
+            {disclaimer.compassResult}
+          </Caption>
+        </Card>
 
-        <ProgressDots total={5} current={4} />
+        <ProgressDots total={5} current={3} />
       </ScrollView>
 
       <View className="px-6 pb-10">

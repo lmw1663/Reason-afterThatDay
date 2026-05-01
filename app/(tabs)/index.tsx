@@ -1,16 +1,21 @@
 import { useEffect, useState } from 'react';
+import { colors } from '@/constants/colors';
 import { Text, View, Pressable, ScrollView, AppState } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { fetchDailyQuote } from '@/api/ai';
+import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
 import { withRetry } from '@/utils/retry';
 
 export default function HomeScreen() {
   const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
-  const { todayEntry } = useJournalStore();
+  const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
   const [dailyQuote, setDailyQuote] = useState<string>('');
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
@@ -30,6 +35,20 @@ export default function HomeScreen() {
       .catch(() => setDailyQuote('오늘도 한 걸음씩. 네 속도가 맞는 속도야.'));
   }, [userId, daysElapsed]);
 
+  // 일기 동기화 — 홈 진입 시 오늘 엔트리/최근 30개를 서버에서 끌어와 store에 반영.
+  // 앱 재시작이나 다른 기기에서 작성한 경우에도 history/홈 카드가 비지 않도록.
+  useEffect(() => {
+    if (!userId) return;
+    fetchTodayEntry(userId)
+      .then((entry) => {
+        if (entry) setTodayEntry(entry);
+      })
+      .catch((e) => console.warn('[journal] fetchTodayEntry failed:', e));
+    fetchRecentEntries(userId, 30)
+      .then(setEntries)
+      .catch((e) => console.warn('[journal] fetchRecentEntries failed:', e));
+  }, [userId]);
+
   return (
     <ScreenWrapper>
       <ScrollView
@@ -39,8 +58,12 @@ export default function HomeScreen() {
       >
         {/* 헤더 */}
         <View className="flex-row justify-between items-center px-6 pt-14 pb-6">
-          <Text className="text-white text-2xl font-bold">Reason - 그날 이후</Text>
-          <View className="bg-purple-800 rounded-full px-3 py-1">
+          <Heading>Reason - 그날 이후</Heading>
+          <View
+            className="bg-purple-800 rounded-full px-3 py-1"
+            accessibilityRole="text"
+            accessibilityLabel={`이별 후 ${daysElapsed}일 경과`}
+          >
             <Text className="text-purple-400 text-sm font-semibold">D+{daysElapsed}</Text>
           </View>
         </View>
@@ -61,29 +84,32 @@ export default function HomeScreen() {
         {/* 일기 CTA */}
         <View className="px-6 mb-6">
           {todayEntry ? (
-            <View
-              className="rounded-2xl p-4 border border-teal-600"
-              style={{ backgroundColor: 'rgba(15,110,86,0.1)' }}
-            >
+            <Card variant="subtle" accent="teal" className="rounded-2xl p-4">
               <Text className="text-teal-400 text-sm font-medium mb-1">오늘 일기 작성 완료</Text>
               <Text className="text-white text-lg font-semibold">
                 감정 온도 {todayEntry.moodScore}°
               </Text>
-              <Text className="text-gray-400 text-sm mt-1">
+              <Caption className="mt-1">
                 방향: {
                   todayEntry.direction === 'catch' ? '잡고 싶어'
                   : todayEntry.direction === 'let_go' ? '보내고 싶어'
                   : '아직 모르겠어'
                 }
-              </Text>
-            </View>
+              </Caption>
+            </Card>
           ) : (
             <Pressable
               onPress={() => router.push('/journal')}
+              accessibilityRole="button"
+              accessibilityLabel="오늘 일기 쓰기"
+              accessibilityHint="감정·방향·짧은 답변 4단계로 기록해"
               className="rounded-2xl py-5 px-6 items-center active:opacity-80"
-              style={{ backgroundColor: '#534AB7' }}
+              style={{ backgroundColor: colors.purple[600] }}
             >
-              <Text className="text-white text-lg font-bold">오늘 일기 쓰기 ▶</Text>
+              <View className="flex-row items-center gap-2">
+                <Text className="text-white text-lg font-bold">오늘 일기 쓰기</Text>
+                <Icon name="chevron-right" color={colors.white} size={20} />
+              </View>
               <Text className="text-purple-50 text-sm mt-1 opacity-80">
                 지금 마음을 기록해둘게
               </Text>
@@ -94,19 +120,19 @@ export default function HomeScreen() {
         {/* 하단 메뉴 카드들 */}
         <View className="px-6 gap-3">
           <QuickLink
-            emoji="🔍"
+            icon="search"
             title="관계 분석"
             desc="장단점, 이유, 가망 진단"
             onPress={() => router.push('/(tabs)/analysis')}
           />
           <QuickLink
-            emoji="🧭"
+            icon="compass"
             title="결정 나침반"
             desc="지금 마음의 방향 탐색"
             onPress={() => router.push('/(tabs)/compass')}
           />
           <QuickLink
-            emoji="📔"
+            icon="book"
             title="일기 목록"
             desc="지나온 감정들 다시 보기"
             onPress={() => router.push('/journal/history')}
@@ -118,12 +144,12 @@ export default function HomeScreen() {
 }
 
 function QuickLink({
-  emoji,
+  icon,
   title,
   desc,
   onPress,
 }: {
-  emoji: string;
+  icon: IconName;
   title: string;
   desc: string;
   onPress: () => void;
@@ -131,15 +157,19 @@ function QuickLink({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center p-4 rounded-2xl active:opacity-70"
-      style={{ backgroundColor: '#1A1A22' }}
+      accessibilityRole="button"
+      accessibilityLabel={`${title} 화면으로 이동`}
+      accessibilityHint={desc}
+      className="flex-row items-center p-4 rounded-2xl bg-surface active:opacity-70"
     >
-      <Text className="text-2xl mr-3">{emoji}</Text>
+      <View className="mr-3">
+        <Icon name={icon} size={22} />
+      </View>
       <View className="flex-1">
         <Text className="text-white font-semibold">{title}</Text>
-        <Text className="text-gray-400 text-sm mt-0.5">{desc}</Text>
+        <Caption className="mt-0.5">{desc}</Caption>
       </View>
-      <Text className="text-gray-600">›</Text>
+      <Icon name="chevron-right" size={18} color={colors.gray[600]} />
     </Pressable>
   );
 }

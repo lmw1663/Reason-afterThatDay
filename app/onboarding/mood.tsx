@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Text, View, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Pill } from '@/components/ui/Pill';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Body, Caption, Display } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { supabase } from '@/api/supabase';
 
@@ -54,13 +55,11 @@ export default function OnboardingMoodScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">reason · 2 / 2</Text>
-        <Text className="text-white text-3xl font-bold mb-2">
-          지금 기분이 어때?
-        </Text>
-        <Text className="text-gray-400 text-base mb-8">
+        <Caption className="mb-2">reason · 2 / 2</Caption>
+        <Display className="mb-2">지금 기분이 어때?</Display>
+        <Body className="text-gray-400 mb-8">
           여러 개 골라도 괜찮아. 복잡한 게 당연해.
-        </Text>
+        </Body>
 
         <View className="flex-row flex-wrap">
           {MOODS.map(({ label, color }) => (

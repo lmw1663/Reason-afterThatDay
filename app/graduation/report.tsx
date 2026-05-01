@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
+import { colors } from '@/constants/colors';
 import { Text, View, ScrollView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { MoodChart } from '@/components/ui/MoodChart';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon, type IconName } from '@/components/ui/Icon';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { fetchRecentEntries } from '@/api/journal';
@@ -19,7 +23,7 @@ export default function GraduationReportScreen() {
     if (!userId) { setLoading(false); return; }
     fetchRecentEntries(userId, 30)
       .then(setEntries)
-      .catch(() => {})
+      .catch((e) => console.warn('[graduation] fetchRecentEntries failed:', e))
       .finally(() => setLoading(false));
   }, [userId]);
 
@@ -36,7 +40,7 @@ export default function GraduationReportScreen() {
     return (
       <ScreenWrapper>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7F77DD" />
+          <ActivityIndicator color={colors.purple[400]} />
         </View>
       </ScreenWrapper>
     );
@@ -49,27 +53,27 @@ export default function GraduationReportScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">졸업 · 1 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-2">이별 이후의 성장 리포트</Text>
-        <Text className="text-gray-400 text-sm mb-8">D+{daysElapsed}일, 참 많이 걸어왔어.</Text>
+        <Caption className="mb-2">졸업 · 1 / 4</Caption>
+        <Heading className="mb-2">이별 이후의 성장 리포트</Heading>
+        <Caption className="mb-8">D+{daysElapsed}일, 참 많이 걸어왔어.</Caption>
 
         {/* 핵심 수치 */}
         <View className="flex-row gap-3 mb-6">
-          <StatCard emoji="📔" label="일기" value={`${entries.length}개`} />
-          <StatCard emoji="🌡️" label="평균 온도" value={`${moodAvg}°`} />
-          <StatCard emoji="🧭" label="주된 방향" value={DIRECTION_LABEL[dominantDirection]} />
+          <StatCard icon="book"        label="일기"      value={`${entries.length}개`} />
+          <StatCard icon="thermometer" label="평균 온도" value={`${moodAvg}°`} />
+          <StatCard icon="compass"     label="주된 방향" value={DIRECTION_LABEL[dominantDirection]} />
         </View>
 
         {/* 감정 추이 차트 */}
-        <View className="rounded-2xl p-4 mb-6" style={{ backgroundColor: '#1A1A22' }}>
+        <Card className="mb-6">
           <MoodChart moodScores={moodScores} label="최근 7일 감정 온도" />
-        </View>
+        </Card>
 
-        <View className="p-4 rounded-2xl mb-6" style={{ backgroundColor: '#1A1A22' }}>
-          <Text className="text-gray-400 text-sm leading-relaxed">
+        <Card className="mb-6">
+          <Body className="text-gray-400">
             {getReportSummary(entries.length, Number(moodAvg), daysElapsed)}
-          </Text>
-        </View>
+          </Body>
+        </Card>
       </ScrollView>
 
       <View className="px-6 pb-10">
@@ -79,11 +83,17 @@ export default function GraduationReportScreen() {
   );
 }
 
-function StatCard({ emoji, label, value }: { emoji: string; label: string; value: string }) {
+function StatCard({ icon, label, value }: { icon: IconName; label: string; value: string }) {
   return (
-    <View className="flex-1 rounded-2xl p-3 items-center" style={{ backgroundColor: '#1A1A22' }}>
-      <Text className="text-2xl mb-1">{emoji}</Text>
-      <Text className="text-gray-400 text-xs mb-0.5">{label}</Text>
+    <View
+      className="flex-1 rounded-2xl p-3 items-center bg-surface"
+      accessibilityRole="text"
+      accessibilityLabel={`${label} ${value}`}
+    >
+      <View className="mb-1">
+        <Icon name={icon} size={20} />
+      </View>
+      <Caption variant="subtle" className="mb-0.5">{label}</Caption>
       <Text className="text-white text-sm font-semibold text-center">{value}</Text>
     </View>
   );

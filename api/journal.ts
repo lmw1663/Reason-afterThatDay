@@ -23,23 +23,34 @@ export async function upsertJournalEntry(params: {
   freeText?: string;
   aiResponse?: string;
 }): Promise<JournalEntry> {
+  // PostgREST의 on_conflict 파라미터는 표현식 기반 unique index를 지원하지 않으므로
+  // 오늘 항목 존재 여부를 직접 확인 후 insert/update로 분기
+  const existing = await fetchTodayEntry(params.userId);
+
+  const payload = {
+    mood_score: params.moodScore,
+    mood_label: params.moodLabel,
+    direction: params.direction,
+    free_text: params.freeText ?? null,
+    ai_response: params.aiResponse ?? null,
+  };
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from('journal_entries')
+      .update(payload)
+      .eq('id', existing.id)
+      .select()
+      .single();
+    if (error) throw { code: AppError.AI_FAILED, detail: error };
+    return toJournalEntry(data);
+  }
+
   const { data, error } = await supabase
     .from('journal_entries')
-    .upsert(
-      {
-        user_id: params.userId,
-        mood_score: params.moodScore,
-        mood_label: params.moodLabel,
-        direction: params.direction,
-        free_text: params.freeText,
-        ai_response: params.aiResponse,
-        created_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,date(created_at at time zone \'Asia/Seoul\')' },
-    )
+    .insert({ user_id: params.userId, created_at: new Date().toISOString(), ...payload })
     .select()
     .single();
-
   if (error) throw { code: AppError.AI_FAILED, detail: error };
   return toJournalEntry(data);
 }
@@ -57,14 +68,20 @@ export async function fetchRecentEntries(userId: string, limit = 7): Promise<Jou
 }
 
 export async function fetchTodayEntry(userId: string): Promise<JournalEntry | null> {
-  const today = new Date().toISOString().slice(0, 10);
+  // KST(UTC+9) 기준 오늘 자정~23:59를 UTC로 변환
+  const now = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(now.getTime() + kstOffset).toISOString().slice(0, 10);
+  const startUtc = new Date(`${kstDate}T00:00:00+09:00`).toISOString();
+  const endUtc = new Date(`${kstDate}T23:59:59+09:00`).toISOString();
+
   const { data } = await supabase
     .from('journal_entries')
     .select('*')
     .eq('user_id', userId)
-    .gte('created_at', `${today}T00:00:00`)
-    .lt('created_at', `${today}T23:59:59`)
-    .single();
+    .gte('created_at', startUtc)
+    .lte('created_at', endUtc)
+    .maybeSingle();
 
   return data ? toJournalEntry(data) : null;
 }

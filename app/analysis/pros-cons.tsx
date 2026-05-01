@@ -1,9 +1,13 @@
 import { useState } from 'react';
-import { Text, View, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { colors } from '@/constants/colors';
+import { Text, View, TextInput, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 
 type Tab = 'pros' | 'cons';
@@ -36,25 +40,26 @@ export default function AnalysisProsCons() {
   }
 
   return (
-    <ScreenWrapper>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
+    <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">관계 분석 · 2 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-6">
-          그 사람의 장단점은?
-        </Text>
+        <BackHeader />
+        <Caption className="mb-2">관계 분석 · 2 / 4</Caption>
+        <Heading className="mb-6">그 사람의 장단점은?</Heading>
 
         {/* 탭 */}
-        <View className="flex-row mb-6 rounded-xl overflow-hidden" style={{ backgroundColor: '#1A1A22' }}>
+        <View
+          className="flex-row mb-6 rounded-xl overflow-hidden bg-surface"
+          accessibilityRole="tablist"
+        >
           {(['pros', 'cons'] as Tab[]).map((t) => (
             <Pressable
               key={t}
               onPress={() => { setTab(t); setInput(''); }}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab === t }}
+              accessibilityLabel={t === 'pros' ? `장점 탭, ${pros.length}개` : `단점 탭, ${cons.length}개`}
               className="flex-1 py-3 items-center"
-              style={tab === t ? { backgroundColor: '#534AB7' } : {}}
+              style={tab === t ? { backgroundColor: colors.purple[600] } : undefined}
             >
               <Text className={tab === t ? 'text-white font-semibold' : 'text-gray-400'}>
                 {t === 'pros' ? `장점 (${pros.length})` : `단점 (${cons.length})`}
@@ -70,17 +75,18 @@ export default function AnalysisProsCons() {
             onChangeText={setInput}
             onSubmitEditing={addItem}
             placeholder={tab === 'pros' ? '좋았던 점 추가...' : '아쉬웠던 점 추가...'}
-            placeholderTextColor="#5F5E5A"
+            placeholderTextColor={colors.gray[600]}
             returnKeyType="done"
-            className="flex-1 text-white text-base px-4 py-3 rounded-xl"
-            style={{ backgroundColor: '#1A1A22' }}
+            accessibilityLabel={tab === 'pros' ? '장점 추가' : '단점 추가'}
+            className="flex-1 text-white text-base px-4 py-3 rounded-xl bg-surface"
           />
           <Pressable
             onPress={addItem}
-            className="px-4 py-3 rounded-xl items-center justify-center"
-            style={{ backgroundColor: '#534AB7' }}
+            accessibilityRole="button"
+            accessibilityLabel="추가"
+            className="px-4 py-3 rounded-xl items-center justify-center bg-purple-600"
           >
-            <Text className="text-white font-bold">+</Text>
+            <Icon name="plus" size={20} color={colors.white} strokeWidth={2.4} />
           </Pressable>
         </View>
 
@@ -89,12 +95,16 @@ export default function AnalysisProsCons() {
           {list.map((item) => (
             <View
               key={item}
-              className="flex-row items-center justify-between px-4 py-3 rounded-xl mb-2"
-              style={{ backgroundColor: '#1A1A22' }}
+              className="flex-row items-center justify-between px-4 py-3 rounded-xl mb-2 bg-surface"
             >
               <Text className="text-white flex-1">{item}</Text>
-              <Pressable onPress={() => removeItem(item)}>
-                <Text className="text-gray-600 text-lg ml-3">×</Text>
+              <Pressable
+                onPress={() => removeItem(item)}
+                accessibilityRole="button"
+                accessibilityLabel={`${item} 삭제`}
+                className="ml-3"
+              >
+                <Icon name="x" size={18} color={colors.gray[600]} />
               </Pressable>
             </View>
           ))}
@@ -105,7 +115,6 @@ export default function AnalysisProsCons() {
         <ProgressDots total={4} current={1} />
         <PrimaryButton label="다음" onPress={handleNext} />
       </View>
-      </KeyboardAvoidingView>
     </ScreenWrapper>
   );
 }

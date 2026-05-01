@@ -1,15 +1,18 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { ChangeIndicator } from '@/components/ui/ChangeIndicator';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
+import type { IconName } from '@/components/ui/Icon';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
 
-const DIRECTIONS: { value: Direction; label: string; sublabel: string; icon: string }[] = [
-  { value: 'catch',    label: '잡고 싶어',    sublabel: '다시 함께하고 싶은 마음이 있어',  icon: '💜' },
-  { value: 'let_go',   label: '보내고 싶어',  sublabel: '이제 내 길을 가고 싶어',           icon: '🕊️' },
-  { value: 'undecided',label: '아직 모르겠어', sublabel: '어느 쪽인지 잘 모르겠어',          icon: '🌫️' },
+const DIRECTIONS: { value: Direction; label: string; sublabel: string; icon: IconName }[] = [
+  { value: 'catch',    label: '잡고 싶어',    sublabel: '다시 함께하고 싶은 마음이 있어',  icon: 'heart' },
+  { value: 'let_go',   label: '보내고 싶어',  sublabel: '이제 내 길을 가고 싶어',           icon: 'feather' },
+  { value: 'undecided',label: '아직 모르겠어', sublabel: '어느 쪽인지 잘 모르겠어',          icon: 'fog' },
 ];
 
 export default function JournalDirectionScreen() {
@@ -28,13 +31,12 @@ export default function JournalDirectionScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">이별 일기 · 2 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-2">
-          지금 마음은 어느 쪽이야?
-        </Text>
-        <Text className="text-gray-400 text-sm mb-6">
+        <BackHeader />
+        <Caption className="mb-2">이별 일기 · 2 / 4</Caption>
+        <Heading className="mb-2">지금 마음은 어느 쪽이야?</Heading>
+        <Body className="text-gray-400 mb-6">
           지금 이 순간의 느낌 그대로 선택해봐.
-        </Text>
+        </Body>
 
         <ChangeIndicator prev={lastDirection} current={lastDirection ?? 'undecided'} />
 

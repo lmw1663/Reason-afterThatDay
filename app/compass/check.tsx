@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Text, View, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 
 // 공유 질문 풀에서 compass 맥락 질문을 사용하되, 이성 체크용 간단 예/아니오 형태로 제시
 const CHECK_QUESTIONS = [
@@ -45,13 +47,12 @@ export default function CompassCheckScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">결정 나침반 · 2 / 5</Text>
-        <Text className="text-white text-2xl font-bold mb-2">
-          이성적으로 한번 체크해볼게
-        </Text>
-        <Text className="text-gray-400 text-sm mb-8">
+        <BackHeader />
+        <Caption className="mb-2">결정 나침반 · 2 / 5</Caption>
+        <Heading className="mb-2">이성적으로 한번 체크해볼게</Heading>
+        <Body className="text-gray-400 mb-8">
           직감보다 조금 느리게 생각해봐.
-        </Text>
+        </Body>
 
         {CHECK_QUESTIONS.map((q) => (
           <View key={q.id} className="mb-6">
@@ -70,7 +71,7 @@ export default function CompassCheckScreen() {
           </View>
         ))}
 
-        <ProgressDots total={5} current={2} />
+        <ProgressDots total={5} current={1} />
       </ScrollView>
 
       <View className="px-6 pb-10">

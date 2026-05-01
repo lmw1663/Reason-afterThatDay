@@ -1,4 +1,7 @@
 import { Text, View } from 'react-native';
+import { colors } from '@/constants/colors';
+import { disclaimer } from '@/constants/copy';
+import { Caption } from './Typography';
 
 interface Props {
   label: string;
@@ -8,9 +11,9 @@ interface Props {
 }
 
 const colorMap = {
-  purple: { fill: '#7F77DD', bg: '#3C3489' },
-  teal:   { fill: '#1D9E75', bg: '#085041' },
-  coral:  { fill: '#D85A30', bg: '#712B13' },
+  purple: { fill: colors.purple[400], bg: colors.purple[800] },
+  teal:   { fill: colors.teal[400], bg: colors.teal[800] },
+  coral:  { fill: colors.coral[400], bg: colors.coral[800] },
 };
 
 export function MeterBar({ label, value, color = 'purple', showDisclaimer }: Props) {
@@ -35,9 +38,9 @@ export function MeterBar({ label, value, color = 'purple', showDisclaimer }: Pro
         />
       </View>
       {showDisclaimer && (
-        <Text className="text-gray-600 text-xs mt-2">
-          이건 정답이 아니야. 지금 이 순간의 경향일 뿐이야.
-        </Text>
+        <Caption variant="subtle" className="mt-2">
+          {disclaimer.meterReference}
+        </Caption>
       )}
     </View>
   );

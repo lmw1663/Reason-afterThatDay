@@ -1,4 +1,5 @@
 import { ActivityIndicator, View, Text } from 'react-native';
+import { colors } from '@/constants/colors';
 
 interface Props {
   visible: boolean;
@@ -10,9 +11,9 @@ export function LoadingOverlay({ visible, message }: Props) {
   return (
     <View
       className="items-center justify-center"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998, backgroundColor: 'rgba(14,14,18,0.85)' }}
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998, backgroundColor: colors.overlayBackdropDark }}
     >
-      <ActivityIndicator color="#7F77DD" size="large" />
+      <ActivityIndicator color={colors.purple[400]} size="large" />
       {message && <Text className="text-gray-400 text-sm mt-4">{message}</Text>}
     </View>
   );

@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { Text, View, TextInput } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Caption, Heading } from '@/components/ui/Typography';
 import { useSmartQuestion } from '@/hooks/useSmartQuestion';
 import { useQuestionStore } from '@/store/useQuestionStore';
 import type { Direction } from '@/store/useJournalStore';
+import { colors } from '@/constants/colors';
 
 export default function JournalQuestionScreen() {
   const params = useLocalSearchParams<{
@@ -32,21 +35,23 @@ export default function JournalQuestionScreen() {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">이별 일기 · 3 / 4</Text>
+        <BackHeader />
+        <Caption className="mb-2">이별 일기 · 3 / 4</Caption>
 
-        <Text className="text-white text-2xl font-bold mb-6 leading-snug">
+        <Heading className="mb-6 leading-snug">
           {question?.text ?? '오늘 하루 어떤 순간이 기억에 남아?'}
-        </Text>
+        </Heading>
 
         <TextInput
           value={answer}
           onChangeText={setAnswer}
           placeholder="솔직하게 써봐. 여기선 판단 없어."
-          placeholderTextColor="#5F5E5A"
+          placeholderTextColor={colors.gray[600]}
           multiline
           autoFocus
+          accessibilityLabel={question?.text ?? '오늘의 질문 답변'}
           className="text-white text-base leading-relaxed"
           style={{ minHeight: 160 }}
         />

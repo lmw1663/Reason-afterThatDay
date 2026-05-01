@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Text, View, ScrollView, ActivityIndicator } from 'react-native';
+import { colors } from '@/constants/colors';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { MeterBar } from '@/components/ui/MeterBar';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useUserStore } from '@/store/useUserStore';
 import { calcDiagnosis } from '@/utils/diagnosis';
 import { upsertRelationshipProfile } from '@/api/relationship';
+import { disclaimer } from '@/constants/copy';
 
 export default function AnalysisResultScreen() {
   const { profile } = useRelationshipStore();
@@ -25,7 +30,7 @@ export default function AnalysisResultScreen() {
   useEffect(() => {
     if (!userId) { setSaving(false); return; }
     upsertRelationshipProfile(userId, profile)
-      .catch(() => {})
+      .catch((e) => console.warn('[analysis] profile upsert failed:', e))
       .finally(() => setSaving(false));
   }, []);
 
@@ -33,7 +38,7 @@ export default function AnalysisResultScreen() {
     return (
       <ScreenWrapper>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#7F77DD" />
+          <ActivityIndicator color={colors.purple[400]} />
         </View>
       </ScreenWrapper>
     );
@@ -46,18 +51,15 @@ export default function AnalysisResultScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">관계 분석 · 4 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-2">가망 진단 결과야</Text>
+        <Caption className="mb-2">관계 분석 · 4 / 4</Caption>
+        <Heading className="mb-2">가망 진단 결과야</Heading>
 
         {/* 절대 규칙: "정답이 아니야" 문구 필수 */}
-        <View
-          className="rounded-xl px-4 py-3 mb-8"
-          style={{ backgroundColor: 'rgba(127,119,221,0.1)', borderWidth: 1, borderColor: '#534AB7' }}
-        >
-          <Text className="text-purple-400 text-sm text-center">
-            이건 정답이 아니야. 지금 이 순간의 경향일 뿐이야.
-          </Text>
-        </View>
+        <Card variant="subtle" accent="purple" className="mb-8">
+          <Caption className="text-purple-400 text-center">
+            {disclaimer.diagnosisResult}
+          </Caption>
+        </Card>
 
         <MeterBar
           label="재연결 가능성"
@@ -75,21 +77,19 @@ export default function AnalysisResultScreen() {
           color="coral"
         />
 
-        <View className="mt-6 p-4 rounded-2xl" style={{ backgroundColor: '#1A1A22' }}>
-          <Text className="text-gray-400 text-sm leading-relaxed">
-            {getSummary(result)}
-          </Text>
-        </View>
+        <Card className="mt-6">
+          <Body className="text-gray-400">{getSummary(result)}</Body>
+        </Card>
 
-        <View className="mt-4 p-4 rounded-xl" style={{ backgroundColor: 'rgba(68,68,65,0.3)' }}>
-          <Text className="text-gray-600 text-xs leading-relaxed">
-            이 수치는 지금까지 네가 입력한 내용을 바탕으로 한 참고용 지표야.{'\n'}
-            사람 마음은 수치로 다 담을 수 없어. 방향 변화에 따라 달라질 수 있어.
-          </Text>
+        <View className="mt-4 p-4 rounded-xl" style={{ backgroundColor: colors.overlayGrayMuted }}>
+          <Caption variant="subtle" className="leading-relaxed">
+            {disclaimer.meterReference}
+          </Caption>
         </View>
       </ScrollView>
 
       <View className="px-6 pb-10 gap-3">
+        <ProgressDots total={4} current={3} />
         <PrimaryButton
           label="나침반으로 방향 찾기"
           onPress={() => router.push('/compass')}

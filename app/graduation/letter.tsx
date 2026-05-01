@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { colors } from '@/constants/colors';
 import { Text, View, ScrollView, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Caption, Heading } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
@@ -39,16 +41,21 @@ export default function GraduationLetterScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">졸업 · 2 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-8">나에게 쓰는 편지</Text>
+        <Caption className="mb-2">졸업 · 2 / 4</Caption>
+        <Heading className="mb-8">나에게 쓰는 편지</Heading>
 
         {loading ? (
           <View className="items-center py-12">
-            <ActivityIndicator color="#7F77DD" size="large" />
-            <Text className="text-gray-400 text-sm mt-4">편지를 쓰고 있어 …</Text>
+            <ActivityIndicator color={colors.purple[400]} size="large" />
+            <Caption className="mt-4">편지를 쓰고 있어 …</Caption>
           </View>
         ) : (
-          <View className="rounded-2xl p-6" style={{ backgroundColor: '#1A1A22', borderLeftWidth: 3, borderLeftColor: '#7F77DD' }}>
+          <View
+            className="bg-surface rounded-2xl p-6"
+            style={{ borderLeftWidth: 3, borderLeftColor: colors.purple[400] }}
+            accessibilityRole="text"
+            accessibilityLabel="졸업 편지"
+          >
             <Text className="text-white text-base leading-loose">{letter}</Text>
           </View>
         )}

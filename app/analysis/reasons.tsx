@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Text, View, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Pill } from '@/components/ui/Pill';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 
 const REASON_CATEGORIES = [
@@ -44,11 +45,11 @@ export default function AnalysisReasonScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">관계 분석 · 1 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-2">왜 헤어졌어?</Text>
-        <Text className="text-gray-400 text-sm mb-8">
+        <Caption className="mb-2">관계 분석 · 1 / 4</Caption>
+        <Heading className="mb-2">왜 헤어졌어?</Heading>
+        <Body className="text-gray-400 mb-8">
           여러 개 골라도 돼. 복잡한 이유가 있어도 괜찮아.
-        </Text>
+        </Body>
 
         <View className="flex-row flex-wrap">
           {REASON_CATEGORIES.map(({ label, color }) => (

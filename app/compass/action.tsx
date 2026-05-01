@@ -1,8 +1,10 @@
-import { Text, View, ScrollView } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { InsightCard } from '@/components/ui/InsightCard';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import type { CompassVerdict } from '@/store/useDecisionStore';
 
@@ -66,8 +68,8 @@ export default function CompassActionScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">결정 나침반 · 5 / 5</Text>
-        <Text className="text-white text-2xl font-bold mb-8">{title}</Text>
+        <Caption className="mb-2">결정 나침반 · 5 / 5</Caption>
+        <Heading className="mb-8">{title}</Heading>
 
         <View className="gap-3 mb-6">
           {actions.map((action, i) => (
@@ -75,15 +77,12 @@ export default function CompassActionScreen() {
           ))}
         </View>
 
-        <View
-          className="rounded-xl px-4 py-3 mb-8"
-          style={{ backgroundColor: '#1A1A22', borderLeftWidth: 3, borderLeftColor: '#BA7517' }}
-        >
-          <Text className="text-amber-400 text-xs font-medium mb-1">참고해줘</Text>
-          <Text className="text-gray-400 text-sm">{caution}</Text>
-        </View>
+        <Card variant="warning" className="mb-8">
+          <Caption variant="subtle" className="text-amber-400 mb-1">참고해줘</Caption>
+          <Body className="text-gray-400">{caution}</Body>
+        </Card>
 
-        <ProgressDots total={5} current={5} />
+        <ProgressDots total={5} current={4} />
       </ScrollView>
 
       <View className="px-6 pb-10 gap-3">

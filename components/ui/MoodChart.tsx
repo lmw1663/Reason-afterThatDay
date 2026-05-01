@@ -1,5 +1,6 @@
 import { Dimensions, View, Text } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { colors } from '@/constants/colors';
 
 interface Props {
   moodScores: number[]; // 최신순, 최대 7개
@@ -32,13 +33,13 @@ export function MoodChart({ moodScores, label }: Props) {
         yAxisSuffix="°"
         yAxisInterval={1}
         chartConfig={{
-          backgroundColor: '#1A1A22',
-          backgroundGradientFrom: '#1A1A22',
-          backgroundGradientTo: '#1A1A22',
+          backgroundColor: colors.surface,
+          backgroundGradientFrom: colors.surface,
+          backgroundGradientTo: colors.surface,
           decimalPlaces: 0,
           color: (opacity = 1) => `rgba(29, 158, 117, ${opacity})`,
-          labelColor: () => '#888780',
-          propsForDots: { r: '4', strokeWidth: '2', stroke: '#1D9E75' },
+          labelColor: () => colors.gray[400],
+          propsForDots: { r: '4', strokeWidth: '2', stroke: colors.teal[400] },
         }}
         bezier
         style={{ borderRadius: 16 }}

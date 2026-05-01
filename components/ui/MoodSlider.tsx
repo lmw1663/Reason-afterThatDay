@@ -1,4 +1,5 @@
 import { Text, View, Pressable } from 'react-native';
+import { colors } from '@/constants/colors';
 
 interface Props {
   value: number;
@@ -13,10 +14,10 @@ const SCORE_LABELS: Record<number, string> = {
 };
 
 const SCORE_COLOR: Record<number, string> = {
-  1: '#D85A30', 2: '#D85A30', 3: '#D85A30',
-  4: '#BA7517', 5: '#888780',
-  6: '#1D9E75', 7: '#1D9E75',
-  8: '#7F77DD', 9: '#7F77DD', 10: '#7F77DD',
+  1: colors.coral[400], 2: colors.coral[400], 3: colors.coral[400],
+  4: colors.amber[400], 5: colors.gray[400],
+  6: colors.teal[400], 7: colors.teal[400],
+  8: colors.purple[400], 9: colors.purple[400], 10: colors.purple[400],
 };
 
 export function MoodSlider({ value, onChange }: Props) {
@@ -28,13 +29,16 @@ export function MoodSlider({ value, onChange }: Props) {
             key={score}
             onPress={() => onChange(score)}
             style={{ alignItems: 'center' }}
+            accessibilityRole="adjustable"
+            accessibilityLabel={`감정 온도 ${score}점, ${SCORE_LABELS[score]}`}
+            accessibilityState={{ selected: score === value }}
           >
             <View
               style={{
                 width: 24,
                 height: score === value ? 56 : 32,
                 backgroundColor:
-                  score <= value ? SCORE_COLOR[value] : '#2C2C38',
+                  score <= value ? SCORE_COLOR[value] : colors.border,
                 borderRadius: 4,
               }}
             />

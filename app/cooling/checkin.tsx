@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Text, View, TextInput } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { BackHeader } from '@/components/ui/BackHeader';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { addCheckinResponse } from '@/api/graduation';
 import { formatDateStr } from '@/utils/dateUtils';
+import { colors } from '@/constants/colors';
 
 export default function CoolingCheckinScreen() {
   const [text, setText] = useState('');
@@ -25,21 +28,23 @@ export default function CoolingCheckinScreen() {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">자율 체크인</Text>
-        <Text className="text-white text-2xl font-bold mb-2">지금 마음이 어때?</Text>
-        <Text className="text-gray-400 text-sm mb-8">
+        <BackHeader />
+        <Caption className="mb-2">자율 체크인</Caption>
+        <Heading className="mb-2">지금 마음이 어때?</Heading>
+        <Body className="text-gray-400 mb-8">
           강요 없이, 지금 느끼는 걸 그대로 써봐. 기록은 보존돼.
-        </Text>
+        </Body>
 
         <TextInput
           value={text}
           onChangeText={setText}
           placeholder="지금 이 순간의 솔직한 마음을..."
-          placeholderTextColor="#5F5E5A"
+          placeholderTextColor={colors.gray[600]}
           multiline
           autoFocus
+          accessibilityLabel="자율 체크인 입력"
           className="text-white text-base leading-relaxed"
           style={{ minHeight: 200 }}
         />

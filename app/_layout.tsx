@@ -1,4 +1,5 @@
 import '../global.css';
+import { colors } from '@/constants/colors';
 import { LogBox } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -28,7 +29,7 @@ export default function RootLayout() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#0E0E12' },
+          contentStyle: { backgroundColor: colors.bg },
           animation: 'fade',
         }}
       />

@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Text, View, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 
 const SCENARIOS = [
   {
@@ -54,13 +56,12 @@ export default function CompassScenarioScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text className="text-gray-400 text-sm mb-2">결정 나침반 · 3 / 5</Text>
-        <Text className="text-white text-2xl font-bold mb-2">
-          시나리오로 탐색해볼게
-        </Text>
-        <Text className="text-gray-400 text-sm mb-8">
+        <BackHeader />
+        <Caption className="mb-2">결정 나침반 · 3 / 5</Caption>
+        <Heading className="mb-2">시나리오로 탐색해볼게</Heading>
+        <Body className="text-gray-400 mb-8">
           각 상황에서 떠오르는 첫 느낌으로 골라봐.
-        </Text>
+        </Body>
 
         {SCENARIOS.map((sc) => (
           <View key={sc.id} className="mb-8">
@@ -78,7 +79,7 @@ export default function CompassScenarioScreen() {
           </View>
         ))}
 
-        <ProgressDots total={5} current={3} />
+        <ProgressDots total={5} current={2} />
       </ScrollView>
 
       <View className="px-6 pb-10">

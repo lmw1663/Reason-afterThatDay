@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Text, View, TextInput } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
 import { Pill } from '@/components/ui/Pill';
 import { ProgressDots } from '@/components/ui/ProgressDots';
-import { useJournalStore } from '@/store/useJournalStore';
+import { Caption, Heading } from '@/components/ui/Typography';
+import { colors } from '@/constants/colors';
 
 const MOOD_TAGS = ['슬퍼', '화나', '허전해', '후련해', '그리워', '무감각해', '지쳐', '외로워'];
 
@@ -27,12 +28,10 @@ export default function JournalMoodScreen() {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">이별 일기 · 1 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-8">
-          지금 감정 온도가 몇 도야?
-        </Text>
+        <Caption className="mb-2">이별 일기 · 1 / 4</Caption>
+        <Heading className="mb-8">지금 감정 온도가 몇 도야?</Heading>
 
         <MoodSlider value={score} onChange={setScore} />
 
@@ -46,8 +45,9 @@ export default function JournalMoodScreen() {
           value={freeText}
           onChangeText={setFreeText}
           placeholder="더 하고 싶은 말이 있으면 써봐 (선택)"
-          placeholderTextColor="#5F5E5A"
+          placeholderTextColor={colors.gray[600]}
           multiline
+          accessibilityLabel="감정 자유 메모 (선택)"
           className="text-white text-base leading-relaxed"
           style={{ minHeight: 80 }}
         />

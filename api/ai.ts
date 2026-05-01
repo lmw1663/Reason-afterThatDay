@@ -36,7 +36,7 @@ async function invokeWithTimeout<T>(
     setTimeout(() => reject({ code: AppError.AI_TIMEOUT }), timeoutMs),
   );
 
-  const invocation = supabase.functions.invoke(fnName, { body });
+  const invocation = supabase.functions.invoke(fnName, { body: body as Record<string, unknown> });
 
   const { data, error } = await Promise.race([invocation, timer]);
   if (error) throw { code: AppError.AI_FAILED, detail: error };

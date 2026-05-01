@@ -4,6 +4,8 @@ import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Card } from '@/components/ui/Card';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 
 const QUESTIONS = [
   { id: 'q1', text: '이 결정이 두려움이 아닌 성장에서 온 건지 생각해봤어?' },
@@ -20,11 +22,11 @@ export default function GraduationConfirmScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Text className="text-gray-400 text-sm mb-2">졸업 · 3 / 4</Text>
-        <Text className="text-white text-2xl font-bold mb-2">마지막으로 확인해볼게</Text>
-        <Text className="text-gray-400 text-sm mb-8">
+        <Caption className="mb-2">졸업 · 3 / 4</Caption>
+        <Heading className="mb-2">마지막으로 확인해볼게</Heading>
+        <Body className="text-gray-400 mb-8">
           후회 없는 결정을 위해 천천히 답해봐.
-        </Text>
+        </Body>
 
         {QUESTIONS.map((q) => (
           <View key={q.id} className="mb-6">
@@ -44,11 +46,11 @@ export default function GraduationConfirmScreen() {
         ))}
 
         {allAnswered && !allYes && (
-          <View className="rounded-xl p-4 mb-4" style={{ backgroundColor: 'rgba(186,117,23,0.1)', borderWidth: 1, borderColor: '#BA7517' }}>
-            <Text className="text-amber-400 text-sm leading-relaxed">
+          <Card variant="subtle" accent="amber" className="mb-4">
+            <Caption className="text-amber-400 leading-relaxed">
               아직 준비가 완전히 된 건 아닌 것 같아. 조금 더 시간을 갖는 것도 좋아. 돌아가도 괜찮아.
-            </Text>
-          </View>
+            </Caption>
+          </Card>
         )}
       </View>
 

@@ -1,11 +1,12 @@
 import { Stack } from 'expo-router';
+import { colors } from '@/constants/colors';
 
 export default function AnalysisLayout() {
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: '#0E0E12' },
+        contentStyle: { backgroundColor: colors.bg },
         animation: 'slide_from_right',
       }}
     />
