@@ -105,6 +105,8 @@ export async function fetchGraduationLetter(params: {
   pros?: string[];
   cons?: string[];
   journalCount?: number;
+  checkinMoods?: number[];    // 유예 기간 체크인 감정 점수 배열
+  checkinNotes?: string[];    // 유예 기간 체크인 메모 배열
 }): Promise<string> {
   try {
     const data = await invokeWithTimeout<{ response: string }>(

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { colors } from '@/constants/colors';
 import { Text, View, TextInput, Pressable, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -36,14 +36,14 @@ export default function AnalysisProsCons() {
   function handleNext() {
     updateField('pros', pros);
     updateField('cons', cons);
-    router.push('/analysis/stay-leave');
+    router.push('/analysis/role-partner' as Href);
   }
 
   return (
     <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
-        <Caption className="mb-2">관계 분석 · 2 / 4</Caption>
+        <Caption className="mb-2">관계 분석 · 2 / 5</Caption>
         <Heading className="mb-6">그 사람의 장단점은?</Heading>
 
         {/* 탭 */}
@@ -112,7 +112,7 @@ export default function AnalysisProsCons() {
       </View>
 
       <View className="px-6 pb-10 gap-4">
-        <ProgressDots total={4} current={1} />
+        <ProgressDots total={5} current={1} />
         <PrimaryButton label="다음" onPress={handleNext} />
       </View>
     </ScreenWrapper>

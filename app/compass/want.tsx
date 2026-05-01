@@ -3,12 +3,14 @@ import { View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
+import { ChangeIndicator } from '@/components/ui/ChangeIndicator';
 import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import type { IconName } from '@/components/ui/Icon';
 import type { Direction } from '@/store/useJournalStore';
+import { useDecisionStore } from '@/store/useDecisionStore';
 
 const OPTIONS: { value: Direction; label: string; sublabel: string; icon: IconName }[] = [
   { value: 'catch',     label: '다시 함께하고 싶어',  sublabel: '아직 마음이 남아있어',     icon: 'heart' },
@@ -18,6 +20,8 @@ const OPTIONS: { value: Direction; label: string; sublabel: string; icon: IconNa
 
 export default function CompassWantScreen() {
   const [selected, setSelected] = useState<Direction | null>(null);
+  const { history } = useDecisionStore();
+  const prevDirection = history[0]?.direction ?? null;
 
   function handleNext() {
     if (!selected) return;
@@ -30,9 +34,16 @@ export default function CompassWantScreen() {
         <BackHeader />
         <Caption className="mb-2">결정 나침반 · 1 / 5</Caption>
         <Heading className="mb-2">솔직하게, 지금 뭘 원해?</Heading>
-        <Body className="text-gray-400 mb-8">
+        <Body className="text-gray-400 mb-6">
           맞고 틀린 대답은 없어. 지금 이 순간 느낌 그대로.
         </Body>
+
+        <ChangeIndicator
+          prev={prevDirection}
+          current={selected ?? 'undecided'}
+          prefix="저번엔"
+          suffix="지금은?"
+        />
 
         <View className="gap-1">
           {OPTIONS.map((opt) => (

@@ -8,18 +8,28 @@ import { Caption, Heading } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
+import { useCoolingStore } from '@/store/useCoolingStore';
 import { fetchGraduationLetter } from '@/api/ai';
 
 export default function GraduationLetterScreen() {
   const { daysElapsed } = useUserStore();
   const { entries, stats } = useJournalStore();
   const { profile } = useRelationshipStore();
+  const { checkinResponses } = useCoolingStore();
   const [letter, setLetter] = useState('');
   const [loading, setLoading] = useState(true);
 
   const moodAvg = stats?.moodTrend.length
     ? stats.moodTrend.reduce((a, b) => a + b, 0) / stats.moodTrend.length
     : undefined;
+
+  // 유예 체크인에서 감정 점수와 메모 추출
+  const checkinMoods = (checkinResponses as Array<Record<string, unknown>>)
+    .map((r) => r.mood_score as number)
+    .filter(Boolean);
+  const checkinNotes = (checkinResponses as Array<Record<string, unknown>>)
+    .map((r) => r.note as string)
+    .filter(Boolean);
 
   useEffect(() => {
     fetchGraduationLetter({
@@ -29,6 +39,8 @@ export default function GraduationLetterScreen() {
       pros: profile.pros,
       cons: profile.cons,
       journalCount: entries.length,
+      checkinMoods,
+      checkinNotes,
     })
       .then(setLetter)
       .finally(() => setLoading(false));
@@ -41,7 +53,7 @@ export default function GraduationLetterScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">졸업 · 2 / 4</Caption>
+        <Caption className="mb-2">졸업 · 2 / 5</Caption>
         <Heading className="mb-8">나에게 쓰는 편지</Heading>
 
         {loading ? (

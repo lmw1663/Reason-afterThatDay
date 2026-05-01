@@ -41,7 +41,7 @@ export default function AnalysisStayLeave() {
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
-        <Caption className="mb-2">관계 분석 · 3 / 4</Caption>
+        <Caption className="mb-2">관계 분석 · 4 / 5</Caption>
         <Heading className="mb-2">솔직하게 점수를 매겨봐</Heading>
         <Body className="text-gray-400 mb-8">
           0점(전혀 아니야)부터 10점(완전 그래)까지
@@ -89,7 +89,7 @@ export default function AnalysisStayLeave() {
       </View>
 
       <View className="px-6 pb-10 gap-4">
-        <ProgressDots total={4} current={2} />
+        <ProgressDots total={5} current={3} />
         <PrimaryButton label="결과 보기" onPress={handleNext} />
       </View>
     </ScreenWrapper>

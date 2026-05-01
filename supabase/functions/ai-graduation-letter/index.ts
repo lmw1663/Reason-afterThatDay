@@ -39,7 +39,11 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { daysElapsed, moodAvg, reasons, pros, cons, journalCount } = await req.json();
+    const { daysElapsed, moodAvg, reasons, pros, cons, journalCount, checkinMoods, checkinNotes } = await req.json();
+
+    const coolingSection = checkinMoods?.length
+      ? `\n- 7일 유예 중 감정 변화: ${checkinMoods.join(' → ')}점${checkinNotes?.length ? `\n- 유예 중 메모: ${checkinNotes.slice(0, 2).join(' / ')}` : ''}`
+      : '';
 
     const userPrompt = `
 사용자 정보:
@@ -48,7 +52,7 @@ Deno.serve(async (req: Request) => {
 - 헤어진 이유: ${(reasons ?? []).join(', ') || '모름'}
 - 좋았던 점: ${(pros ?? []).slice(0, 3).join(', ') || '없음'}
 - 아쉬웠던 점: ${(cons ?? []).slice(0, 3).join(', ') || '없음'}
-- 일기 작성 횟수: ${journalCount ?? 0}회
+- 일기 작성 횟수: ${journalCount ?? 0}회${coolingSection}
 
 이 정보를 바탕으로 사용자를 대신해 "나에게 쓰는 편지"를 써줘.
     `.trim();

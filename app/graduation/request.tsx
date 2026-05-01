@@ -67,7 +67,7 @@ export default function GraduationRequestScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">졸업 · 4 / 4</Caption>
+        <Caption className="mb-2">졸업 · 5 / 5</Caption>
         <Heading className="mb-2">졸업 신청</Heading>
 
         <Card className="p-5 mb-6">

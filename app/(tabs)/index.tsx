@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { colors } from '@/constants/colors';
 import { Text, View, Pressable, ScrollView, AppState } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Card } from '@/components/ui/Card';
@@ -136,6 +136,12 @@ export default function HomeScreen() {
             title="일기 목록"
             desc="지나온 감정들 다시 보기"
             onPress={() => router.push('/journal/history')}
+          />
+          <QuickLink
+            icon="heart"
+            title="추억 돌아보기"
+            desc="그 관계의 기억을 정리해봐"
+            onPress={() => router.push('/memory' as Href)}
           />
         </View>
       </ScrollView>

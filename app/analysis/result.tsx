@@ -12,6 +12,7 @@ import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useUserStore } from '@/store/useUserStore';
 import { calcDiagnosis } from '@/utils/diagnosis';
+import { analyzeMoodTrend, moodLevelSentence } from '@/utils/moodAnalysis';
 import { upsertRelationshipProfile } from '@/api/relationship';
 import { disclaimer } from '@/constants/copy';
 
@@ -21,11 +22,16 @@ export default function AnalysisResultScreen() {
   const { userId } = useUserStore();
   const [saving, setSaving] = useState(true);
 
-  const moodAvg = stats?.moodTrend.length
-    ? stats.moodTrend.reduce((a, b) => a + b, 0) / stats.moodTrend.length
+  const moodTrend = stats?.moodTrend ?? [];
+  const moodAvg = moodTrend.length
+    ? moodTrend.reduce((a, b) => a + b, 0) / moodTrend.length
     : 5;
 
   const result = calcDiagnosis(profile, moodAvg);
+  const moodInsight = analyzeMoodTrend(moodTrend);
+  const moodSentence = moodInsight.trend === 'insufficient'
+    ? moodLevelSentence(moodAvg)
+    : moodInsight.sentence;
 
   useEffect(() => {
     if (!userId) { setSaving(false); return; }
@@ -51,7 +57,7 @@ export default function AnalysisResultScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">관계 분석 · 4 / 4</Caption>
+        <Caption className="mb-2">관계 분석 · 5 / 5</Caption>
         <Heading className="mb-2">가망 진단 결과야</Heading>
 
         {/* 절대 규칙: "정답이 아니야" 문구 필수 */}
@@ -81,6 +87,11 @@ export default function AnalysisResultScreen() {
           <Body className="text-gray-400">{getSummary(result)}</Body>
         </Card>
 
+        <Card variant="subtle" accent="teal" className="mt-4">
+          <Caption className="text-teal-400 mb-1">감정 흐름 인사이트</Caption>
+          <Body className="text-gray-300">{moodSentence}</Body>
+        </Card>
+
         <View className="mt-4 p-4 rounded-xl" style={{ backgroundColor: colors.overlayGrayMuted }}>
           <Caption variant="subtle" className="leading-relaxed">
             {disclaimer.meterReference}
@@ -89,7 +100,7 @@ export default function AnalysisResultScreen() {
       </ScrollView>
 
       <View className="px-6 pb-10 gap-3">
-        <ProgressDots total={4} current={3} />
+        <ProgressDots total={5} current={4} />
         <PrimaryButton
           label="나침반으로 방향 찾기"
           onPress={() => router.push('/compass')}

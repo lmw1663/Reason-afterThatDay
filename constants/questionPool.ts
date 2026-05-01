@@ -25,4 +25,13 @@ export const OFFLINE_QUESTION_POOL: Question[] = [
   { id: 'x_right_now',         text: '지금 이 순간 가장 필요한 게 뭐야?',                   context: ['journal', 'compass'],    isActive: true, weight: 6  },
   { id: 'x_support',           text: '지금 곁에 있어줬으면 하는 사람이 있어?',               context: ['journal', 'analysis'],   isActive: true, weight: 5  },
   { id: 'x_self_care',         text: '요즘 자신을 위해 하고 있는 게 있어?',                  context: ['journal', 'graduation'], isActive: true, weight: 5  },
+  // 나침반 체크 질문 (migration 005)
+  { id: 'c_check_past',        text: '6개월 전으로 돌아가도 같은 선택을 할 것 같아?',         context: ['compass'],               isActive: true, weight: 7  },
+  { id: 'c_check_change',      text: '상대방이 바뀔 수 있다고 진심으로 믿어?',                context: ['compass'],               isActive: true, weight: 7  },
+  { id: 'c_check_harder',      text: '혼자인 지금이 같이였을 때보다 더 힘들어?',               context: ['compass'],               isActive: true, weight: 6  },
+  { id: 'c_check_free',        text: '상대 없이 내 삶을 상상하면 자유롭다는 느낌이 들어?',     context: ['compass'],               isActive: true, weight: 6  },
+  { id: 'c_check_fear',        text: '지금 이 결정이 두려움에서 온 게 아니라고 할 수 있어?',   context: ['compass'],               isActive: true, weight: 7  },
+  // 졸업 회한 질문 (migration 005)
+  { id: 'g_regret_best',       text: '이 관계에서 제일 아쉬웠던 기억이 뭐야?',               context: ['graduation'],            isActive: true, weight: 8  },
+  { id: 'g_regret_unsaid',     text: '아직 전하지 못한 말이 있어?',                          context: ['graduation'],            isActive: true, weight: 8  },
 ];
