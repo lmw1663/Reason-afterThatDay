@@ -3,20 +3,12 @@ import { View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
-import { ChangeIndicator } from '@/components/ui/ChangeIndicator';
-import { ChoiceButton } from '@/components/ui/ChoiceButton';
+import { DirectionPicker } from '@/components/ui/DirectionPicker';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
-import type { IconName } from '@/components/ui/Icon';
 import type { Direction } from '@/store/useJournalStore';
 import { useDecisionStore } from '@/store/useDecisionStore';
-
-const OPTIONS: { value: Direction; label: string; sublabel: string; icon: IconName }[] = [
-  { value: 'catch',     label: '다시 함께하고 싶어',  sublabel: '아직 마음이 남아있어',     icon: 'heart' },
-  { value: 'let_go',    label: '이제 보내주고 싶어',  sublabel: '내 길을 가고 싶은 마음이야', icon: 'feather' },
-  { value: 'undecided', label: '솔직히 모르겠어',     sublabel: '어느 쪽도 확신이 없어',     icon: 'fog' },
-];
 
 export default function CompassWantScreen() {
   const [selected, setSelected] = useState<Direction | null>(null);
@@ -38,25 +30,13 @@ export default function CompassWantScreen() {
           맞고 틀린 대답은 없어. 지금 이 순간 느낌 그대로.
         </Body>
 
-        <ChangeIndicator
-          prev={prevDirection}
-          current={selected ?? 'undecided'}
-          prefix="저번엔"
-          suffix="지금은?"
+        <DirectionPicker
+          value={selected}
+          onChange={setSelected}
+          prevDirection={prevDirection}
+          changePrefix="저번엔"
+          changeSuffix="지금은?"
         />
-
-        <View className="gap-1">
-          {OPTIONS.map((opt) => (
-            <ChoiceButton
-              key={opt.value}
-              label={opt.label}
-              sublabel={opt.sublabel}
-              icon={opt.icon}
-              selected={selected === opt.value}
-              onPress={() => setSelected(opt.value)}
-            />
-          ))}
-        </View>
       </View>
 
       <View className="px-6 pb-10 gap-4">

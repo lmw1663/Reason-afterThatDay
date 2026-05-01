@@ -2,23 +2,14 @@ import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
-import { ChoiceButton } from '@/components/ui/ChoiceButton';
-import { ChangeIndicator } from '@/components/ui/ChangeIndicator';
+import { DirectionPicker } from '@/components/ui/DirectionPicker';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
-import type { IconName } from '@/components/ui/Icon';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
-
-const DIRECTIONS: { value: Direction; label: string; sublabel: string; icon: IconName }[] = [
-  { value: 'catch',    label: '잡고 싶어',    sublabel: '다시 함께하고 싶은 마음이 있어',  icon: 'heart' },
-  { value: 'let_go',   label: '보내고 싶어',  sublabel: '이제 내 길을 가고 싶어',           icon: 'feather' },
-  { value: 'undecided',label: '아직 모르겠어', sublabel: '어느 쪽인지 잘 모르겠어',          icon: 'fog' },
-];
 
 export default function JournalDirectionScreen() {
   const params = useLocalSearchParams<{ score: string; tags: string; freeText: string }>();
   const { entries } = useJournalStore();
-
   const lastDirection = entries[0]?.direction ?? null;
 
   function handleSelect(direction: Direction) {
@@ -38,19 +29,11 @@ export default function JournalDirectionScreen() {
           지금 이 순간의 느낌 그대로 선택해봐.
         </Body>
 
-        <ChangeIndicator prev={lastDirection} current={lastDirection ?? 'undecided'} />
-
-        <View className="gap-1">
-          {DIRECTIONS.map((d) => (
-            <ChoiceButton
-              key={d.value}
-              label={d.label}
-              sublabel={d.sublabel}
-              icon={d.icon}
-              onPress={() => handleSelect(d.value)}
-            />
-          ))}
-        </View>
+        <DirectionPicker
+          value={null}
+          onChange={handleSelect}
+          prevDirection={lastDirection}
+        />
       </View>
 
       <View className="px-6 pb-10">
