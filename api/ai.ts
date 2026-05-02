@@ -97,6 +97,33 @@ export async function fetchComfort(params: {
   }
 }
 
+// ── 체크인 GPT 응답 ─────────────────────────────────────────────────
+const CHECKIN_FALLBACK: Record<number, string> = {
+  1: '첫 하루를 견뎌낸 것만으로 충분해. 천천히 호흡해보자.',
+  2: '지금 흔들리는 것도 정상이야. 너는 충분히 고민했던 사람이야.',
+  3: '미움이나 분노가 떠올라도 괜찮아. 그것도 너의 정직한 마음이야.',
+  4: '슬픔이 깊어지는 것은 그 관계가 너에게 소중했다는 뜻이야.',
+  5: '배움을 찾기 시작했다는 것 자체가 회복의 신호야.',
+  6: '미래를 그리고 있다면 충분히 회복하고 있는 거야.',
+  7: '7일을 견뎌낸 너의 마음이 가장 정확한 답이야.',
+};
+
+export async function fetchCoolingCheckinGPTResponse(params: {
+  day: number;
+  checkinText: string;
+}): Promise<string> {
+  try {
+    const data = await invokeWithTimeout<{ response: string }>(
+      'cooling-checkin-response',
+      params,
+      6000,
+    );
+    return data.response;
+  } catch {
+    return CHECKIN_FALLBACK[params.day] ?? CHECKIN_FALLBACK[1];
+  }
+}
+
 // ── 졸업 편지 (gpt-4o, 10초 타임아웃) ──────────────────────────────
 export async function fetchGraduationLetter(params: {
   daysElapsed: number;
