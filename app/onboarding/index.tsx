@@ -39,11 +39,11 @@ export default function OnboardingDateScreen() {
       }
 
       setBreakupDate(breakupDate);
-      router.push('/onboarding/mood');
+      router.push('/onboarding/duration' as never);
     } catch (e) {
       console.warn('onboarding date save failed:', e);
       setBreakupDate(breakupDate);
-      router.push('/onboarding/mood');
+      router.push('/onboarding/duration' as never);
     } finally {
       setLoading(false);
     }

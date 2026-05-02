@@ -55,7 +55,7 @@ export default function OnboardingMoodScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">reason · 2 / 2</Caption>
+        <Caption className="mb-2">reason · 3 / 3</Caption>
         <Display className="mb-2">지금 기분이 어때?</Display>
         <Body className="text-gray-400 mb-8">
           여러 개 골라도 괜찮아. 복잡한 게 당연해.
@@ -74,7 +74,7 @@ export default function OnboardingMoodScreen() {
         </View>
 
         <View className="mt-10 mb-4">
-          <ProgressDots total={2} current={1} />
+          <ProgressDots total={3} current={2} />
         </View>
       </ScrollView>
 
