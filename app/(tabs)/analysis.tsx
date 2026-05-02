@@ -38,7 +38,7 @@ export default function AnalysisTabScreen() {
   const moodAvg = stats?.moodTrend.length
     ? stats.moodTrend.reduce((a, b) => a + b, 0) / stats.moodTrend.length
     : 5;
-  const result = hasData ? calcDiagnosis(profile, moodAvg) : null;
+  const result = hasData ? calcDiagnosis(profile, moodAvg, daysElapsed) : null;
 
   return (
     <ScreenWrapper>

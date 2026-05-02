@@ -7,8 +7,12 @@ export interface DiagnosisResult {
   heal: number;      // 0~1
 }
 
-// 가망 진단 점수 산식 (가중치 기반)
-export function calcDiagnosis(profile: RelationshipProfile, moodAvg: number): DiagnosisResult {
+// 가망 진단 점수 산식 (가중치 기반) — 6-8: 시간 가중치 포함
+export function calcDiagnosis(
+  profile: RelationshipProfile,
+  moodAvg: number,
+  daysElapsed = 0,
+): DiagnosisResult {
   const prosTotal = profile.pros.length;
   const consTotal = profile.cons.length;
   const prosRatio = prosTotal / (prosTotal + consTotal + 0.01);
@@ -17,9 +21,14 @@ export function calcDiagnosis(profile: RelationshipProfile, moodAvg: number): Di
   const fix = profile.fix * 0.7 + prosRatio * 0.3;
   const heal = (Math.max(1, Math.min(10, moodAvg)) - 1) / 9;
 
+  // D+0~14: 로시 회상 가능성 → reconnect 50% 할인
+  // D+0~29: 객관화 미완성 → fix 30% 할인
+  const reconnectWeight = daysElapsed < 15 ? 0.5 : 1.0;
+  const fixWeight = daysElapsed < 30 ? 0.7 : 1.0;
+
   return {
-    reconnect: Math.min(1, reconnect / 10),
-    fix: Math.min(1, fix / 10),
+    reconnect: Math.min(1, (reconnect / 10) * reconnectWeight),
+    fix: Math.min(1, (fix / 10) * fixWeight),
     heal,
   };
 }

@@ -3,12 +3,14 @@ import type { RelationshipProfile } from '@/store/useRelationshipStore';
 
 function toProfile(row: Record<string, unknown>): RelationshipProfile {
   return {
-    reasons: (row.reasons as string[]) ?? [],
-    pros:    (row.pros as string[])    ?? [],
-    cons:    (row.cons as string[])    ?? [],
-    fix:     (row.fix as number)       ?? 0,
-    other:   (row.other as number)     ?? 0,
-    role:    (row.role as number)      ?? 0,
+    reasons:    (row.reasons as string[]) ?? [],
+    pros:       (row.pros as string[])    ?? [],
+    cons:       (row.cons as string[])    ?? [],
+    fix:        (row.fix as number)       ?? 0,
+    other:      (row.other as number)     ?? 0,
+    role:       (row.role as number)      ?? 0,
+    prosByDate: (row.pros_by_date as Record<string, string[]>) ?? {},
+    consByDate: (row.cons_by_date as Record<string, string[]>) ?? {},
   };
 }
 
@@ -25,8 +27,14 @@ export async function upsertRelationshipProfile(
   userId: string,
   profile: Partial<RelationshipProfile>,
 ): Promise<void> {
+  const { prosByDate, consByDate, ...rest } = profile;
   await supabase.from('relationship_profile').upsert(
-    { user_id: userId, ...profile },
+    {
+      user_id: userId,
+      ...rest,
+      ...(prosByDate !== undefined && { pros_by_date: prosByDate }),
+      ...(consByDate !== undefined && { cons_by_date: consByDate }),
+    },
     { onConflict: 'user_id' },
   );
 }

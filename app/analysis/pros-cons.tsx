@@ -6,14 +6,29 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
-import { Caption, Heading } from '@/components/ui/Typography';
+import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
+import { useUserStore } from '@/store/useUserStore';
 
 type Tab = 'pros' | 'cons';
 
+function getDayContextMessage(daysElapsed: number, tab: Tab): string | null {
+  if (tab === 'cons' && daysElapsed < 15) {
+    return '지금은 단점보다 장점이 더 잘 떠오르는 시기야. 그래도 괜찮아.';
+  }
+  if (daysElapsed < 15) {
+    return '아직 초기라서 상대방의 좋은 점들이 많이 떠오를 거야. 그것도 너의 정직한 마음이야.';
+  }
+  if (daysElapsed < 30) {
+    return '이제 양쪽을 더 균형 있게 봐야 할 때야. 전에 못 봤던 단점들도 보이기 시작할 거야.';
+  }
+  return '전에 입력했던 내용을 다시 봐볼까? 지금은 어떻게 보여?';
+}
+
 export default function AnalysisProsCons() {
   const { profile, updateField } = useRelationshipStore();
+  const { daysElapsed } = useUserStore();
   const [tab, setTab] = useState<Tab>('pros');
   const [pros, setPros] = useState<string[]>(profile.pros);
   const [cons, setCons] = useState<string[]>(profile.cons);
@@ -21,6 +36,8 @@ export default function AnalysisProsCons() {
 
   const list = tab === 'pros' ? pros : cons;
   const setList = tab === 'pros' ? setPros : setCons;
+  const contextMessage = getDayContextMessage(daysElapsed, tab);
+  const dayKey = `D+${daysElapsed}`;
 
   function addItem() {
     const trimmed = input.trim();
@@ -36,6 +53,11 @@ export default function AnalysisProsCons() {
   function handleNext() {
     updateField('pros', pros);
     updateField('cons', cons);
+    // 시점별 누적 (prosByDate/consByDate)
+    const existingPros = { ...profile.prosByDate, [dayKey]: pros };
+    const existingCons = { ...profile.consByDate, [dayKey]: cons };
+    updateField('prosByDate', existingPros);
+    updateField('consByDate', existingCons);
     router.push('/analysis/role-partner' as Href);
   }
 
@@ -44,7 +66,14 @@ export default function AnalysisProsCons() {
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
         <Caption className="mb-2">관계 분석 · 2 / 5</Caption>
-        <Heading className="mb-6">그 사람의 장단점은?</Heading>
+        <Heading className="mb-4">그 사람의 장단점은?</Heading>
+
+        {/* 시점별 안내 메시지 */}
+        {contextMessage && (
+          <Body className="text-gray-400 text-sm mb-4 leading-relaxed">
+            {contextMessage}
+          </Body>
+        )}
 
         {/* 탭 */}
         <View

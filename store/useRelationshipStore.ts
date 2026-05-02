@@ -7,6 +7,8 @@ export interface RelationshipProfile {
   fix: number;    // 0~10
   other: number;  // 0~10
   role: number;   // 0~10
+  prosByDate: Record<string, string[]>;  // { "D+5": [...] }
+  consByDate: Record<string, string[]>;  // { "D+15": [...] }
 }
 
 interface RelationshipState {
@@ -22,6 +24,8 @@ const defaultProfile: RelationshipProfile = {
   fix: 0,
   other: 0,
   role: 0,
+  prosByDate: {},
+  consByDate: {},
 };
 
 export const useRelationshipStore = create<RelationshipState>((set) => ({

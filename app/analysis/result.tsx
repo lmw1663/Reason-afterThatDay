@@ -29,7 +29,7 @@ export default function AnalysisResultScreen() {
     ? moodTrend.reduce((a, b) => a + b, 0) / moodTrend.length
     : 5;
 
-  const result = calcDiagnosis(profile, moodAvg);
+  const result = calcDiagnosis(profile, moodAvg, daysElapsed);
   const moodInsight = analyzeMoodTrend(moodTrend);
   const moodSentence = moodInsight.trend === 'insufficient'
     ? moodLevelSentence(moodAvg)
