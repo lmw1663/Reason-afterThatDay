@@ -7,6 +7,7 @@ import { InsightCard } from '@/components/ui/InsightCard';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { fetchDailyQuote } from '@/api/ai';
@@ -17,6 +18,7 @@ export default function HomeScreen() {
   const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
   const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
   const [dailyQuote, setDailyQuote] = useState<string>('');
+  const [showIntrusiveModal, setShowIntrusiveModal] = useState(false);
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {
@@ -51,6 +53,10 @@ export default function HomeScreen() {
 
   return (
     <ScreenWrapper>
+      <IntrusiveMemoryModal
+        visible={showIntrusiveModal}
+        onClose={() => setShowIntrusiveModal(false)}
+      />
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 32 }}
@@ -115,6 +121,23 @@ export default function HomeScreen() {
               </Text>
             </Pressable>
           )}
+        </View>
+
+        {/* 갑자기 떠올랐어 버튼 */}
+        <View className="px-6 mb-6">
+          <Pressable
+            onPress={() => setShowIntrusiveModal(true)}
+            accessibilityRole="button"
+            accessibilityLabel="갑자기 떠올랐어 — 30초 진정 플로우 시작"
+            className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <Text className="text-2xl">🫧</Text>
+            <View>
+              <Text className="text-gray-200 font-semibold">지금 갑자기 떠올랐어</Text>
+              <Caption className="text-gray-500">30초 진정 플로우</Caption>
+            </View>
+          </Pressable>
         </View>
 
         {/* 하단 메뉴 카드들 */}
