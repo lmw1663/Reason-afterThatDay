@@ -13,6 +13,7 @@ export interface JournalEntry {
   direction: Direction;
   freeText?: string;
   aiResponse?: string;
+  isMiniMode?: boolean;
 }
 
 interface JournalState {

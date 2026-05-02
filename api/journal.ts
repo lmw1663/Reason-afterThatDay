@@ -14,6 +14,7 @@ function toJournalEntry(row: Record<string, unknown>): JournalEntry {
     direction: row.direction as Direction,
     freeText: row.free_text as string | undefined,
     aiResponse: row.ai_response as string | undefined,
+    isMiniMode: (row.is_mini_mode as boolean) ?? false,
   };
 }
 
@@ -26,6 +27,7 @@ export async function upsertJournalEntry(params: {
   direction: Direction;
   freeText?: string;
   aiResponse?: string;
+  isMiniMode?: boolean;
 }): Promise<JournalEntry> {
   // PostgREST의 on_conflict 파라미터는 표현식 기반 unique index를 지원하지 않으므로
   // 오늘 항목 존재 여부를 직접 확인 후 insert/update로 분기
@@ -39,6 +41,7 @@ export async function upsertJournalEntry(params: {
     direction: params.direction,
     free_text: params.freeText ?? null,
     ai_response: params.aiResponse ?? null,
+    is_mini_mode: params.isMiniMode ?? false,
   };
 
   if (existing) {

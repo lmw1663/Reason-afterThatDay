@@ -62,7 +62,12 @@ export default function GraduationTabScreen() {
     );
   }
 
-  const canGraduate = daysElapsed >= 30 && entries.length >= 5;
+  // mini 일기는 가벼운 기록이지만 꾸준한 자기관찰을 보여주므로,
+  // 일반 일기 5개 조건을 mini 10개로 대체할 수 있게 한다.
+  const fullEntries = entries.filter((e) => !e.isMiniMode);
+  const miniEntries = entries.filter((e) => e.isMiniMode);
+  const meetsJournalGate = fullEntries.length >= 5 || miniEntries.length >= 10;
+  const canGraduate = daysElapsed >= 30 && meetsJournalGate;
 
   return (
     <ScreenWrapper>
@@ -76,7 +81,8 @@ export default function GraduationTabScreen() {
           {canGraduate ? '졸업 준비가 된 것 같아' : '아직 조금 더 걸어봐'}
         </Heading>
         <Caption className="mb-6">
-          D+{daysElapsed}일 · 일기 {entries.length}개
+          D+{daysElapsed}일 · 일기 {fullEntries.length}개
+          {miniEntries.length > 0 ? ` · 미니 ${miniEntries.length}개` : ''}
         </Caption>
 
         {moodScores.length >= 2 && (
@@ -88,7 +94,7 @@ export default function GraduationTabScreen() {
         {!canGraduate && (
           <View className="rounded-xl px-4 py-3 mb-6" style={{ backgroundColor: colors.overlayGrayStrong }}>
             <Body className="text-gray-400">
-              졸업은 이별 후 30일 이상, 일기 5개 이상 작성 후 신청할 수 있어.{'\n'}
+              졸업은 이별 후 30일 이상, 일기 5개 이상(또는 미니 일기 10개)을 채운 뒤 신청할 수 있어.{'\n'}
               지금은 감정을 충분히 느끼고 기록하는 게 먼저야.
             </Body>
           </View>

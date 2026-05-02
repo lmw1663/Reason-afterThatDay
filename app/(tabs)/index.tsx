@@ -128,22 +128,40 @@ export default function HomeScreen() {
               </Caption>
             </Card>
           ) : (
-            <Pressable
-              onPress={() => router.push('/journal')}
-              accessibilityRole="button"
-              accessibilityLabel="오늘 일기 쓰기"
-              accessibilityHint="감정·방향·짧은 답변 4단계로 기록해"
-              className="rounded-2xl py-5 px-6 items-center active:opacity-80"
-              style={{ backgroundColor: colors.purple[600] }}
-            >
-              <View className="flex-row items-center gap-2">
-                <Text className="text-white text-lg font-bold">오늘 일기 쓰기</Text>
-                <Icon name="chevron-right" color={colors.white} size={20} />
-              </View>
-              <Text className="text-purple-50 text-sm mt-1 opacity-80">
-                지금 마음을 기록해둘게
-              </Text>
-            </Pressable>
+            <View className="gap-3">
+              <Pressable
+                onPress={() => router.push('/journal/mini')}
+                accessibilityRole="button"
+                accessibilityLabel="오늘은 감정 온도만 기록"
+                accessibilityHint="무기력한 날엔 감정 온도만 빠르게 기록해"
+                className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
+                style={{ backgroundColor: colors.surface }}
+              >
+                <Text className="text-2xl">⚡</Text>
+                <View>
+                  <Text className="text-gray-200 font-semibold">오늘은 감정 온도만</Text>
+                  <Caption className="text-gray-500">힘든 날엔 이만큼이면 돼</Caption>
+                </View>
+              </Pressable>
+
+              <Pressable
+                onPress={() => router.push('/journal')}
+                accessibilityRole="button"
+                accessibilityLabel="깊게 쓰고 싶어"
+                accessibilityHint="감정·방향·짧은 답변 4단계로 기록해"
+                className="rounded-2xl py-5 px-6 items-center active:opacity-80"
+                style={{ backgroundColor: colors.purple[600] }}
+              >
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-2xl">🔥</Text>
+                  <Text className="text-white text-lg font-bold">깊게 쓰고 싶어</Text>
+                  <Icon name="chevron-right" color={colors.white} size={20} />
+                </View>
+                <Text className="text-purple-50 text-sm mt-1 opacity-80">
+                  4단계로 차근차근 풀어볼게
+                </Text>
+              </Pressable>
+            </View>
           )}
         </View>
 
