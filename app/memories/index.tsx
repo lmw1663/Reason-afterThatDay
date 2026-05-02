@@ -238,8 +238,7 @@ export default function MemoryOrganizationScreen() {
                       />
                     ) : (
                       <PrimaryButton
-                        label={isSaving ? '저장 중...' : '정리했어'}
-                        leftIcon="check"
+                        label={isSaving ? '저장 중...' : '완료로 표시하기'}
                         onPress={() => handleComplete(cat.key)}
                         loading={isSaving}
                         disabled={!userId}

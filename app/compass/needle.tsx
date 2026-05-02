@@ -26,8 +26,8 @@ export default function CompassNeedleScreen() {
   const color = VERDICT_COLOR[verdict];
   const label = VERDICT_LABEL[verdict];
 
-  // 나침반 바늘 각도 (-90° ~ +90°)
-  const needleAngle = Math.max(-80, Math.min(80, diff * 12));
+  // 나침반 바늘 각도: diff 양수=잡기(왼쪽), 음수=보내기(오른쪽)
+  const needleAngle = Math.max(-80, Math.min(80, -diff * 12));
 
   useEffect(() => {
     const record = {

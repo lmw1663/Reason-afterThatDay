@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 import { Card } from '@/components/ui/Card';
 import { Pill } from '@/components/ui/Pill';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
@@ -62,6 +63,7 @@ export default function ReflectionCategoryScreen() {
   const [labels, setLabels] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   const config = CATEGORY_CONFIGS[category] ?? CATEGORY_CONFIGS.love_self;
 
@@ -86,9 +88,13 @@ export default function ReflectionCategoryScreen() {
   async function handleSave() {
     if (!userId) return;
     setSaving(true);
+    setSaveError(false);
     try {
       await updateReflection(userId, category, { score, labels, textResponse: text });
       router.back();
+    } catch (e) {
+      console.warn('[about-me] save failed:', e);
+      setSaveError(true);
     } finally {
       setSaving(false);
     }
@@ -106,6 +112,12 @@ export default function ReflectionCategoryScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <ErrorToast
+        visible={saveError}
+        message="저장이 안 됐어. 다시 시도해볼래?"
+        onHide={() => setSaveError(false)}
+        action={{ label: '재시도', onPress: handleSave }}
+      />
       <ScrollView
         className="flex-1 px-6 pt-14"
         showsVerticalScrollIndicator={false}

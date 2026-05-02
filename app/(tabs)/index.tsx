@@ -165,54 +165,35 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* 갑자기 떠올랐어 버튼 */}
-        <View className="px-6 mb-6">
+        {/* 빠른 진입 버튼 2개 (떠올랐어 / 나에 대해) */}
+        <View className="px-6 mb-6 flex-row gap-3">
           <Pressable
             onPress={() => setShowIntrusiveModal(true)}
             accessibilityRole="button"
-            accessibilityLabel="갑자기 떠올랐어 — 30초 진정 플로우 시작"
-            className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
+            accessibilityLabel="갑자기 떠올랐어"
+            className="flex-1 rounded-2xl py-4 px-4 items-center active:opacity-70 border border-gray-700"
             style={{ backgroundColor: colors.surface }}
           >
-            <Text className="text-2xl">🫧</Text>
-            <View>
-              <Text className="text-gray-200 font-semibold">지금 갑자기 떠올랐어</Text>
-              <Caption className="text-gray-500">30초 진정 플로우</Caption>
-            </View>
+            <Text className="text-2xl mb-1">🫧</Text>
+            <Text className="text-gray-200 font-semibold text-sm text-center">갑자기 떠올랐어</Text>
+            <Caption className="text-gray-600 text-center text-xs mt-0.5">진정 플로우</Caption>
           </Pressable>
-        </View>
 
-        {/* 자기 성찰 트랙 (D+8 이상 강조) */}
-        <View className="px-6 mb-6">
           <Pressable
             onPress={() => router.push('/about-me' as Href)}
             accessibilityRole="button"
             accessibilityLabel="나에 대해 알아가기"
-            className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
+            className="flex-1 rounded-2xl py-4 px-4 items-center active:opacity-70 border border-gray-700"
             style={{ backgroundColor: colors.surface }}
           >
-            <Text className="text-2xl">🌱</Text>
-            <View>
-              <Text className="text-gray-200 font-semibold">나에 대해 알아가기</Text>
-              <Caption className="text-gray-500">자존감 회복 트랙</Caption>
-            </View>
+            <Text className="text-2xl mb-1">🌱</Text>
+            <Text className="text-gray-200 font-semibold text-sm text-center">나에 대해</Text>
+            <Caption className="text-gray-600 text-center text-xs mt-0.5">자존감 트랙</Caption>
           </Pressable>
         </View>
 
-        {/* 하단 메뉴 카드들 */}
+        {/* 메뉴 (하단탭 중복 제거: 관계분석·나침반 빠짐) */}
         <View className="px-6 gap-3">
-          <QuickLink
-            icon="search"
-            title="관계 분석"
-            desc="장단점, 이유, 가망 진단"
-            onPress={() => router.push('/(tabs)/analysis')}
-          />
-          <QuickLink
-            icon="compass"
-            title="결정 나침반"
-            desc="지금 마음의 방향 탐색"
-            onPress={() => router.push('/(tabs)/compass')}
-          />
           <QuickLink
             icon="book"
             title="일기 목록"
@@ -220,13 +201,13 @@ export default function HomeScreen() {
             onPress={() => router.push('/journal/history')}
           />
           <QuickLink
-            icon="heart"
+            icon="camera"
             title="추억 돌아보기"
             desc="그 관계의 기억을 정리해봐"
             onPress={() => router.push('/memory' as Href)}
           />
           <QuickLink
-            icon="clipboard"
+            icon="archive"
             title="추억 정리"
             desc="사진·메시지·장소를 차근차근 정리해봐"
             onPress={() => router.push('/memories' as Href)}

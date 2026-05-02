@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Modal, Pressable, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Body, Caption, Heading } from './ui/Typography';
 import { PrimaryButton } from './ui/PrimaryButton';
@@ -20,6 +20,7 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
   const { userId } = useUserStore();
   const [step, setStep] = useState<Step>(1);
   const [moodScore, setMoodScore] = useState(5);
+  const [thoughtText, setThoughtText] = useState('');
   const [saving, setSaving] = useState(false);
 
   // 모달이 닫힐 때 상태 초기화
@@ -27,6 +28,7 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
     if (!visible) {
       setStep(1);
       setMoodScore(5);
+      setThoughtText('');
     }
   }, [visible]);
 
@@ -41,7 +43,11 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
     setSaving(true);
     try {
       if (userId) {
-        await addIntrusiveMemoryResponse({ userId, moodScore });
+        await addIntrusiveMemoryResponse({
+          userId,
+          moodScore,
+          thoughtText: thoughtText.trim() || undefined,
+        });
       }
     } catch {
       // 저장 실패 시 UX 차단 없이 진행
@@ -92,7 +98,28 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
 
           {step === 3 && (
             <>
-              <Heading className="mb-6">지금 기분이 어때?</Heading>
+              <Heading className="mb-4">잠깐, 기록해볼게</Heading>
+              <Caption className="text-gray-500 mb-4">선택사항이야, 건너뛰어도 돼</Caption>
+
+              <Body className="text-gray-300 mb-2">어떤 생각이 떠올랐어?</Body>
+              <TextInput
+                value={thoughtText}
+                onChangeText={setThoughtText}
+                placeholder="예: 같이 갔던 카페, 마지막으로 했던 말..."
+                placeholderTextColor={colors.gray[600]}
+                multiline
+                className="text-white text-sm leading-relaxed mb-4"
+                style={{
+                  minHeight: 60,
+                  backgroundColor: colors.bg ?? '#0A0A0B',
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              />
+
+              <Body className="text-gray-300 mb-2">지금 기분이 어때?</Body>
               <MoodSlider value={moodScore} onChange={setMoodScore} />
               <View className="mt-6">
                 <PrimaryButton

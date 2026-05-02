@@ -1,8 +1,10 @@
 import {
+  Archive,
   BarChart3,
   Bell,
   BellOff,
   BookOpen,
+  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -35,8 +37,6 @@ import { colors } from '@/constants/colors';
  *  - 강조가 다른 맥락(teal/coral/amber/gray)은 `color` prop으로 명시 override.
  *  - 라인 두께 1.8 — 너무 얇지도 굵지도 않게.
  *  - 표준 size: 22 (탭/메뉴/Choice), 18 (인라인/헤더), 16 (보조), 56+ (Empty state).
- *
- * 이모지를 직접 쓰지 말고 이 컴포넌트만 사용해 시각적 통일성을 유지한다.
  */
 
 const iconMap = {
@@ -76,6 +76,10 @@ const iconMap = {
 
   // 분위기
   moon: Moon,
+
+  // 추억 / 정리 트랙
+  archive: Archive,
+  camera: Camera,
 
   // 기타
   clipboard: ClipboardList,
