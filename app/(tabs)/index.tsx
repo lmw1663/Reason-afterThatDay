@@ -8,17 +8,28 @@ import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
+import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { fetchDailyQuote } from '@/api/ai';
 import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
 import { withRetry } from '@/utils/retry';
+import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 
 export default function HomeScreen() {
   const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
   const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
   const [dailyQuote, setDailyQuote] = useState<string>('');
   const [showIntrusiveModal, setShowIntrusiveModal] = useState(false);
+  const [safetyAlert, setSafetyAlert] = useState<'consecutive_low' | 'late_night' | null>(null);
+  const { checkConsecutiveLowTemperature, checkLateNightAccess } = useEmotionalSafety();
+
+  // 새벽 접근 감지 — 홈 진입 시 1회
+  useEffect(() => {
+    checkLateNightAccess().then((result) => {
+      if (result.triggered) setSafetyAlert('late_night');
+    });
+  }, []);
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {
@@ -47,7 +58,13 @@ export default function HomeScreen() {
       })
       .catch((e) => console.warn('[journal] fetchTodayEntry failed:', e));
     fetchRecentEntries(userId, 30)
-      .then(setEntries)
+      .then((entries) => {
+        setEntries(entries);
+        // 3일 연속 저온 체크 — entries 로드 완료 후 실행
+        checkConsecutiveLowTemperature(userId).then((result) => {
+          if (result.triggered) setSafetyAlert('consecutive_low');
+        });
+      })
       .catch((e) => console.warn('[journal] fetchRecentEntries failed:', e));
   }, [userId]);
 
@@ -57,6 +74,13 @@ export default function HomeScreen() {
         visible={showIntrusiveModal}
         onClose={() => setShowIntrusiveModal(false)}
       />
+      {safetyAlert && (
+        <EmotionalCheckModal
+          type={safetyAlert}
+          visible={!!safetyAlert}
+          onClose={() => setSafetyAlert(null)}
+        />
+      )}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 32 }}
