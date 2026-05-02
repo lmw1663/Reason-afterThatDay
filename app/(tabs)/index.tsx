@@ -225,6 +225,12 @@ export default function HomeScreen() {
             desc="그 관계의 기억을 정리해봐"
             onPress={() => router.push('/memory' as Href)}
           />
+          <QuickLink
+            icon="clipboard"
+            title="추억 정리"
+            desc="사진·메시지·장소를 차근차근 정리해봐"
+            onPress={() => router.push('/memories' as Href)}
+          />
         </View>
       </ScrollView>
     </ScreenWrapper>
