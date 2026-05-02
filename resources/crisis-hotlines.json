@@ -1,0 +1,57 @@
+{
+  "_comment": "출시 전 보건복지부 공식 자료로 반드시 재검증. 잘못된 번호는 생명에 직결되는 위험.",
+  "verified_at": "2026-05-02",
+  "verified_by": "TODO: 운영자명 입력",
+  "source_url": "https://www.mohw.go.kr / https://www.mentalhealth.go.kr",
+  "hotlines": [
+    {
+      "id": "suicide_prevention",
+      "name": "자살예방 상담전화",
+      "number": "1393",
+      "available": "24시간",
+      "operator": "보건복지부",
+      "description": "자살 위기 상담, 정서적 지지, 전문 연결"
+    },
+    {
+      "id": "mental_health_crisis",
+      "name": "정신건강 위기상담전화",
+      "number": "1577-0199",
+      "available": "24시간",
+      "operator": "정신건강복지센터",
+      "description": "정신건강 위기 상담 및 지역사회 연계"
+    },
+    {
+      "id": "youth",
+      "name": "청소년 전화",
+      "number": "1388",
+      "available": "24시간",
+      "operator": "여성가족부",
+      "description": "청소년 고민, 위기 상담 (24세 이하)"
+    },
+    {
+      "id": "women_emergency",
+      "name": "여성 긴급전화",
+      "number": "1366",
+      "available": "24시간",
+      "operator": "여성가족부",
+      "description": "여성 폭력 피해, 위기 지원"
+    },
+    {
+      "id": "welfare_counseling",
+      "name": "보건복지상담센터",
+      "number": "129",
+      "available": "24시간",
+      "operator": "보건복지부",
+      "description": "복지 서비스, 정신건강 상담 연계"
+    },
+    {
+      "id": "lifeline_online",
+      "name": "한국생명의전화 사이버상담",
+      "number": null,
+      "url": "https://www.lifeline.or.kr",
+      "available": "온라인",
+      "operator": "한국생명의전화",
+      "description": "온라인 채팅 상담 (익명 가능)"
+    }
+  ]
+}

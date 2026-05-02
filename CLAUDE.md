@@ -14,6 +14,8 @@
 | 판단 문구 | 진단/나침반 결과 화면에 "정답이 아니야" 문구 필수 포함 |
 | 방향 변화 | 방향 변화에 대한 비난/판단 문구 금지 |
 | D+N | D+N(이별 경과일) 전역 표시 항상 유지 |
+| 위기 신호 | 3일 연속 mood_score 1~2점 또는 새벽(00~04시) 진입 감지 시 반드시 `EmotionalCheckModal` 표시 — 핫라인 정보는 `resources/crisis-hotlines.json`에서만 로드, 하드코딩 금지 |
+| 위기 안내 톤 | `EmotionalCheckModal` 본문은 반말 / `/resources/hotline` 화면(정보 전달)만 존댓말 예외 허용 |
 
 ---
 
