@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
+import { CoolingOffWarningModal } from '@/components/CoolingOffWarningModal';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -18,9 +19,14 @@ import { disclaimer } from '@/constants/copy';
 export default function AnalysisTabScreen() {
   const { profile, setProfile } = useRelationshipStore();
   const { stats } = useJournalStore();
-  const { userId } = useUserStore();
+  const { userId, daysElapsed } = useUserStore();
+  const [showCoolingoffWarning, setShowCoolingoffWarning] = useState(false);
 
   const hasData = profile.pros.length > 0 || profile.cons.length > 0 || profile.reasons.length > 0;
+
+  useEffect(() => {
+    if (daysElapsed < 8) setShowCoolingoffWarning(true);
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -36,6 +42,13 @@ export default function AnalysisTabScreen() {
 
   return (
     <ScreenWrapper>
+      <CoolingOffWarningModal
+        visible={showCoolingoffWarning}
+        day={daysElapsed}
+        context="analysis"
+        onProceed={() => setShowCoolingoffWarning(false)}
+        onCancel={() => router.back()}
+      />
       <ScrollView
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 32 }}

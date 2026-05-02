@@ -1,17 +1,33 @@
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { colors } from '@/constants/colors';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { CoolingOffWarningModal } from '@/components/CoolingOffWarningModal';
 import { useDecisionStore } from '@/store/useDecisionStore';
+import { useUserStore } from '@/store/useUserStore';
 import { VERDICT_LABEL, VERDICT_COLOR } from '@/utils/diagnosis';
 
 export default function CompassTabScreen() {
   const { history, latestVerdict } = useDecisionStore();
+  const { daysElapsed } = useUserStore();
+  const [showCoolingoffWarning, setShowCoolingoffWarning] = useState(false);
+
+  useEffect(() => {
+    if (daysElapsed < 8) setShowCoolingoffWarning(true);
+  }, []);
 
   return (
     <ScreenWrapper>
+      <CoolingOffWarningModal
+        visible={showCoolingoffWarning}
+        day={daysElapsed}
+        context="analysis"
+        onProceed={() => setShowCoolingoffWarning(false)}
+        onCancel={() => router.back()}
+      />
       <View className="flex-1 px-6 pt-14">
         <Caption className="mb-2">결정 나침반</Caption>
         <Heading className="mb-6">마음의 방향을 탐색해봐</Heading>
