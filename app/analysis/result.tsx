@@ -19,7 +19,7 @@ import { disclaimer } from '@/constants/copy';
 export default function AnalysisResultScreen() {
   const { profile } = useRelationshipStore();
   const { stats } = useJournalStore();
-  const { userId } = useUserStore();
+  const { userId, daysElapsed } = useUserStore();
   const [saving, setSaving] = useState(true);
 
   const moodTrend = stats?.moodTrend ?? [];
@@ -90,6 +90,14 @@ export default function AnalysisResultScreen() {
         <Card variant="subtle" accent="teal" className="mt-4">
           <Caption className="text-teal-400 mb-1">감정 흐름 인사이트</Caption>
           <Body className="text-gray-300">{moodSentence}</Body>
+        </Card>
+
+        {/* 6-7: 시간성 명시 — 고정 마인드셋 방지 */}
+        <Card className="mt-4 border border-amber-700/50">
+          <Caption className="text-amber-400 mb-1">📅 지금 이 시점의 너야</Caption>
+          <Body className="text-gray-300 text-sm">
+            이 수치는 D+{daysElapsed} 시점의 너야.{'\n'}한 달 뒤엔 다른 결과가 나올 거야.
+          </Body>
         </Card>
 
         <View className="mt-4 p-4 rounded-xl" style={{ backgroundColor: colors.overlayGrayMuted }}>
