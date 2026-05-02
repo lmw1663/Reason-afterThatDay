@@ -20,6 +20,7 @@ export default function JournalResponseScreen() {
     score: string;
     tags: string;
     physicalSignals: string;
+    affectionLevel: string;
     freeText: string;
     direction: string;
     questionAnswer: string;
@@ -34,6 +35,7 @@ export default function JournalResponseScreen() {
   const direction = (params.direction ?? 'undecided') as Direction;
   const tags = params.tags ? params.tags.split(',').filter(Boolean) : [];
   const physicalSignals = params.physicalSignals ? params.physicalSignals.split(',').filter(Boolean) : [];
+  const affectionLevel = params.affectionLevel != null ? Number(params.affectionLevel) : null;
   const recentMoods = entries.slice(0, 3).map((e) => e.moodScore);
 
   const showSelfReflectionSuggestion =
@@ -64,6 +66,7 @@ export default function JournalResponseScreen() {
       moodScore: score,
       moodLabel: tags,
       physicalSignals,
+      affectionLevel,
       direction,
       freeText: params.freeText || undefined,
       aiResponse: text,
@@ -77,6 +80,7 @@ export default function JournalResponseScreen() {
       moodScore: score,
       moodLabel: tags,
       physicalSignals,
+      affectionLevel,
       direction,
       freeText: params.freeText || undefined,
       aiResponse: text,

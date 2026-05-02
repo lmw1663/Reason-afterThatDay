@@ -10,6 +10,7 @@ function toJournalEntry(row: Record<string, unknown>): JournalEntry {
     moodScore: row.mood_score as number,
     moodLabel: (row.mood_label as string[]) ?? [],
     physicalSignals: (row.physical_signals as string[]) ?? [],
+    affectionLevel: row.affection_level as number | null | undefined,
     direction: row.direction as Direction,
     freeText: row.free_text as string | undefined,
     aiResponse: row.ai_response as string | undefined,
@@ -21,6 +22,7 @@ export async function upsertJournalEntry(params: {
   moodScore: number;
   moodLabel: string[];
   physicalSignals?: string[];
+  affectionLevel?: number | null;
   direction: Direction;
   freeText?: string;
   aiResponse?: string;
@@ -33,6 +35,7 @@ export async function upsertJournalEntry(params: {
     mood_score: params.moodScore,
     mood_label: params.moodLabel,
     physical_signals: params.physicalSignals ?? [],
+    affection_level: params.affectionLevel ?? null,
     direction: params.direction,
     free_text: params.freeText ?? null,
     ai_response: params.aiResponse ?? null,

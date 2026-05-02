@@ -157,9 +157,15 @@ function getDescription(verdict: ReturnType<typeof compassVerdict>): string {
       return '잡는 쪽으로 조금 기울어진 것 같아. 아직 확신이 완전하지 않을 수 있어.';
     case 'undecided':
       return '지금은 어느 쪽도 확실하지 않아. 그게 솔직한 마음일 수 있어. 더 시간을 줘도 괜찮아.';
+    case 'undecided_with_love':
+      return '좋아하는 마음이 남아있는 채로 모르겠는 것 같아. 그 마음도 괜찮아.';
+    case 'undecided_with_resentment':
+      return '지금은 분노 단계를 통과 중인 것 같아. 이 감정도 정상적인 과정이야.';
     case 'lean_let_go':
       return '보내는 쪽으로 조금 기울어진 것 같아. 그 마음도 충분히 이해할 수 있어.';
     case 'strong_let_go':
       return '보내고 싶은 마음이 꽤 분명해 보여. 그것도 용기 있는 선택이야.';
+    case 'DANGER_OBSESSION':
+      return '잡고 싶은 마음과 미운 마음이 동시에 있는 것 같아. 그럴 수 있어. 7일 유예 동안 차분히 살펴보자.';
   }
 }

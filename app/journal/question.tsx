@@ -16,6 +16,7 @@ export default function JournalQuestionScreen() {
     score: string;
     tags: string;
     physicalSignals: string;
+    affectionLevel: string;
     freeText: string;
     direction: string;
   }>();

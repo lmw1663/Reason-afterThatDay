@@ -54,6 +54,33 @@ const ACTION_MAP: Record<CompassVerdict, { title: string; actions: string[]; cau
     ],
     caution: '보내는 것도 사랑의 한 방식이야. 충분히 잘 한 거야.',
   },
+  undecided_with_love: {
+    title: '좋아하는 마음이 남아있어',
+    actions: [
+      '지금 이 마음이 집착인지, 진짜 사랑인지 일기로 써봐',
+      '상대 없이도 행복했던 순간을 기억해봐',
+      '7일 뒤에 다시 나침반을 해봐',
+    ],
+    caution: '좋아하는 마음이 있다고 해서 잡아야 하는 건 아니야.',
+  },
+  undecided_with_resentment: {
+    title: '미운 마음이 많이 있어',
+    actions: [
+      '분노를 일기나 편지로 쏟아내봐 (보내지 않아도 돼)',
+      '미운 감정도 애도의 일부야 — 억누르지 않아도 돼',
+      '오늘은 일기 한 줄만 써봐',
+    ],
+    caution: '분노도 정상적인 회복 과정이야. 잘 지나가고 있어.',
+  },
+  DANGER_OBSESSION: {
+    title: '잡고 싶지만 미운 마음도 커',
+    actions: [
+      '지금 이 마음을 일기로 솔직하게 기록해봐',
+      '7일 유예 기간 동안 차분히 살펴봐',
+      '친한 사람에게 이야기해보는 것도 도움이 될 수 있어',
+    ],
+    caution: '잡고 싶은 마음과 미운 마음이 동시에 있는 거, 그럴 수 있어. 천천히 가봐.',
+  },
 };
 
 export default function CompassActionScreen() {

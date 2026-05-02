@@ -5,8 +5,11 @@ export type CompassVerdict =
   | 'strong_catch'
   | 'lean_catch'
   | 'undecided'
+  | 'undecided_with_love'
+  | 'undecided_with_resentment'
   | 'lean_let_go'
-  | 'strong_let_go';
+  | 'strong_let_go'
+  | 'DANGER_OBSESSION';
 
 export interface DecisionRecord {
   id: string;
