@@ -8,6 +8,7 @@ export interface JournalEntry {
   createdAt: string;
   moodScore: number;
   moodLabel: string[];
+  physicalSignals: string[];
   direction: Direction;
   freeText?: string;
   aiResponse?: string;

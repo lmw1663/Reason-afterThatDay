@@ -8,7 +8,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
 
 export default function JournalDirectionScreen() {
-  const params = useLocalSearchParams<{ score: string; tags: string; freeText: string }>();
+  const params = useLocalSearchParams<{ score: string; tags: string; physicalSignals: string; freeText: string }>();
   const { entries } = useJournalStore();
   const lastDirection = entries[0]?.direction ?? null;
 

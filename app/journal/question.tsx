@@ -15,6 +15,7 @@ export default function JournalQuestionScreen() {
   const params = useLocalSearchParams<{
     score: string;
     tags: string;
+    physicalSignals: string;
     freeText: string;
     direction: string;
   }>();

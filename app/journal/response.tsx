@@ -18,6 +18,7 @@ export default function JournalResponseScreen() {
   const params = useLocalSearchParams<{
     score: string;
     tags: string;
+    physicalSignals: string;
     freeText: string;
     direction: string;
     questionAnswer: string;
@@ -30,7 +31,11 @@ export default function JournalResponseScreen() {
   const score = Number(params.score ?? '5');
   const direction = (params.direction ?? 'undecided') as Direction;
   const tags = params.tags ? params.tags.split(',').filter(Boolean) : [];
+  const physicalSignals = params.physicalSignals ? params.physicalSignals.split(',').filter(Boolean) : [];
   const recentMoods = entries.slice(0, 3).map((e) => e.moodScore);
+
+  const showSelfReflectionSuggestion =
+    tags.includes('자존감 흔들림') && (daysElapsed ?? 0) >= 8;
 
   useEffect(() => {
     const ctx = {
@@ -56,6 +61,7 @@ export default function JournalResponseScreen() {
       createdAt: new Date().toISOString(),
       moodScore: score,
       moodLabel: tags,
+      physicalSignals,
       direction,
       freeText: params.freeText || undefined,
       aiResponse: text,
@@ -68,6 +74,7 @@ export default function JournalResponseScreen() {
       userId,
       moodScore: score,
       moodLabel: tags,
+      physicalSignals,
       direction,
       freeText: params.freeText || undefined,
       aiResponse: text,
@@ -109,6 +116,30 @@ export default function JournalResponseScreen() {
             </Body>
           </View>
         </Card>
+
+        {showSelfReflectionSuggestion && done && (
+          <Card className="mt-4 border border-purple-700">
+            <Body className="text-white mb-1">자존감이 흔들리는 날이네.</Body>
+            <Caption className="text-gray-400 mb-4">
+              너 자신에 대해 한 가지만 생각해볼래?
+            </Caption>
+            <View className="flex-row gap-3">
+              <View className="flex-1">
+                <PrimaryButton
+                  label="나에 대해 알아가기 →"
+                  onPress={() => router.push('/about-me/self_love' as never)}
+                />
+              </View>
+              <View className="flex-1">
+                <PrimaryButton
+                  label="지금은 됐어"
+                  variant="ghost"
+                  onPress={() => {}}
+                />
+              </View>
+            </View>
+          </Card>
+        )}
       </View>
 
       <View className="px-6 pb-10 gap-4">
