@@ -140,6 +140,23 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
+        {/* 자기 성찰 트랙 (D+8 이상 강조) */}
+        <View className="px-6 mb-6">
+          <Pressable
+            onPress={() => router.push('/about-me' as Href)}
+            accessibilityRole="button"
+            accessibilityLabel="나에 대해 알아가기"
+            className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
+            style={{ backgroundColor: colors.surface }}
+          >
+            <Text className="text-2xl">🌱</Text>
+            <View>
+              <Text className="text-gray-200 font-semibold">나에 대해 알아가기</Text>
+              <Caption className="text-gray-500">자존감 회복 트랙</Caption>
+            </View>
+          </Pressable>
+        </View>
+
         {/* 하단 메뉴 카드들 */}
         <View className="px-6 gap-3">
           <QuickLink

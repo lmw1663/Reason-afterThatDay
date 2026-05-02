@@ -22,3 +22,12 @@ export const PHYSICAL_SIGNAL_LABELS: Record<PhysicalSignal, string> = {
   dazed: "멍한 기분이 들어",
   frequent_crying: "자꾸 울음이 나와",
 };
+
+export const STRENGTH_LABELS = [
+  "친절함", "유머", "책임감",
+  "공감력", "성실함", "창의성",
+  "포용력", "정직함", "인내심",
+  "적극성", "차분함", "솔직함",
+] as const;
+
+export type StrengthLabel = typeof STRENGTH_LABELS[number];
