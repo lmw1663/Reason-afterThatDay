@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, TextInput, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
 import { Pill } from '@/components/ui/Pill';
+import { Modal } from '@/components/ui/Modal';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Caption, Heading, Body } from '@/components/ui/Typography';
 import { colors } from '@/constants/colors';
@@ -13,26 +14,78 @@ import {
   PHYSICAL_SIGNALS,
   PHYSICAL_SIGNAL_LABELS,
 } from '@/constants/emotionLabels';
+import { useJournalDraft, type JournalDraft } from '@/hooks/useJournalDraft';
 
 export default function JournalMoodScreen() {
   const [score, setScore] = useState(5);
   const [emotionLabels, setEmotionLabels] = useState<string[]>([]);
   const [physicalSignals, setPhysicalSignals] = useState<string[]>([]);
   const [freeText, setFreeText] = useState('');
+  const [showDraftRestore, setShowDraftRestore] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<JournalDraft | null>(null);
+
+  const { saveDraft, loadDraft, clearDraft } = useJournalDraft();
+
+  // 진입 시 draft 확인
+  useEffect(() => {
+    loadDraft().then((draft) => {
+      if (draft) {
+        setPendingDraft(draft);
+        setShowDraftRestore(true);
+      }
+    });
+  }, []);
+
+  function buildDraft(): JournalDraft {
+    return {
+      step: 1,
+      mood: { moodScore: score, moodLabel: emotionLabels, physicalSignals, freeText },
+      direction: { direction: null, affectionLevel: 5 },
+      question: { answerText: '' },
+      savedAt: Date.now(),
+    };
+  }
 
   function toggleLabel(label: string) {
-    setEmotionLabels((prev) =>
-      prev.includes(label) ? prev.filter((x) => x !== label) : [...prev, label]
-    );
+    const next = emotionLabels.includes(label)
+      ? emotionLabels.filter((x) => x !== label)
+      : [...emotionLabels, label];
+    setEmotionLabels(next);
+    saveDraft({ ...buildDraft(), mood: { ...buildDraft().mood, moodLabel: next } });
   }
 
   function toggleSignal(signal: string) {
-    setPhysicalSignals((prev) =>
-      prev.includes(signal) ? prev.filter((x) => x !== signal) : [...prev, signal]
-    );
+    const next = physicalSignals.includes(signal)
+      ? physicalSignals.filter((x) => x !== signal)
+      : [...physicalSignals, signal];
+    setPhysicalSignals(next);
+    saveDraft({ ...buildDraft(), mood: { ...buildDraft().mood, physicalSignals: next } });
   }
 
-  function handleNext() {
+  function handleScoreChange(value: number) {
+    setScore(value);
+    saveDraft({ ...buildDraft(), mood: { ...buildDraft().mood, moodScore: value } });
+  }
+
+  function handleRestoreDraft() {
+    if (!pendingDraft) return;
+    const { moodScore, moodLabel, physicalSignals: ps, freeText: ft } = pendingDraft.mood;
+    setScore(moodScore);
+    setEmotionLabels(moodLabel);
+    setPhysicalSignals(ps);
+    setFreeText(ft);
+    setShowDraftRestore(false);
+    setPendingDraft(null);
+  }
+
+  async function handleDiscardDraft() {
+    await clearDraft();
+    setShowDraftRestore(false);
+    setPendingDraft(null);
+  }
+
+  async function handleNext() {
+    await saveDraft(buildDraft());
     router.push({
       pathname: '/journal/direction',
       params: {
@@ -44,8 +97,28 @@ export default function JournalMoodScreen() {
     });
   }
 
+  const draftTimeLabel = pendingDraft
+    ? new Date(pendingDraft.savedAt).toLocaleString('ko-KR', {
+        month: 'numeric',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '';
+
   return (
     <ScreenWrapper keyboardAvoiding>
+      <Modal
+        visible={showDraftRestore}
+        onClose={handleDiscardDraft}
+        title="이어서 쓸래?"
+        description={`${draftTimeLabel}에 저장된 일기가 있어.`}
+        primaryLabel="이어서 쓰기"
+        onPrimary={handleRestoreDraft}
+        secondaryLabel="새로 쓰기"
+        onSecondary={handleDiscardDraft}
+      />
+
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 16 }}
@@ -55,7 +128,7 @@ export default function JournalMoodScreen() {
         <Caption className="mb-2">이별 일기 · 1 / 4</Caption>
         <Heading className="mb-8">지금 감정 온도가 몇 도야?</Heading>
 
-        <MoodSlider value={score} onChange={setScore} />
+        <MoodSlider value={score} onChange={handleScoreChange} />
 
         {/* 1.5단계: 감정 라벨 다중 선택 */}
         <View className="mt-10 mb-2">

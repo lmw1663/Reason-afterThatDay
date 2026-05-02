@@ -13,6 +13,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
 import { useStreamingJournalResponse } from '@/hooks/useStreamingAI';
 import { upsertJournalEntry } from '@/api/journal';
+import { useJournalDraft } from '@/hooks/useJournalDraft';
 
 export default function JournalResponseScreen() {
   const params = useLocalSearchParams<{
@@ -27,6 +28,7 @@ export default function JournalResponseScreen() {
   const { userId, daysElapsed } = useUserStore();
   const { entries, upsertEntry } = useJournalStore();
   const { text, loading, done, fetchStream } = useStreamingJournalResponse();
+  const { clearDraft } = useJournalDraft();
 
   const score = Number(params.score ?? '5');
   const direction = (params.direction ?? 'undecided') as Direction;
@@ -79,7 +81,10 @@ export default function JournalResponseScreen() {
       freeText: params.freeText || undefined,
       aiResponse: text,
     })
-      .then((saved) => upsertEntry(saved))
+      .then((saved) => {
+        upsertEntry(saved);
+        clearDraft();
+      })
       .catch((e) => {
         const err = e as { code?: string; message?: string };
         console.warn('[journal] save failed:', err.code ?? err.message ?? e);
