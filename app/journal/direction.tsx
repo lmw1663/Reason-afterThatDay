@@ -93,13 +93,46 @@ export default function JournalDirectionScreen() {
             ))}
           </View>
 
-          {direction && (
-            <Caption className="mt-3 text-gray-400 text-center">
-              {affectionLevel <= 3 && direction === 'catch'
-                ? '잡고 싶은 마음과 미운 마음이 동시에 있는 거 같아. 그럴 수 있어.'
-                : '지금 이 마음도 자연스러운 거야.'}
-            </Caption>
-          )}
+          {/* 4가지 임상 상태 분류 (psychology-analysis.md §3) */}
+          {(() => {
+            if (!direction) return null;
+            let label: string | null = null;
+            let meaning: string | null = null;
+            if (direction === 'catch' && affectionLevel >= 7) {
+              label = '잡고 싶고 좋아하는 마음';
+              meaning = '미해결 애착 — 천천히 들여다봐도 돼';
+            } else if (direction === 'catch' && affectionLevel <= 3) {
+              label = '잡고 싶지만 미운 마음';
+              meaning = '가장 흔들리기 쉬운 시점이야 (상호의존 신호)';
+            } else if (direction === 'let_go' && affectionLevel >= 7) {
+              label = '보내지만 여전히 좋아하는 마음';
+              meaning = '건강한 수용 진입이야';
+            } else if (direction === 'let_go' && affectionLevel <= 3) {
+              label = '보내고 미움도 큰 마음';
+              meaning = '분노 단계 통과 중이야 — 정상적이야';
+            }
+            if (!label) {
+              return (
+                <Caption className="mt-3 text-gray-400 text-center">
+                  지금 이 마음도 자연스러운 거야.
+                </Caption>
+              );
+            }
+            return (
+              <View
+                className="mt-4 rounded-2xl p-4"
+                style={{
+                  backgroundColor: colors.surface,
+                  borderWidth: 1,
+                  borderColor: colors.purple[600],
+                }}
+              >
+                <Caption className="text-purple-400 mb-1">지금 너의 마음:</Caption>
+                <Body className="text-white font-semibold mb-1">{label}</Body>
+                <Caption className="text-gray-400">{meaning}</Caption>
+              </View>
+            );
+          })()}
         </View>
       </ScrollView>
 

@@ -30,7 +30,7 @@ const SCENARIOS = [
 ];
 
 export default function CompassScenarioScreen() {
-  const params = useLocalSearchParams<{ want: string; score: string }>();
+  const params = useLocalSearchParams<{ want: string; score: string; affectionLevel: string }>();
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   function calcFinalScore(): number {

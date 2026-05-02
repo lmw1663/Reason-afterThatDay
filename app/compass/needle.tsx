@@ -10,19 +10,25 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { ErrorToast } from '@/components/ui/ErrorToast';
 import { useDecisionStore } from '@/store/useDecisionStore';
 import { useUserStore } from '@/store/useUserStore';
-import { compassVerdict, VERDICT_LABEL, VERDICT_COLOR } from '@/utils/diagnosis';
+import { compassVerdict, compassVerdictWithAffection, VERDICT_LABEL, VERDICT_COLOR } from '@/utils/diagnosis';
 import { supabase } from '@/api/supabase';
 import type { Direction } from '@/store/useJournalStore';
 import { disclaimer } from '@/constants/copy';
 
 export default function CompassNeedleScreen() {
-  const params = useLocalSearchParams<{ want: string; finalScore: string }>();
+  const params = useLocalSearchParams<{
+    want: string;
+    finalScore: string;
+    affectionLevel: string;
+  }>();
   const { addDecision } = useDecisionStore();
   const { userId, daysElapsed } = useUserStore();
   const [saveError, setSaveError] = useState(false);
 
   const diff = Number(params.finalScore ?? '0');
-  const verdict = compassVerdict(diff);
+  const affectionLevel = params.affectionLevel != null ? Number(params.affectionLevel) : null;
+  // 7종 verdict (affection_level 있을 때) — 4가지 임상 상태 분류
+  const verdict = compassVerdictWithAffection(diff, affectionLevel);
   const color = VERDICT_COLOR[verdict];
   const label = VERDICT_LABEL[verdict];
 
@@ -119,6 +125,11 @@ export default function CompassNeedleScreen() {
             {label}
           </Text>
           <Body className="text-gray-400">{getDescription(verdict)}</Body>
+          {affectionLevel !== null && (
+            <Caption className="text-gray-600 mt-3">
+              방향 {params.want === 'catch' ? '잡기' : params.want === 'let_go' ? '보내기' : '모르겠어'} · 애정 {affectionLevel}/10
+            </Caption>
+          )}
         </View>
 
         {/* 6-7: 시간성 명시 — 고정 마인드셋 방지 */}

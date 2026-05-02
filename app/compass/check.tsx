@@ -20,7 +20,7 @@ const CHECK_QUESTIONS = [
 ];
 
 export default function CompassCheckScreen() {
-  const params = useLocalSearchParams<{ want: string }>();
+  const params = useLocalSearchParams<{ want: string; affectionLevel: string }>();
   const { userId } = useUserStore();
   const [answers, setAnswers] = useState<Record<string, 'yes' | 'no'>>({});
 
@@ -53,7 +53,14 @@ export default function CompassCheckScreen() {
         }
       }
     }
-    router.push({ pathname: '/compass/scenario', params: { want: params.want, score: String(score) } });
+    router.push({
+      pathname: '/compass/scenario',
+      params: {
+        want: params.want,
+        score: String(score),
+        affectionLevel: params.affectionLevel ?? '5',
+      },
+    });
   }
 
   return (
