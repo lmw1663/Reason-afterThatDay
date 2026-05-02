@@ -6,6 +6,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
@@ -14,7 +15,7 @@ import { AppError } from '@/constants/errors';
 
 export default function GraduationRequestScreen() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const { userId } = useUserStore();
   const { setCooling, status } = useCoolingStore();
 
@@ -26,7 +27,7 @@ export default function GraduationRequestScreen() {
 
   async function handleRequest() {
     setLoading(true);
-    setError('');
+    setErrorMsg('');
     try {
       if (userId) {
         const row = await requestGraduation(userId);
@@ -55,9 +56,9 @@ export default function GraduationRequestScreen() {
     } catch (e: unknown) {
       const err = e as { code?: string };
       if (err.code === AppError.COOLING_ACTIVE) {
-        setError('이미 유예 기간이 진행 중이야.');
+        setErrorMsg('이미 유예 기간이 진행 중이야.');
       } else {
-        setError('신청 중 오류가 생겼어. 다시 시도해줄래?');
+        setErrorMsg('신청 중 오류가 생겼어. 다시 시도해줄래?');
       }
     } finally {
       setLoading(false);
@@ -66,6 +67,14 @@ export default function GraduationRequestScreen() {
 
   return (
     <ScreenWrapper>
+      <ErrorToast
+        visible={!!errorMsg}
+        message={errorMsg}
+        onHide={() => setErrorMsg('')}
+        action={
+          errorMsg.includes('오류') ? { label: '재시도', onPress: handleRequest } : undefined
+        }
+      />
       <View className="flex-1 px-6 pt-14">
         <Caption className="mb-2">졸업 · 5 / 5</Caption>
         <Heading className="mb-2">졸업 신청</Heading>
@@ -90,11 +99,6 @@ export default function GraduationRequestScreen() {
           </Caption>
         </Card>
 
-        {error ? (
-          <Caption className="text-coral-400 text-center mb-4" accessibilityRole="alert">
-            {error}
-          </Caption>
-        ) : null}
       </View>
 
       <View className="px-6 pb-10 gap-3">

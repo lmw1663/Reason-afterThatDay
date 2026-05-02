@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { colors } from '@/constants/colors';
 import { Text, View, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -7,6 +7,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 import { useDecisionStore } from '@/store/useDecisionStore';
 import { useUserStore } from '@/store/useUserStore';
 import { compassVerdict, VERDICT_LABEL, VERDICT_COLOR } from '@/utils/diagnosis';
@@ -18,6 +19,7 @@ export default function CompassNeedleScreen() {
   const params = useLocalSearchParams<{ want: string; finalScore: string }>();
   const { addDecision } = useDecisionStore();
   const { userId, daysElapsed } = useUserStore();
+  const [saveError, setSaveError] = useState(false);
 
   const diff = Number(params.finalScore ?? '0');
   const verdict = compassVerdict(diff);
@@ -38,17 +40,36 @@ export default function CompassNeedleScreen() {
     addDecision(record);
 
     if (userId) {
-      void Promise.resolve(supabase.from('decision_history').insert({
+      supabase.from('decision_history').insert({
         user_id: userId,
         direction: record.direction,
         verdict,
         diff_score: diff,
-      }));
+      }).then(({ error }) => {
+        if (error) setSaveError(true);
+      });
     }
   }, []);
 
+  async function retrySave() {
+    if (!userId) return;
+    const { error } = await supabase.from('decision_history').insert({
+      user_id: userId,
+      direction: (params.want ?? 'undecided') as Direction,
+      verdict,
+      diff_score: diff,
+    });
+    if (error) throw error;
+  }
+
   return (
     <ScreenWrapper>
+      <ErrorToast
+        visible={saveError}
+        message="나침반 결과 저장이 안 됐어. 다시 시도해볼까?"
+        onHide={() => setSaveError(false)}
+        action={{ label: '재시도', onPress: retrySave }}
+      />
       <ScrollView
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 24 }}

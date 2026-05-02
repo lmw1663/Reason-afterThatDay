@@ -8,6 +8,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -21,6 +22,7 @@ export default function AnalysisResultScreen() {
   const { stats } = useJournalStore();
   const { userId, daysElapsed } = useUserStore();
   const [saving, setSaving] = useState(true);
+  const [saveError, setSaveError] = useState(false);
 
   const moodTrend = stats?.moodTrend ?? [];
   const moodAvg = moodTrend.length
@@ -33,12 +35,18 @@ export default function AnalysisResultScreen() {
     ? moodLevelSentence(moodAvg)
     : moodInsight.sentence;
 
-  useEffect(() => {
+  async function saveProfile() {
     if (!userId) { setSaving(false); return; }
-    upsertRelationshipProfile(userId, profile)
-      .catch((e) => console.warn('[analysis] profile upsert failed:', e))
-      .finally(() => setSaving(false));
-  }, []);
+    try {
+      await upsertRelationshipProfile(userId, profile);
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  useEffect(() => { saveProfile(); }, []);
 
   if (saving) {
     return (
@@ -52,6 +60,12 @@ export default function AnalysisResultScreen() {
 
   return (
     <ScreenWrapper>
+      <ErrorToast
+        visible={saveError}
+        message="분석 저장이 안 됐어. 다시 시도해볼까?"
+        onHide={() => setSaveError(false)}
+        action={{ label: '재시도', onPress: saveProfile }}
+      />
       <ScrollView
         className="flex-1 px-6 pt-14"
         contentContainerStyle={{ paddingBottom: 32 }}
