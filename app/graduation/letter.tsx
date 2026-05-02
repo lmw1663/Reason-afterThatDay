@@ -75,8 +75,8 @@ export default function GraduationLetterScreen() {
 
       <View className="px-6 pb-10">
         <PrimaryButton
-          label="다음 — 마지막 확인"
-          onPress={() => router.push('/graduation/confirm')}
+          label="나의 마지막 한 줄 쓰기"
+          onPress={() => router.push('/graduation/farewell' as never)}
           disabled={loading}
         />
       </View>

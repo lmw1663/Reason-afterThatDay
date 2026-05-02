@@ -124,6 +124,28 @@ export async function fetchCoolingCheckinGPTResponse(params: {
   }
 }
 
+// ── 졸업 작별 문장 AI 응답 ──────────────────────────────────────────
+const FAREWELL_FALLBACK =
+  '그 마음으로 이별을 맺는 너의 모습이 가장 성숙한 마무리야. ' +
+  '그렇게 정직한 마음으로 보내는 사람이 다시 행복해질 거야.';
+
+export async function fetchGraduationFarewellResponse(params: {
+  userId: string;
+  coolingPeriodId: string;
+  farewellMessage: string;
+}): Promise<string> {
+  try {
+    const data = await invokeWithTimeout<{ response: string }>(
+      'graduation-farewell-response',
+      params,
+      6000,
+    );
+    return data.response;
+  } catch {
+    return FAREWELL_FALLBACK;
+  }
+}
+
 // ── 졸업 편지 (gpt-4o, 10초 타임아웃) ──────────────────────────────
 export async function fetchGraduationLetter(params: {
   daysElapsed: number;
