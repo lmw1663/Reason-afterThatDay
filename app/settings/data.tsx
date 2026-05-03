@@ -277,7 +277,7 @@ export default function DataSettingsScreen() {
               />
             </Card>
             <Caption className="text-gray-600 mt-2 leading-5">
-              *현재 일일 한마디·정기 알림에 적용*. 일기 응답·위로 등 추가 항목은 곧 적용될 예정.
+              일기 응답·위로·체크인 등 모든 AI 응답과 일반 알림에 적용돼. 위기 평가는 안전상 별도 정책.
             </Caption>
           </View>
         )}

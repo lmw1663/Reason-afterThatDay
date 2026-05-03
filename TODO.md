@@ -324,8 +324,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | X-1-잔여 | 계정 자체 삭제 Edge Function (Share file·§37 의사 저장 완료) | 🔄 | 권고 5 잔존 |
 | └ X-1-잔여-Share | Share message → expo-file-system + expo-sharing file URL 모드 + cleanup (PIPA §29) | ✅ | bfddf14 |
 | └ X-1-잔여-§37-의사 | DB 컬럼(025) + api/processingSuspension + UI 토글 (의사 저장만) | ✅ | (본 커밋) |
-| └ X-1-잔여-§37-적용-1 | server-side 게이트 — `_shared/processingSuspension` + ai-daily-quote · push-daily-reminder · push-cooling-day7 (3 함수) | ✅ | (본 커밋) |
-| └ X-1-잔여-§37-적용-2 | client-side 게이트 — api/ai.ts wrapper 5 함수 (store 인프라 결정 의존) | ⬜ | 출시 전 |
+| └ X-1-잔여-§37-적용-1 | server-side 게이트 — `_shared/processingSuspension` + ai-daily-quote · push-daily-reminder · push-cooling-day7 | ✅ | 812ee08 |
+| └ X-1-잔여-§37-적용-2 | client-side 게이트 — api/ai.ts wrapper 6 함수 (매 호출 DB query, fail-open) | ✅ | (본 커밋) |
 | └ X-1-잔여-§37-test | processingSuspension API 단위 테스트 (supabase mock 인프라 필요) | ⬜ | 후속 |
 | X-2 | AI 응답 임상 면책 자동 첨부 (X-2-B-1 buildSystemPrompt에 통합 완료) | ✅ |
 | X-2-B-1 | `_shared/personaPrompts.ts` 19 페르소나 톤·금기·프레이밍 + lint 헬퍼 | ✅ fbcd106 |

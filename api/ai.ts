@@ -3,7 +3,24 @@ import { supabase } from './supabase';
 import { AppError } from '@/constants/errors';
 import type { Direction } from '@/store/useJournalStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
+import { useUserStore } from '@/store/useUserStore';
+import { getProcessingSuspension } from './processingSuspension';
 import type { PersonaCode } from '@/utils/personaClassifier';
+
+/**
+ * X-1-잔여 §37 client-side 게이트 — 모든 AI wrapper 시작에서 검사.
+ * server-side 게이트(_shared/processingSuspension)와 dual gate. fail-open(false).
+ */
+async function isAiSuspended(): Promise<boolean> {
+  const userId = useUserStore.getState().userId;
+  if (!userId) return false;
+  try {
+    const s = await getProcessingSuspension(userId);
+    return s.aiAnalysisSuspended;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * X-2-B-2: 모든 GPT 호출에 현재 사용자 페르소나(primary)를 자동 첨부.
@@ -86,6 +103,7 @@ async function invokeWithTimeout<T>(
 
 // ── 일기 AI 응답 ────────────────────────────────────────────────────
 export async function fetchJournalResponse(ctx: JournalContext): Promise<string> {
+  if (await isAiSuspended()) return fallbackJournal(ctx.direction);
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-journal-response',
@@ -106,6 +124,9 @@ export async function fetchDailyQuote(
   daysElapsed: number,
   userId?: string,
 ): Promise<string> {
+  if (await isAiSuspended()) {
+    return DAILY_QUOTE_FALLBACKS[Math.floor(Math.random() * DAILY_QUOTE_FALLBACKS.length)];
+  }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-daily-quote',
@@ -129,7 +150,9 @@ export async function fetchComfort(params: {
     compass: '나침반이 가리키는 건 힌트일 뿐이야. 결국 네가 결정하는 거야.',
     graduation: '졸업이 끝이 아니야. 새로운 시작이야.',
   };
+  const fallback = () => FALLBACKS[params.situation] ?? '지금 이 순간도 잘 버티고 있어. 충분해.';
 
+  if (await isAiSuspended()) return fallback();
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-comfort',
@@ -137,7 +160,7 @@ export async function fetchComfort(params: {
     );
     return data.response;
   } catch {
-    return FALLBACKS[params.situation] ?? '지금 이 순간도 잘 버티고 있어. 충분해.';
+    return fallback();
   }
 }
 
@@ -156,6 +179,8 @@ export async function fetchCoolingCheckinGPTResponse(params: {
   day: number;
   checkinText: string;
 }): Promise<string> {
+  const fallback = () => CHECKIN_FALLBACK[params.day] ?? CHECKIN_FALLBACK[1];
+  if (await isAiSuspended()) return fallback();
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'cooling-checkin-response',
@@ -164,7 +189,7 @@ export async function fetchCoolingCheckinGPTResponse(params: {
     );
     return data.response;
   } catch {
-    return CHECKIN_FALLBACK[params.day] ?? CHECKIN_FALLBACK[1];
+    return fallback();
   }
 }
 
@@ -178,6 +203,7 @@ export async function fetchGraduationFarewellResponse(params: {
   coolingPeriodId: string;
   farewellMessage: string;
 }): Promise<string> {
+  if (await isAiSuspended()) return FAREWELL_FALLBACK;
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'graduation-farewell-response',
@@ -201,6 +227,8 @@ export async function fetchGraduationLetter(params: {
   checkinMoods?: number[];    // 유예 기간 체크인 감정 점수 배열
   checkinNotes?: string[];    // 유예 기간 체크인 메모 배열
 }): Promise<string> {
+  const FALLBACK = '지금 이 순간까지 버텨온 나에게.\n\n쉽지 않았어. 그 마음 알아. 그런데 있잖아, 지금 여기까지 온 것만으로도 충분해.\n\n앞으로 어떻게 될지 모르겠어. 근데 그게 나쁜 건 아닐 것 같아. 아직 쓰여지지 않은 페이지가 있다는 거니까.';
+  if (await isAiSuspended()) return FALLBACK;
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-graduation-letter',
@@ -209,6 +237,6 @@ export async function fetchGraduationLetter(params: {
     );
     return data.response;
   } catch {
-    return '지금 이 순간까지 버텨온 나에게.\n\n쉽지 않았어. 그 마음 알아. 그런데 있잖아, 지금 여기까지 온 것만으로도 충분해.\n\n앞으로 어떻게 될지 모르겠어. 근데 그게 나쁜 건 아닐 것 같아. 아직 쓰여지지 않은 페이지가 있다는 거니까.';
+    return FALLBACK;
   }
 }
