@@ -14,6 +14,7 @@ import {
   type CrisisSeverity,
 } from '@/api/safety';
 import { getHotlinesForPersona, type Hotline } from '@/utils/crisisHotlines';
+import { usePersonaStore } from '@/store/usePersonaStore';
 
 /**
  * 위기 모달 트리거 타입.
@@ -111,6 +112,7 @@ type Step = 1 | 2 | 3 | 4;
 
 function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const { userId } = useUserStore();
+  const personaPrimary = usePersonaStore(s => s.primary);
   const [step, setStep] = useState<Step>(1);
   const [responses, setResponses] = useState<CrisisResponses>({
     q1: false, q2: false, q3: false, q4: false, q5: false, q6: false,
@@ -154,8 +156,8 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
         responses,
       });
       setSeverity(result.severity);
-      // 페르소나는 Phase C 후에 결정 — 현재는 baseline (mental_health_crisis만)
-      setHotlines(getHotlinesForPersona(null));
+      // C-2-G-10: 페르소나별 우선 핫라인 매핑 적용. 페르소나 미정 시 baseline.
+      setHotlines(getHotlinesForPersona(personaPrimary));
       setStep(4);
     } catch (e) {
       // 잠금 생성 실패 등 안전 인프라 장애 — silent 금지. 사용자에게 즉시 안내 + 직접 전화 옵션.
