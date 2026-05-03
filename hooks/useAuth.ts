@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { supabase } from '@/api/supabase';
 import { useUserStore } from '@/store/useUserStore';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import { getActivePersona } from '@/api/persona';
 import { parseDateStr } from '@/utils/dateUtils';
 
 export function useAuth() {
@@ -58,6 +60,14 @@ export function useAuth() {
         data.consent_versions,
         new Date(data.consent_accepted_at),
       );
+    }
+
+    // 페르소나 활성 분류 로드 — 분류 안 된 신규 사용자는 null 유지
+    try {
+      const persona = await getActivePersona(userId);
+      usePersonaStore.getState().setPersona(persona);
+    } catch (e) {
+      console.warn('[auth] persona load failed:', e);
     }
   }
 

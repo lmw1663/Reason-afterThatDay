@@ -9,6 +9,7 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { PersonaPriorityCard } from '@/components/PersonaPriorityCard';
+import { usePersonaStore } from '@/store/usePersonaStore';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { fetchDailyQuote } from '@/api/ai';
@@ -98,9 +99,9 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* 페르소나 우선 카드 슬롯 (A-6) — Phase C에서 usePersonaStore 연결.
-            Phase A 단계에선 페르소나 미정이라 컴포넌트 자체가 null 반환 → wrapper도 렌더 X. */}
-        <PersonaPriorityCard persona={null} />
+        {/* 페르소나 우선 카드 슬롯 (A-6 + C-1-3 연결) — usePersonaStore의 primary가 null이면
+            컴포넌트 자체가 null 반환 → wrapper도 렌더 X. */}
+        <PersonaPriorityCard persona={usePersonaStore(s => s.primary)} />
 
         {/* 오늘의 한마디 */}
         <View className="px-6 mb-5">

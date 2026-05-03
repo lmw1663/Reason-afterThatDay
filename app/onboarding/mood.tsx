@@ -6,8 +6,7 @@ import { Pill } from '@/components/ui/Pill';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Display } from '@/components/ui/Typography';
-import { useUserStore } from '@/store/useUserStore';
-import { supabase } from '@/api/supabase';
+// useUserStore/supabase는 페르소나 온보딩(persona/index.tsx)에서 사용 — 본 화면은 라우팅만
 
 const MOODS = [
   { label: '슬퍼', color: 'purple' as const },
@@ -27,7 +26,6 @@ const MOODS = [
 export default function OnboardingMoodScreen() {
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const { userId, setOnboardingCompleted } = useUserStore();
 
   function toggle(label: string) {
     setSelected((prev) =>
@@ -38,11 +36,9 @@ export default function OnboardingMoodScreen() {
   async function handleDone() {
     setLoading(true);
     try {
-      if (userId) {
-        await supabase.from('users').update({ onboarding_completed: true }).eq('id', userId);
-      }
-      setOnboardingCompleted(true);
-      router.replace('/(tabs)');
+      // onboarding_completed=true는 페르소나 분류 후 설정 (C-1-3 흐름).
+      // 현재 단계는 페르소나 온보딩으로 이동만.
+      router.push('/onboarding/persona' as never);
     } finally {
       setLoading(false);
     }

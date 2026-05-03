@@ -3,7 +3,6 @@ import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { BackHeader } from '@/components/ui/BackHeader';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
@@ -75,9 +74,10 @@ export default function SafetyReleaseScreen() {
     <ScreenWrapper>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 24 }}
       >
-        <BackHeader />
+        {/* BackHeader 의도적 제거 — 위기 잠금 화면은 *최종 안전망*이라 사용자가 임의로 빠져나갈 수
+            없어야 함. 해제는 4문항 통과 + 24h 경과 후 acknowledgeLockout으로만 가능. */}
         <Caption className="mb-2">안전 확인</Caption>
         <Display className="mb-2">천천히, 다시 만나자</Display>
         <Body className="text-gray-400 mb-6">
