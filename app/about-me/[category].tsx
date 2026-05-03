@@ -52,6 +52,29 @@ const CATEGORY_CONFIGS: Record<ReflectionCategory, CategoryConfig> = {
     mainQuestion: '연애 안 할 때 뭐로 스트레스 풀었어?',
     subQuestions: ['혼자 있을 때 가장 행복한 순간', '너를 채워주는 것들'],
   },
+  // G-5b: 페르소나 우선 트랙 — 매트릭스 §2 C5
+  reality_check: {
+    mainQuestion: '지금 너의 판단을 흐리게 만든 게 뭐야?',
+    subQuestions: [
+      '사실로 확인할 수 있는 것 / 상대 말로만 들은 것',
+      '지금 다시 보면 이상하게 느껴지는 부분',
+    ],
+  },
+  body: {
+    mainQuestion: '지금 몸은 어때?',
+    subQuestions: ['잠은 어때?', '식욕은 어때?', '몸이 무겁게 느껴지는 부분'],
+  },
+  needs: {
+    mainQuestion: '오늘 너만의 작은 욕구 하나는 뭐야?',
+    subQuestions: ['배고픔·졸림 같은 신체부터 시작해봐', '다른 사람 시선 빼고 너만'],
+  },
+  identity: {
+    mainQuestion: '이 관계 안에서 잃어버린 너는 누구야?',
+    subQuestions: [
+      '원래 좋아했지만 그 사람 만나고 줄어든 것',
+      '이제 다시 시작할 수 있는 것 하나',
+    ],
+  },
 };
 
 export default function ReflectionCategoryScreen() {

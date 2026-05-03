@@ -6,7 +6,12 @@ export type ReflectionCategory =
   | 'self_love'
   | 'strengths'
   | 'self_care_in_relationship'
-  | 'self_care_alone';
+  | 'self_care_alone'
+  // G-5b: 페르소나 우선 트랙 (reality_check·body·needs·identity)
+  | 'reality_check'
+  | 'body'
+  | 'needs'
+  | 'identity';
 
 export type ReflectionSource = 'manual' | 'cooling_day5' | 'cooling_day6';
 

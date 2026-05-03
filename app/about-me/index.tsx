@@ -19,6 +19,11 @@ const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc
   { key: 'strengths',                 icon: 'sparkles',         title: '강점 발견',        desc: '나의 장점이 뭐야?' },
   { key: 'self_care_in_relationship', icon: 'coffee',           title: '연애 중 자기 돌봄', desc: '연애할 때 뭐로 스트레스 풀었어?' },
   { key: 'self_care_alone',           icon: 'leaf',             title: '독립 시 자기 돌봄', desc: '혼자 있을 때 뭐로 힘을 얻어?' },
+  // G-5b 신규 — 페르소나 우선 트랙
+  { key: 'reality_check',             icon: 'scale',            title: '현실 검증',        desc: '지금 판단을 흐리게 만든 게 뭐야?' },
+  { key: 'body',                      icon: 'wind',             title: '몸 살피기',        desc: '잠·식욕·몸의 무게는 어때?' },
+  { key: 'needs',                     icon: 'apple',            title: '내 욕구 찾기',     desc: '오늘 너만의 작은 욕구 하나' },
+  { key: 'identity',                  icon: 'user',             title: '잃어버린 나',      desc: '관계 안에서 줄어든 너의 부분' },
 ];
 
 export default function AboutMeScreen() {

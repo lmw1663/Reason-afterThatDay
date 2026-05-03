@@ -154,9 +154,8 @@ export function getProsConsItemLimit(p: PersonaCode | null): number {
 /**
  * about-me 카테고리 정렬 — 페르소나별 우선 순서 (매트릭스 §2 C5).
  *
- * 기존 ReflectionCategory 6개(love_self·ideal_match·self_love·strengths·
- * self_care_in_relationship·self_care_alone) 위에 *순서*만 분기.
- * 신규 카테고리(reality-check·identity·body·needs 등)는 G-5b 또는 별도 후속.
+ * G-5b 신설 카테고리 4종(reality_check·body·needs·identity) 포함.
+ * 기존 6 카테고리 + 신규 4 카테고리 위에 *순서*만 분기.
  *
  * **주의**: 본 strengths는 *내 장점*. 매트릭스의 "상대 장점 비활성"(P01·P14·P20)은
  * 분석 트랙(C6 pros·cons)에서 처리 — 본 함수 범위 밖.
@@ -170,15 +169,15 @@ export function sortAboutMeCategories<T extends string>(
 ): T[] {
   if (!p) return [...defaultOrder];
 
-  // 페르소나별 우선 카테고리 (key 부분 일치로 매칭)
+  // 페르소나별 우선 카테고리 (key 부분 일치로 매칭). G-5b 신규 트랙 우선 노출.
   const PRIORITY: Partial<Record<PersonaCode, string[]>> = {
-    P02: ['self_care_alone', 'self_care_in_relationship'],   // 회피형 — 신체 돌봄 우선
+    P01: ['reality_check', 'self_love'],                      // 자기 판단 손상 — 현실 검증 우선 (line 41)
+    P02: ['body', 'self_care_alone', 'self_care_in_relationship'],  // 회피형 — 신체 우선 (line 60)
     P04: ['self_love', 'strengths'],                          // 잠수당함 — 자존감 회복 우선
-    // P08: 매트릭스는 신규 *identity* 카테고리 지정. G-5b 신설 전 임시로 love_self·ideal_match 근사 매핑.
-    P08: ['love_self', 'ideal_match'],
-    P09: ['self_love', 'strengths'],                          // 헌신 소진 — 자기 인식 우선
+    P08: ['identity', 'love_self', 'ideal_match'],            // 장기 권태 — identity 메인 (line 156)
+    P09: ['needs', 'self_love', 'strengths'],                 // 헌신 소진 — 너 욕구 우선 (line 169·172)
     // P14: 매트릭스 "자존감 후순위" — self_love 우선 두지 않음. 자기 책임(self_care_alone)만 우선.
-    // strengths(상대 정당화 위험) 차단은 G-5b로 deferred.
+    // line 282 "identity 후순위" — identity는 매핑 미포함이라 default 끝에 자연 노출.
     P14: ['self_care_alone'],
   };
 
