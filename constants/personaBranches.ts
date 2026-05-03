@@ -275,3 +275,20 @@ const UNSENT_LETTER_RECOMMENDED: PersonaCode[] = ['P02', 'P10', 'P17'];
 export function isUnsentLetterRecommended(p: PersonaCode | null): boolean {
   return p !== null && UNSENT_LETTER_RECOMMENDED.includes(p);
 }
+
+// ───────── Ref-3 새벽 푸시 차단 (참고용 §2 P03) ─────────
+
+/**
+ * 새벽(00~05시) 푸시 차단 페르소나 (참고용 §2 P3).
+ * 불안형 사용자에게 가장 위험한 시간대에 알림이 충동을 자극하지 않도록.
+ *
+ * 위기 자원 푸시(B-1 safety-followup-cron 등)는 *예외* — kind='crisis' notification은 통과.
+ * 본 함수는 *kind 무관*하게 페르소나·시간만 체크. 호출처에서 kind 별도 체크 필요.
+ */
+const LATE_NIGHT_SUPPRESSED_PERSONAS: PersonaCode[] = ['P03'];
+
+export function isLateNightPushSuppressed(p: PersonaCode | null, hour: number): boolean {
+  if (p === null) return false;
+  if (!LATE_NIGHT_SUPPRESSED_PERSONAS.includes(p)) return false;
+  return hour < 5;  // 0~4시
+}

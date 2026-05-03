@@ -5,15 +5,40 @@ import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/api/supabase';
 import { useUserStore } from '@/store/useUserStore';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import { isLateNightPushSuppressed } from '@/constants/personaBranches';
 import { AppError } from '@/constants/errors';
 
+/**
+ * Push notification handler.
+ *
+ * C-2-Ref-3: 페르소나별 새벽 푸시 차단 (참고용 §2 P3).
+ *  - 불안형(P03) 사용자가 새벽 시간대에 푸시 받으면 충동 자극 위험
+ *  - notification.data.kind === 'crisis'는 *위기 자원 푸시*로 항상 통과 (B-1 정책)
+ */
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) => {
+    const persona = usePersonaStore.getState().primary;
+    const hour = new Date().getHours();
+    const kind = notification.request.content.data?.kind as string | undefined;
+    const isCrisisPush = kind === 'crisis';
+
+    if (!isCrisisPush && isLateNightPushSuppressed(persona, hour)) {
+      return {
+        shouldShowBanner: false,
+        shouldShowList: false,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+      };
+    }
+
+    return {
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 export function usePushNotifications() {
