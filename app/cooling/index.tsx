@@ -320,8 +320,23 @@ export default function CoolingDashboardScreen() {
 
       <View className="px-6 pb-10 gap-3">
         <PrimaryButton label="자율 체크인 하기" onPress={() => router.push('/cooling/checkin')} />
+        {/* A-4: 졸업 트랙 보류 — Day 7에 마무리 안내로 직행 + cooling을 자동 cancel하여 무한 루프 차단 */}
         {isDay7 && (
-          <PrimaryButton leftIcon="graduation" label="최종 졸업 확인" onPress={() => router.push('/cooling/final')} />
+          <PrimaryButton
+            leftIcon="graduation"
+            label="마무리 안내 보기"
+            onPress={async () => {
+              if (id && userId) {
+                try {
+                  await cancelCooling(id);
+                  updateStatus('cancelled');
+                } catch (e) {
+                  console.warn('[cooling] auto-cancel before paused failed:', e);
+                }
+              }
+              router.replace('/graduation-paused');
+            }}
+          />
         )}
         <PrimaryButton label="취소할게" variant="ghost" onPress={handleCancel} />
       </View>
