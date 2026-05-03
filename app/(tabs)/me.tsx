@@ -14,6 +14,7 @@ import {
   isCompassDisabledByPersona,
   isAnalysisTrackBlockedByPersona,
 } from '@/constants/personaBranches';
+import { resolvePersona, appliesGuard, longestGate } from '@/utils/personaResolver';
 
 /**
  * [나] 탭 — A-3·A-5
@@ -30,14 +31,18 @@ const SELF_INSIGHT_GATE_DAYS = 7;
 export default function MeScreen() {
   const { userId, daysElapsed } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
+  const personaSecondary = usePersonaStore(s => s.secondary);
+
+  // C-3-H: 다중 페르소나 — 차단형 헬퍼는 secondary 금기도 검사, 게이트는 더 긴 일수 적용
+  const resolved = resolvePersona(personaPrimary, personaSecondary);
 
   // 분석은 baseline D+7. 나침반은 페르소나별 게이트 (C-2-G-4): P02=10, P04=14, P07=21.
   const insightUnlocked = daysElapsed >= SELF_INSIGHT_GATE_DAYS;
-  const compassGateDays = getCompassGateDays(personaPrimary);
+  const compassGateDays = longestGate(resolved, getCompassGateDays);
   const compassUnlocked = daysElapsed >= compassGateDays;
-  const compassDisabled = isCompassDisabledByPersona(personaPrimary);
+  const compassDisabled = appliesGuard(resolved, isCompassDisabledByPersona);
   // C-2-G-6: P01·P14·P20은 분석 자체 부적합 (about-me로 우회)
-  const analysisDisabled = isAnalysisTrackBlockedByPersona(personaPrimary);
+  const analysisDisabled = appliesGuard(resolved, isAnalysisTrackBlockedByPersona);
 
   const insightDaysLeft = Math.max(0, SELF_INSIGHT_GATE_DAYS - daysElapsed);
   const compassDaysLeft = Math.max(0, compassGateDays - daysElapsed);

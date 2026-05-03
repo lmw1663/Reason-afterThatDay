@@ -4,6 +4,7 @@ import { colors } from '@/constants/colors';
 import { useDecisionLockGuard } from '@/hooks/useDecisionLockGuard';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { isAnalysisTrackBlockedByPersona } from '@/constants/personaBranches';
+import { resolvePersona, appliesGuard } from '@/utils/personaResolver';
 
 /**
  * 분석 진입 가드 — A-5(잠금) + C-2-G-6(페르소나 차단).
@@ -17,6 +18,7 @@ import { isAnalysisTrackBlockedByPersona } from '@/constants/personaBranches';
 export default function AnalysisLayout() {
   const lock = useDecisionLockGuard();
   const personaPrimary = usePersonaStore(s => s.primary);
+  const personaSecondary = usePersonaStore(s => s.secondary);
 
   if (lock === 'loading') {
     return (
@@ -27,7 +29,9 @@ export default function AnalysisLayout() {
   }
   if (lock === 'locked') return <Redirect href="/safety/release" />;
 
-  if (isAnalysisTrackBlockedByPersona(personaPrimary)) {
+  // C-3-H: secondary가 P01·P14·P20이어도 차단 (deep link 대응)
+  const resolved = resolvePersona(personaPrimary, personaSecondary);
+  if (appliesGuard(resolved, isAnalysisTrackBlockedByPersona)) {
     return <Redirect href="/(tabs)/me" />;
   }
 

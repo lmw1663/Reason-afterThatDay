@@ -14,6 +14,7 @@ import {
   isMemoryGlamourBlocked,
   getMemoryReflectGateDays,
 } from '@/constants/personaBranches';
+import { resolvePersona, appliesGuard, longestGate } from '@/utils/personaResolver';
 
 interface CategoryOption {
   id: 'happy' | 'miss' | 'painful' | 'growth';
@@ -34,11 +35,13 @@ export default function MemoryIndexScreen() {
   const { entries } = useJournalStore();
   const { daysElapsed } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
+  const personaSecondary = usePersonaStore(s => s.secondary);
   const [selected, setSelected] = useState<string | null>(null);
 
-  // C-2-G-7a: 페르소나별 미화 차단·D+N 게이트 (매트릭스 §2 C7)
-  const glamourBlocked = isMemoryGlamourBlocked(personaPrimary);
-  const reflectGateDays = getMemoryReflectGateDays(personaPrimary);
+  // C-2-G-7a + C-3-H: secondary 금기·게이트도 검사 (P01·P10·P14·P20 / P03 D+21)
+  const resolved = resolvePersona(personaPrimary, personaSecondary);
+  const glamourBlocked = appliesGuard(resolved, isMemoryGlamourBlocked);
+  const reflectGateDays = longestGate(resolved, getMemoryReflectGateDays);
   const reflectUnlocked = daysElapsed >= reflectGateDays;
   const reflectDaysLeft = Math.max(0, reflectGateDays - daysElapsed);
 

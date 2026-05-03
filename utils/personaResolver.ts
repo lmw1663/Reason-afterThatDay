@@ -160,3 +160,31 @@ export function appliesRecommendation(
 ): boolean {
   return recommendCheck(resolved.effective);
 }
+
+/**
+ * 숫자 *상한* 헬퍼(예: pros·cons 항목 cap) — 양쪽 페르소나 중 더 *작은* 값 적용.
+ * 보수적(엄격) 정책: 어느 한 쪽이라도 ≤7 cap이 있으면 7 적용.
+ * 사용 예: strictestLimit(resolved, getProsConsItemLimit).
+ */
+export function strictestLimit(
+  resolved: ResolvedPersona,
+  limitFn: (p: PersonaCode | null) => number,
+): number {
+  const a = limitFn(resolved.effective);
+  const b = resolved.guardOverlay ? limitFn(resolved.guardOverlay) : Infinity;
+  return Math.min(a, b);
+}
+
+/**
+ * 숫자 *게이트 일수* 헬퍼(예: 나침반 D+N 잠금) — 양쪽 페르소나 중 더 *긴* 값 적용.
+ * 보수적(긴 대기) 정책: 어느 한 쪽이라도 D+21 게이트면 21일 대기.
+ * 사용 예: longestGate(resolved, getCompassGateDays).
+ */
+export function longestGate(
+  resolved: ResolvedPersona,
+  gateFn: (p: PersonaCode | null) => number,
+): number {
+  const a = gateFn(resolved.effective);
+  const b = resolved.guardOverlay ? gateFn(resolved.guardOverlay) : 0;
+  return Math.max(a, b);
+}

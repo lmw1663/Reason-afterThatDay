@@ -16,6 +16,7 @@ import {
   isPartnerConsBlocked,
   getProsConsItemLimit,
 } from '@/constants/personaBranches';
+import { resolvePersona, appliesGuard, strictestLimit } from '@/utils/personaResolver';
 import { Card } from '@/components/ui/Card';
 
 type Tab = 'pros' | 'cons';
@@ -37,11 +38,13 @@ export default function AnalysisProsCons() {
   const { profile, updateField } = useRelationshipStore();
   const { daysElapsed } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
+  const personaSecondary = usePersonaStore(s => s.secondary);
 
-  // C-2-G-6: 페르소나별 탭 차단·항목 상한
-  const prosBlocked = isPartnerProsBlocked(personaPrimary);   // P01·P20
-  const consBlocked = isPartnerConsBlocked(personaPrimary);   // P14
-  const itemLimit = getProsConsItemLimit(personaPrimary);     // P19=7, 그 외=Infinity
+  // C-2-G-6 + C-3-H: 페르소나별 탭 차단·항목 상한 — secondary 금기도 검사
+  const resolved = resolvePersona(personaPrimary, personaSecondary);
+  const prosBlocked = appliesGuard(resolved, isPartnerProsBlocked);   // P01·P20
+  const consBlocked = appliesGuard(resolved, isPartnerConsBlocked);   // P14
+  const itemLimit = strictestLimit(resolved, getProsConsItemLimit);   // P19=7 (양쪽 중 작은 값)
 
   // 차단되지 않은 첫 탭으로 default
   const initialTab: Tab = prosBlocked && !consBlocked ? 'cons' : 'pros';
