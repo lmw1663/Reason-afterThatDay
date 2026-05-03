@@ -12,6 +12,7 @@ import { usePersonaStore } from '@/store/usePersonaStore';
 import {
   getCompassGateDays,
   isCompassDisabledByPersona,
+  isAnalysisTrackBlockedByPersona,
 } from '@/constants/personaBranches';
 
 /**
@@ -35,6 +36,8 @@ export default function MeScreen() {
   const compassGateDays = getCompassGateDays(personaPrimary);
   const compassUnlocked = daysElapsed >= compassGateDays;
   const compassDisabled = isCompassDisabledByPersona(personaPrimary);
+  // C-2-G-6: P01·P14·P20은 분석 자체 부적합 (about-me로 우회)
+  const analysisDisabled = isAnalysisTrackBlockedByPersona(personaPrimary);
 
   const insightDaysLeft = Math.max(0, SELF_INSIGHT_GATE_DAYS - daysElapsed);
   const compassDaysLeft = Math.max(0, compassGateDays - daysElapsed);
@@ -49,7 +52,7 @@ export default function MeScreen() {
   }, [userId]);
 
   // 분석/나침반 진입 가능 여부
-  const canEnterAnalysis = insightUnlocked && !decisionLocked;
+  const canEnterAnalysis = insightUnlocked && !decisionLocked && !analysisDisabled;
   const canEnterCompass = compassUnlocked && !decisionLocked && !compassDisabled;
 
   return (
@@ -73,16 +76,18 @@ export default function MeScreen() {
             onPress={() => router.push('/about-me' as never)}
           />
 
-          {/* 분석 — D+7 baseline 게이트 + B-1 안전 잠금 */}
+          {/* 분석 — D+7 baseline 게이트 + B-1 안전 잠금 + C-2-G-6 페르소나 차단 */}
           <MeCard
             icon="search"
             title="관계 분석"
             subtitle={
               decisionLocked
                 ? '안전 확인 후 다시 만나자'
-                : insightUnlocked
-                  ? '장단점·이유·역할 정리'
-                  : `${insightDaysLeft}일 뒤 — 지금은 자신을 살피는 시간`
+                : analysisDisabled
+                  ? '지금은 *너에 대해* 트랙이 더 도움돼'
+                  : insightUnlocked
+                    ? '장단점·이유·역할 정리'
+                    : `${insightDaysLeft}일 뒤 — 지금은 자신을 살피는 시간`
             }
             disabled={!canEnterAnalysis}
             onPress={() => router.push('/analysis/pros-cons' as never)}

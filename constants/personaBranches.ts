@@ -104,6 +104,50 @@ export function getCompassVerdictFooter(p: PersonaCode | null): string | null {
   }
 }
 
+// ───────── G-6 분석 pros·cons 분기 ─────────
+
+/**
+ * 분석 pros·cons에서 *상대 장점* 탭 차단할 페르소나 (매트릭스 §2 C6).
+ * - P01·P20: 자기 판단 손상·트라우마 본딩 — 상대 미화로 이어져 위험
+ */
+const PARTNER_PROS_BLOCKED: PersonaCode[] = ['P01', 'P20'];
+
+export function isPartnerProsBlocked(p: PersonaCode | null): boolean {
+  return p !== null && PARTNER_PROS_BLOCKED.includes(p);
+}
+
+/**
+ * 분석 pros·cons에서 *상대 단점* 탭 차단할 페르소나 (매트릭스 §2 C6).
+ * - P14: 외도 가해 — 상대 단점 찾기는 자기 정당화로 이어져 회복 차단
+ * - P01·P20: 매트릭스 "본인 단점만" 의도 — 상대 단점 트랙도 차단해 자기 단점 우선 (about-me로 우회)
+ */
+const PARTNER_CONS_BLOCKED: PersonaCode[] = ['P14', 'P01', 'P20'];
+
+export function isPartnerConsBlocked(p: PersonaCode | null): boolean {
+  return p !== null && PARTNER_CONS_BLOCKED.includes(p);
+}
+
+/**
+ * 분석 트랙 *전체* 진입 차단 페르소나 (매트릭스 §2 C6).
+ * P01·P14·P20은 두 탭이 모두 차단되므로 분석 자체 부적합 — about-me로 우회.
+ * me.tsx 분석 카드 비활성 + analysis/_layout deep link 가드.
+ */
+const ANALYSIS_TRACK_BLOCKED: PersonaCode[] = ['P01', 'P14', 'P20'];
+
+export function isAnalysisTrackBlockedByPersona(p: PersonaCode | null): boolean {
+  return p !== null && ANALYSIS_TRACK_BLOCKED.includes(p);
+}
+
+/**
+ * pros·cons 항목 수 상한 (매트릭스 §2 C6 P19).
+ * - P19: 항목 ≤ 7 — 강박적 무한 추가가 강박 도구화되는 것 차단
+ * - 그 외: Infinity (무제한)
+ */
+export function getProsConsItemLimit(p: PersonaCode | null): number {
+  if (p === 'P19') return 7;
+  return Infinity;
+}
+
 // ───────── G-5a about-me 카테고리 정렬 ─────────
 
 /**
