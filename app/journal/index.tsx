@@ -10,11 +10,12 @@ import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Caption, Heading, Body } from '@/components/ui/Typography';
 import { colors } from '@/constants/colors';
 import {
-  EMOTION_LABELS,
   PHYSICAL_SIGNALS,
   PHYSICAL_SIGNAL_LABELS,
+  getEmotionLabelsForPersona,
 } from '@/constants/emotionLabels';
 import { useJournalDraft, type JournalDraft } from '@/hooks/useJournalDraft';
+import { usePersonaStore } from '@/store/usePersonaStore';
 
 export default function JournalMoodScreen() {
   const [score, setScore] = useState(5);
@@ -23,6 +24,10 @@ export default function JournalMoodScreen() {
   const [freeText, setFreeText] = useState('');
   const [showDraftRestore, setShowDraftRestore] = useState(false);
   const [pendingDraft, setPendingDraft] = useState<JournalDraft | null>(null);
+
+  // 페르소나별 감정 라벨 정렬 (C-2-G-3a) — P08은 "공허/멍함/시들음" 우선 노출.
+  const primaryPersona = usePersonaStore(s => s.primary);
+  const labelsForPersona = getEmotionLabelsForPersona(primaryPersona);
 
   const { saveDraft, loadDraft, clearDraft } = useJournalDraft();
 
@@ -135,7 +140,7 @@ export default function JournalMoodScreen() {
           <Body className="text-gray-300 mb-1">어떤 감정인지 골라봐</Body>
           <Caption className="text-gray-500 mb-4">여러 개 동시에 느껴도 돼</Caption>
           <View className="flex-row flex-wrap gap-2">
-            {EMOTION_LABELS.map((label) => (
+            {labelsForPersona.map((label) => (
               <Pill
                 key={label}
                 label={label}

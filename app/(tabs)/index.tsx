@@ -10,6 +10,7 @@ import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { PersonaPriorityCard } from '@/components/PersonaPriorityCard';
 import { usePersonaStore } from '@/store/usePersonaStore';
+import { isMiniJournalFirst } from '@/constants/personaBranches';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { fetchDailyQuote } from '@/api/ai';
@@ -20,6 +21,9 @@ import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 export default function HomeScreen() {
   const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
   const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
+  const personaPrimary = usePersonaStore(s => s.primary);
+  // C-2-G-3a: 회피형 페르소나면 일기 미니 모드를 primary 시각으로 강조 (매트릭스 §2 C3).
+  const miniIsPrimary = isMiniJournalFirst(personaPrimary);
   const [dailyQuote, setDailyQuote] = useState<string>('');
   const [showIntrusiveModal, setShowIntrusiveModal] = useState(false);
   const [safetyAlert, setSafetyAlert] = useState<'consecutive_low' | 'late_night' | null>(null);
@@ -101,7 +105,7 @@ export default function HomeScreen() {
 
         {/* 페르소나 우선 카드 슬롯 (A-6 + C-1-3 연결) — usePersonaStore의 primary가 null이면
             컴포넌트 자체가 null 반환 → wrapper도 렌더 X. */}
-        <PersonaPriorityCard persona={usePersonaStore(s => s.primary)} />
+        <PersonaPriorityCard persona={personaPrimary} />
 
         {/* 오늘의 한마디 */}
         <View className="px-6 mb-5">
@@ -161,19 +165,30 @@ export default function HomeScreen() {
               </View>
             </Pressable>
           ) : (
+            // C-2-G-3a: P02(회피형)면 미니 모드를 *primary*로 강조, 깊게 쓰기는 secondary.
+            // 다른 페르소나는 baseline (깊게 쓰기 primary).
             <View className="gap-3">
               <Pressable
                 onPress={() => router.push('/journal/mini')}
                 accessibilityRole="button"
                 accessibilityLabel="오늘은 감정 온도만 기록"
                 accessibilityHint="무기력한 날엔 감정 온도만 빠르게 기록해"
-                className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
-                style={{ backgroundColor: colors.surface }}
+                className="rounded-2xl px-6 items-center flex-row justify-center gap-3 active:opacity-80"
+                style={{
+                  backgroundColor: miniIsPrimary ? colors.purple[600] : colors.surface,
+                  paddingVertical: miniIsPrimary ? 20 : 16,
+                  borderWidth: miniIsPrimary ? 0 : 1,
+                  borderColor: colors.border,
+                }}
               >
-                <Icon name="thermometer" size={24} color={colors.gray[50]} />
+                <Icon name="thermometer" size={24} color={miniIsPrimary ? colors.white : colors.gray[50]} />
                 <View>
-                  <Text className="text-gray-200 font-semibold">오늘은 감정 온도만</Text>
-                  <Caption className="text-gray-500">힘든 날엔 이만큼이면 돼</Caption>
+                  <Text className={`${miniIsPrimary ? 'text-white text-lg font-bold' : 'text-gray-200 font-semibold'}`}>
+                    오늘은 감정 온도만
+                  </Text>
+                  <Caption className={miniIsPrimary ? 'text-purple-50 opacity-80' : 'text-gray-500'}>
+                    힘든 날엔 이만큼이면 돼
+                  </Caption>
                 </View>
               </Pressable>
 
@@ -182,15 +197,22 @@ export default function HomeScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="깊게 쓰고 싶어"
                 accessibilityHint="감정·방향·짧은 답변 4단계로 기록해"
-                className="rounded-2xl py-5 px-6 items-center active:opacity-80"
-                style={{ backgroundColor: colors.purple[600] }}
+                className="rounded-2xl px-6 items-center active:opacity-80"
+                style={{
+                  backgroundColor: miniIsPrimary ? colors.surface : colors.purple[600],
+                  paddingVertical: miniIsPrimary ? 16 : 20,
+                  borderWidth: miniIsPrimary ? 1 : 0,
+                  borderColor: colors.border,
+                }}
               >
                 <View className="flex-row items-center gap-2">
-                  <Icon name="pen" size={22} color={colors.white} />
-                  <Text className="text-white text-lg font-bold">깊게 쓰고 싶어</Text>
-                  <Icon name="chevron-right" color={colors.white} size={20} />
+                  <Icon name="pen" size={22} color={miniIsPrimary ? colors.gray[50] : colors.white} />
+                  <Text className={miniIsPrimary ? 'text-gray-200 font-semibold' : 'text-white text-lg font-bold'}>
+                    깊게 쓰고 싶어
+                  </Text>
+                  <Icon name="chevron-right" color={miniIsPrimary ? colors.gray[400] : colors.white} size={20} />
                 </View>
-                <Text className="text-purple-50 text-sm mt-1 opacity-80">
+                <Text className={`text-sm mt-1 opacity-80 ${miniIsPrimary ? 'text-gray-500' : 'text-purple-50'}`}>
                   4단계로 차근차근 풀어볼게
                 </Text>
               </Pressable>
