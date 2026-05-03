@@ -321,8 +321,11 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | ID | 작업 | 상태 |
 |---|---|---|
 | X-1 | PIPA 컴플라이언스 (§35 열람·§36 삭제·GDPR Art.20 반출) — `api/userData.ts` + `app/settings/data.tsx` + me.tsx 진입 + 안전 잠금 가드 + 민감정보 사전 경고 | ✅ | (본 커밋) |
-| X-1-잔여 | §37 처리정지권(알림 OFF·AI 분석 정지) + 계정 자체 삭제 Edge Function (Share file URL 완료) | 🔄 | opus 권고 3·5 잔존 |
-| └ X-1-잔여-Share | Share message → expo-file-system + expo-sharing file URL 모드 (대용량 안정성 + 캐시 cleanup PIPA §29) | ✅ | (본 커밋) |
+| X-1-잔여 | 계정 자체 삭제 Edge Function (Share file·§37 의사 저장 완료) | 🔄 | 권고 5 잔존 |
+| └ X-1-잔여-Share | Share message → expo-file-system + expo-sharing file URL 모드 + cleanup (PIPA §29) | ✅ | bfddf14 |
+| └ X-1-잔여-§37-의사 | DB 컬럼(025) + api/processingSuspension + UI 토글 (의사 저장만) | ✅ | (본 커밋) |
+| └ X-1-잔여-§37-적용 | 호출처 게이트 — notification cron / api/ai / ai-* edge functions에서 토글 검사 (placebo 차단) | ⬜ | 출시 전 필수 |
+| └ X-1-잔여-§37-test | processingSuspension API 단위 테스트 (supabase mock 인프라 필요) | ⬜ | 후속 |
 | X-2 | AI 응답 임상 면책 자동 첨부 (X-2-B-1 buildSystemPrompt에 통합 완료) | ✅ |
 | X-2-B-1 | `_shared/personaPrompts.ts` 19 페르소나 톤·금기·프레이밍 + lint 헬퍼 | ✅ fbcd106 |
 | X-2-B-2 | 4 ai-* 함수 통합 (journal·comfort·daily-quote·cooling-checkin) + violation fallback | ✅ 92a5f7b |

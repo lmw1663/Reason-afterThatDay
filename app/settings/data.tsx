@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Share, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // expo-file-system v19+는 main entry가 신규 File/Directory 객체 API.
 // legacy 서브경로는 v20+에서 제거 가능 — TODO: 신규 API로 마이그레이션.
@@ -23,6 +23,11 @@ import {
   deleteAllUserData,
   type DataSummaryItem,
 } from '@/api/userData';
+import {
+  getProcessingSuspension,
+  updateProcessingSuspension,
+  type ProcessingSuspension,
+} from '@/api/processingSuspension';
 
 // X-1 PIPA 컴플라이언스 — 사용자가 자기 데이터를 *직접* 보고·내보내고·삭제할 수 있는 트랙.
 // 개인정보 보호법 제35조(열람) · 제36조(삭제) · GDPR Art.20(반출) 대응.
@@ -39,6 +44,10 @@ export default function DataSettingsScreen() {
   const [error, setError] = useState<string | null>(null);
   // B-1 안전 잠금 — C-SSRS 양성 시 충동 삭제 차단 (opus 권고 1)
   const [decisionLocked, setDecisionLocked] = useState(false);
+  // X-1-잔여 §37 처리정지권 — 알림·AI 분석 정지 토글
+  const [suspension, setSuspension] = useState<ProcessingSuspension | null>(null);
+  const [togglingNotif, setTogglingNotif] = useState(false);
+  const [togglingAi, setTogglingAi] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -52,7 +61,40 @@ export default function DataSettingsScreen() {
     isAppLocked(userId)
       .then((s) => setDecisionLocked(s.decisionLocked))
       .catch(() => {/* fail open — 잠금 조회 실패 시 보수적으로 unlocked */});
+    getProcessingSuspension(userId)
+      .then(setSuspension)
+      .catch(() => {/* fail open — 토글 미표시 (모두 활성으로 간주) */});
   }, [userId]);
+
+  async function toggleNotificationSuspension() {
+    if (!userId || !suspension || togglingNotif) return;
+    setTogglingNotif(true);
+    setError(null);
+    const next = !suspension.notificationsSuspended;
+    try {
+      await updateProcessingSuspension(userId, { notificationsSuspended: next });
+      setSuspension({ ...suspension, notificationsSuspended: next, updatedAt: new Date().toISOString() });
+    } catch {
+      setError('알림 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
+    } finally {
+      setTogglingNotif(false);
+    }
+  }
+
+  async function toggleAiSuspension() {
+    if (!userId || !suspension || togglingAi) return;
+    setTogglingAi(true);
+    setError(null);
+    const next = !suspension.aiAnalysisSuspended;
+    try {
+      await updateProcessingSuspension(userId, { aiAnalysisSuspended: next });
+      setSuspension({ ...suspension, aiAnalysisSuspended: next, updatedAt: new Date().toISOString() });
+    } catch {
+      setError('AI 분석 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
+    } finally {
+      setTogglingAi(false);
+    }
+  }
 
   function confirmExport() {
     if (!userId || exporting) return;
@@ -214,6 +256,29 @@ export default function DataSettingsScreen() {
           />
         </View>
 
+        {suspension && (
+          <View className="mb-6">
+            <Caption className="text-gray-500 mb-2">처리 정지</Caption>
+            <Card>
+              <SuspensionRow
+                label="알림 받지 않기"
+                description="리마인더·감정 변화·체크인 등 일반 알림 정지. 위기 안부 푸시는 안전상 제외."
+                value={suspension.notificationsSuspended}
+                loading={togglingNotif}
+                onToggle={toggleNotificationSuspension}
+              />
+              <View style={{ height: 1, backgroundColor: colors.border, marginVertical: 12 }} />
+              <SuspensionRow
+                label="AI 분석·응답 멈추기"
+                description="GPT 응답 생성·페르소나 자동 분류·감정 분석 정지. 안전 평가는 별도 정책."
+                value={suspension.aiAnalysisSuspended}
+                loading={togglingAi}
+                onToggle={toggleAiSuspension}
+              />
+            </Card>
+          </View>
+        )}
+
         <Caption className="text-gray-500 mb-2 mt-2">위험 구간</Caption>
         <Card variant="warning">
           <View className="flex-row items-start gap-3 mb-4">
@@ -241,5 +306,48 @@ export default function DataSettingsScreen() {
         </Card>
       </ScrollView>
     </ScreenWrapper>
+  );
+}
+
+interface SuspensionRowProps {
+  label: string;
+  description: string;
+  value: boolean;
+  loading: boolean;
+  onToggle: () => void;
+}
+
+function SuspensionRow({ label, description, value, loading, onToggle }: SuspensionRowProps) {
+  return (
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value, disabled: loading }}
+      disabled={loading}
+      className="flex-row items-start gap-3 active:opacity-70"
+      style={{ opacity: loading ? 0.5 : 1 }}
+    >
+      <View className="flex-1">
+        <Body className="font-medium mb-1">{label}</Body>
+        <Caption className="text-gray-500 leading-5">{description}</Caption>
+      </View>
+      <View
+        className="px-3 py-1 rounded-full"
+        style={{
+          borderWidth: 1,
+          borderColor: value ? colors.purple[400] : colors.border,
+          backgroundColor: value ? colors.overlayPurpleSoft : 'transparent',
+        }}
+      >
+        <Caption
+          style={{
+            color: value ? colors.purple[400] : colors.gray[400],
+            fontWeight: '600',
+          }}
+        >
+          {value ? '정지됨' : '활성'}
+        </Caption>
+      </View>
+    </Pressable>
   );
 }
