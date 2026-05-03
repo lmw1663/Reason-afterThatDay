@@ -10,7 +10,9 @@
     "typecheck": "npx tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx && node scripts/check-persona-labels.js",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
-    "lint:persona": "node scripts/check-persona-labels.js"
+    "lint:persona": "node scripts/check-persona-labels.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -42,9 +44,9 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@types/react": "19.1.10",
-    "babel-preset-expo": "54.0.10",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
+    "babel-preset-expo": "54.0.10",
     "eslint": "^8.57.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -55,7 +57,8 @@
     "metro-core": "^0.83.7",
     "metro-source-map": "^0.83.7",
     "metro-transform-worker": "^0.83.7",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^4.1.5"
   },
   "overrides": {
     "react": "19.1.0",
