@@ -13,6 +13,12 @@ interface Props {
   secondaryLabel?: string;
   onSecondary?: () => void;
   children?: React.ReactNode;
+  /**
+   * false면 backdrop 탭·하드웨어 백 버튼으로 닫히지 않음.
+   * 위기 평가처럼 *사용자가 끝까지 답해야 하는 흐름*에서 false 사용.
+   * default: true (기존 동작 유지).
+   */
+  dismissable?: boolean;
 }
 
 /**
@@ -32,19 +38,21 @@ export function Modal({
   secondaryLabel,
   onSecondary,
   children,
+  dismissable = true,
 }: Props) {
+  const noop = () => {};
   return (
     <RNModal
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}
+      onRequestClose={dismissable ? onClose : noop}
       accessibilityViewIsModal
     >
       <Pressable
         className="flex-1 items-center justify-center px-8"
         style={{ backgroundColor: colors.overlayBackdropDark }}
-        onPress={onClose}
+        onPress={dismissable ? onClose : noop}
       >
         <Pressable className="w-full" onPress={(e) => e.stopPropagation()}>
           <View className="bg-surface rounded-2xl p-6">
