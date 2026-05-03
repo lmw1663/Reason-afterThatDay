@@ -8,8 +8,9 @@
     "android": "npx expo start --android",
     "web": "npx expo start --web",
     "typecheck": "npx tsc --noEmit",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix"
+    "lint": "eslint . --ext .ts,.tsx && node scripts/check-persona-labels.js",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint:persona": "node scripts/check-persona-labels.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
