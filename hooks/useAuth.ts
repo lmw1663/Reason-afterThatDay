@@ -43,17 +43,21 @@ export function useAuth() {
       .from('users')
       .select('breakup_date, onboarding_completed, consent_versions, consent_accepted_at')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
-    if (data) {
-      if (data.breakup_date) setBreakupDate(parseDateStr(data.breakup_date));
+    // row 자체가 없으면(미동의 신규 사용자) 아무것도 덮어쓰지 않는다.
+    // 동의·온보딩 직후 store에 남아 있는 in-memory 상태가 race로 reset되는 걸 방지.
+    if (!data) return;
+
+    if (data.breakup_date) setBreakupDate(parseDateStr(data.breakup_date));
+    if (typeof data.onboarding_completed === 'boolean') {
       setOnboardingCompleted(data.onboarding_completed);
-      if (data.consent_versions && data.consent_accepted_at) {
-        useUserStore.getState().setConsent(
-          data.consent_versions,
-          new Date(data.consent_accepted_at),
-        );
-      }
+    }
+    if (data.consent_versions && data.consent_accepted_at) {
+      useUserStore.getState().setConsent(
+        data.consent_versions,
+        new Date(data.consent_accepted_at),
+      );
     }
   }
 
@@ -73,19 +77,10 @@ export function useAuth() {
     return data.session;
   }
 
-  async function linkGoogleAccount() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: 'reason://auth/callback' },
-    });
-    if (error) throw error;
-    return data;
-  }
-
   async function signOut() {
     await supabase.auth.signOut();
     useUserStore.getState().reset();
   }
 
-  return { signInAnonymously, getOrCreateSession, linkGoogleAccount, signOut };
+  return { signInAnonymously, getOrCreateSession, signOut };
 }

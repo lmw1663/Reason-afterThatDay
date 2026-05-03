@@ -1,4 +1,5 @@
 import {
+  Apple,
   Archive,
   Award,
   BarChart3,
@@ -14,6 +15,7 @@ import {
   Coffee,
   Compass,
   Feather,
+  Globe,
   GraduationCap,
   Heart,
   HeartHandshake,
@@ -109,6 +111,10 @@ const iconMap = {
 
   // 기타
   clipboard: ClipboardList,
+
+  // OAuth 버튼 — TODO: 정식 브랜드 로고 SVG로 교체. Lucide Apple은 fruit 형태.
+  apple: Apple,
+  globe: Globe,
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconMap;

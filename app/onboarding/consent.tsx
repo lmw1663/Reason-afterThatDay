@@ -46,8 +46,7 @@ export default function ConsentScreen() {
     try {
       const { versions, acceptedAt } = await acceptAllConsents(userId);
       setConsent(versions, new Date(acceptedAt));
-      // A-2 구현 전 임시: 기존 이별 날짜 화면으로. A-2에서 /onboarding/login을 사이에 삽입.
-      router.replace('/onboarding' as never);
+      router.replace('/onboarding/login' as never);
     } catch (e) {
       console.warn('[consent] save failed:', e);
       Alert.alert('저장에 실패했어', '잠시 후 다시 시도해줘');

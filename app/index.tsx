@@ -39,8 +39,7 @@ export default function Index() {
   }
 
   if (!onboardingCompleted) {
-    // A-2 구현 시 /onboarding/login으로 변경. 현재는 기존 이별 날짜 화면으로 직행.
-    return <Redirect href="/onboarding" />;
+    return <Redirect href="/onboarding/login" />;
   }
 
   return <Redirect href="/(tabs)" />;
