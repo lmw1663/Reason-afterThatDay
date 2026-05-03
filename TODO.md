@@ -369,7 +369,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 2. **X-3-잔여** 임계 발동 → UI 노출 통합 (위기 모달·자원 카드 자동)
 3. **X-1-잔여** §37 처리정지권 + Share file URL + 계정 삭제 Edge Function (출시 전)
 4. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-5. **CLAUDE.md vs 참고용.md 시간 표기 통일** — 새벽 boundary 00~04 vs 00~05
+5. ~~**CLAUDE.md vs 참고용.md 시간 표기 통일**~~ — ✅ 본 커밋 (00:00~05:00 즉 0~4시 inclusive로 통일)
 6. **C-2 dogfood 20명** — 베타 트랙으로 분리
 
 ---
