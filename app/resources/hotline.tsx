@@ -5,21 +5,11 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { colors } from '@/constants/colors';
-// 핫라인 정보는 하드코딩 금지 — resources/crisis-hotlines.json 에서만 로드
-import hotlinesData from '@/resources/crisis-hotlines.json';
-
-type Hotline = {
-  id: string;
-  name: string;
-  number: string | null;
-  url?: string;
-  available: string;
-  operator: string;
-  description: string;
-};
+// 핫라인 정보는 하드코딩 금지 — utils/crisisHotlines가 JSON에서 로드
+import { getAllHotlines } from '@/utils/crisisHotlines';
 
 export default function HotlineScreen() {
-  const hotlines = hotlinesData.hotlines as Hotline[];
+  const hotlines = getAllHotlines();
 
   function callNumber(number: string) {
     Linking.openURL(`tel:${number}`);

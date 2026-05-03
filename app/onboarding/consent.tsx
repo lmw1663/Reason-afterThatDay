@@ -125,6 +125,8 @@ export default function ConsentScreen() {
           </View>
         ))}
 
+        {/* 법적 고지 텍스트 — SSOT(crisis-hotlines.json)에서 가져오지 않고 의도적으로 본문에 하드코딩.
+            약관 동의 직전 *불변 고지*가 법적 효력에 더 안전. 번호 변경 시 본 위치도 같이 업데이트. */}
         <View className="mt-6 rounded-xl px-4 py-3" style={{ backgroundColor: colors.overlayPurpleSoft ?? colors.surface }}>
           <Caption className="text-gray-300 leading-5">
             본 서비스는 의료 행위가 아니야. 위기 상황에는 자살예방상담 1393, 정신건강위기상담 1577-0199에 바로 연락해줘.

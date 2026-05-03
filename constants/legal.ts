@@ -6,6 +6,10 @@
  * 본문 변경 시:
  * 1. 여기와 resources/*.md 두 곳 동시 갱신
  * 2. constants/consent.ts의 해당 항목 version을 올려 재동의 강제
+ *
+ * 핫라인 번호(1393·1577-0199 등)가 본문에 하드코딩되어 있다 — 의도적 결정.
+ * 약관·방침은 *법적 고지 텍스트*라 SSOT(crisis-hotlines.json) 동적 lookup보다
+ * 불변 본문이 법적 효력에 더 안전. 번호 변경 시 본 파일도 함께 업데이트.
  */
 
 export const LEGAL_DOCUMENTS = {

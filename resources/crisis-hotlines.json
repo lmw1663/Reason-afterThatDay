@@ -1,6 +1,8 @@
 {
   "_comment": "출시 전 보건복지부 공식 자료로 반드시 재검증. 잘못된 번호는 생명에 직결되는 위험.",
-  "verified_at": "2026-05-02",
+  "_schema_version": 2,
+  "_schema_changes_v2": "B-0-2 — tags, persona_priority, tone, verified_at_per_item 필드 추가. 기존 number/operator 등은 호환 유지.",
+  "verified_at": "2026-05-03",
   "verified_by": "TODO: 운영자명 입력",
   "source_url": "https://www.mohw.go.kr / https://www.mentalhealth.go.kr",
   "hotlines": [
@@ -10,7 +12,11 @@
       "number": "1393",
       "available": "24시간",
       "operator": "보건복지부",
-      "description": "자살 위기 상담, 정서적 지지, 전문 연결"
+      "description": "자살 위기 상담, 정서적 지지, 전문 연결",
+      "tags": ["suicide", "crisis", "general"],
+      "persona_priority": ["P10", "P14"],
+      "tone": "honorific",
+      "verified_at": "2026-05-02"
     },
     {
       "id": "mental_health_crisis",
@@ -18,7 +24,11 @@
       "number": "1577-0199",
       "available": "24시간",
       "operator": "정신건강복지센터",
-      "description": "정신건강 위기 상담 및 지역사회 연계"
+      "description": "정신건강 위기 상담 및 지역사회 연계",
+      "tags": ["mental_health", "general", "anxiety", "depression"],
+      "persona_priority": ["P03", "P04", "P05", "P07", "P10", "P13", "P14"],
+      "tone": "honorific",
+      "verified_at": "2026-05-02"
     },
     {
       "id": "youth",
@@ -26,7 +36,11 @@
       "number": "1388",
       "available": "24시간",
       "operator": "여성가족부",
-      "description": "청소년 고민, 위기 상담 (24세 이하)"
+      "description": "청소년 고민, 위기 상담 (24세 이하)",
+      "tags": ["youth", "general"],
+      "persona_priority": ["P07"],
+      "tone": "honorific",
+      "verified_at": "2026-05-02"
     },
     {
       "id": "women_emergency",
@@ -34,7 +48,11 @@
       "number": "1366",
       "available": "24시간",
       "operator": "여성가족부",
-      "description": "여성 폭력 피해, 위기 지원"
+      "description": "여성 폭력 피해, 위기 지원 (가정폭력·성폭력·스토킹)",
+      "tags": ["domestic_violence", "abuse", "stalking", "sexual_violence"],
+      "persona_priority": ["P01", "P20"],
+      "tone": "honorific",
+      "verified_at": "2026-05-02"
     },
     {
       "id": "welfare_counseling",
@@ -42,7 +60,11 @@
       "number": "129",
       "available": "24시간",
       "operator": "보건복지부",
-      "description": "복지 서비스, 정신건강 상담 연계"
+      "description": "복지 서비스, 정신건강 상담 연계",
+      "tags": ["welfare", "general"],
+      "persona_priority": [],
+      "tone": "honorific",
+      "verified_at": "2026-05-02"
     },
     {
       "id": "lifeline_online",
@@ -51,7 +73,104 @@
       "url": "https://www.lifeline.or.kr",
       "available": "온라인",
       "operator": "한국생명의전화",
-      "description": "온라인 채팅 상담 (익명 가능)"
+      "description": "온라인 채팅 상담 (익명 가능)",
+      "tags": ["online", "anonymous", "general"],
+      "persona_priority": [],
+      "tone": "honorific",
+      "verified_at": "2026-05-02"
+    },
+    {
+      "id": "sexual_violence_counseling",
+      "name": "한국성폭력상담소",
+      "number": "02-338-5801",
+      "url": "https://www.sisters.or.kr",
+      "available": "평일 10:00-17:00 (시간 외 1366 안내)",
+      "operator": "한국성폭력상담소",
+      "description": "성폭력 피해 전문 상담·법률·의료 지원 (P01·P20 페르소나 우선 자원)",
+      "tags": ["sexual_violence", "abuse", "legal_support"],
+      "persona_priority": ["P01", "P20"],
+      "tone": "honorific",
+      "verified_at": "2026-05-03",
+      "_verification_note": "TODO: 출시 전 운영 시간·번호 재확인. 사전 통보 필요."
+    },
+    {
+      "id": "korean_women_hotline",
+      "name": "한국여성의전화",
+      "number": "02-2263-6464",
+      "url": "https://hotline.or.kr",
+      "available": "평일 10:00-17:00 (시간 외 1366 안내)",
+      "operator": "한국여성의전화",
+      "description": "가정폭력·데이트폭력·스토킹 등 친밀한 관계 폭력 전문 (P01·P20 페르소나 우선)",
+      "tags": ["domestic_violence", "dating_violence", "stalking", "abuse"],
+      "persona_priority": ["P01", "P20"],
+      "tone": "honorific",
+      "verified_at": "2026-05-03",
+      "_verification_note": "TODO: 출시 전 운영 시간·번호 재확인. 사전 통보 필요."
+    },
+    {
+      "id": "grief_clinic_referral",
+      "name": "복합비애·사별 전문 안내",
+      "number": null,
+      "url": "https://www.knpa.or.kr",
+      "available": "안내",
+      "operator": "대한정신건강의학과학회",
+      "description": "사별·복합비애 전문 진료 안내 (단일 핫라인 없음, 학회 자료 경유 → 대학병원 정신건강의학과 안내)",
+      "tags": ["grief", "bereavement", "complicated_grief"],
+      "persona_priority": ["P13"],
+      "tone": "honorific",
+      "verified_at": "2026-05-03",
+      "_verification_note": "TODO: 학회 공식 사별/비탄 클리닉 안내 페이지 URL 확정. 현재는 학회 메인 URL — 더 구체적인 자료 페이지로 교체 권장."
+    },
+    {
+      "id": "ocd_specialist_referral",
+      "name": "강박장애 전문 안내",
+      "number": null,
+      "url": "https://www.ncmh.go.kr",
+      "available": "안내",
+      "operator": "국립정신건강센터",
+      "description": "관계 강박(ROCD) 등 강박장애 전문 진료 기관 안내 (P19 페르소나 우선 — 3회 번복 누적 시 자동 노출)",
+      "tags": ["ocd", "obsessive_compulsive", "specialist_referral"],
+      "persona_priority": ["P19"],
+      "tone": "honorific",
+      "verified_at": "2026-05-03",
+      "_verification_note": "TODO: 국립정신건강센터의 ROCD 안내 페이지 또는 서울대병원 강박장애센터 등 더 구체적 URL로 교체 권장."
+    },
+    {
+      "id": "trauma_specialist_referral",
+      "name": "트라우마 전문 안내",
+      "number": null,
+      "url": "https://kstss.kr",
+      "available": "안내",
+      "operator": "한국트라우마스트레스학회",
+      "description": "트라우마 본딩·복합 PTSD 전문 진료 기관 안내 (P20 페르소나 우선)",
+      "tags": ["trauma", "ptsd", "trauma_bonding", "specialist_referral"],
+      "persona_priority": ["P20"],
+      "tone": "honorific",
+      "verified_at": "2026-05-03",
+      "_verification_note": "TODO: 학회 URL 도메인·작동 여부 확인. 학회는 직접 핫라인 미운영 — 자료 안내 페이지 또는 회원 의료기관 검색 페이지로 연결 권장."
     }
-  ]
+  ],
+  "_persona_mapping_summary": {
+    "_note": "매트릭스 §2 C10 셀의 페르소나별 우선 핫라인 매핑 요약. 각 페르소나 진입 시 priority 순으로 노출.",
+    "P01": ["women_emergency", "sexual_violence_counseling", "korean_women_hotline", "mental_health_crisis"],
+    "P02": ["mental_health_crisis"],
+    "P03": ["mental_health_crisis"],
+    "P04": ["mental_health_crisis"],
+    "P05": ["mental_health_crisis"],
+    "P06": ["mental_health_crisis"],
+    "P07": ["youth", "mental_health_crisis"],
+    "P08": ["mental_health_crisis"],
+    "P09": ["mental_health_crisis"],
+    "P10": ["mental_health_crisis", "suicide_prevention"],
+    "P11": ["mental_health_crisis"],
+    "P12": ["mental_health_crisis"],
+    "P13": ["grief_clinic_referral", "mental_health_crisis"],
+    "P14": ["suicide_prevention", "mental_health_crisis"],
+    "P15": ["mental_health_crisis"],
+    "P16": ["mental_health_crisis"],
+    "P17": ["mental_health_crisis"],
+    "P18": ["mental_health_crisis"],
+    "P19": ["ocd_specialist_referral", "mental_health_crisis"],
+    "P20": ["women_emergency", "korean_women_hotline", "trauma_specialist_referral", "mental_health_crisis"]
+  }
 }
