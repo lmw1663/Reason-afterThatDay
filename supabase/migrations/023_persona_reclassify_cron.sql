@@ -27,7 +27,30 @@ select cron.schedule(
   $$
 );
 
--- 운영 메모:
---  app.supabase_url과 app.supabase_service_role_key는 Supabase Dashboard의
---  Settings > Database > Custom config에서 설정 필요.
---  설정 안 됐으면 cron job이 실패하므로 배포 전 반드시 확인.
+-- 운영 메모 (출시 전 필수):
+--
+--  현재 본 SQL은 current_setting('app.*')로 평문 변수를 읽음. 개발 단계엔 동작하지만
+--  출시 운영 환경에선 service_role_key를 평문 GUC에 두는 것은 보안상 부적절.
+--
+--  **출시 전 마이그레이션 작성 필요**: 024_persona_reclassify_cron_vault.sql
+--    1. Supabase Vault에 secrets 등록:
+--         select vault.create_secret('https://xxxx.supabase.co', 'project_url');
+--         select vault.create_secret('eyJhbG...', 'service_role_key');
+--    2. 본 cron job을 unschedule 후 vault 호출 버전으로 재등록:
+--         select cron.unschedule('persona-reclassify-daily');
+--         select cron.schedule('persona-reclassify-daily', '0 15 * * *', $$
+--           select net.http_post(
+--             url := (select decrypted_secret from vault.decrypted_secrets where name = 'project_url')
+--                    || '/functions/v1/persona-reclassify-cron',
+--             headers := jsonb_build_object(
+--               'Content-Type', 'application/json',
+--               'Authorization', 'Bearer ' ||
+--                 (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key')
+--             ),
+--             body := '{}'::jsonb
+--           );
+--         $$);
+--
+--  ⚠️ 주의: 환경에 따라 ALTER DATABASE SET app.* 호출이 permission denied될 수 있음.
+--   Supabase 매니지드 환경에선 GUC 설정 권한 제한적이라, **Vault 사용이 사실상 정도**.
+--   본 023은 *개발 환경 동작 확인용*, 운영은 024(Vault) 필수.
