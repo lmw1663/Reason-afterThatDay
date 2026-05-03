@@ -17,6 +17,14 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { ErrorToast } from '@/components/ui/ErrorToast';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import {
+  isSealRecommended,
+  isDeclutterRecommended,
+  isContinuingBondsRecommended,
+  isEncounterPlanRecommended,
+} from '@/constants/personaBranches';
+import { resolvePersona, appliesRecommendation } from '@/utils/personaResolver';
 import {
   addMemoryLog,
   deleteMemoryLog,
@@ -44,8 +52,20 @@ const CATEGORY_META: Record<MemoryCategory, CategoryMeta> = CATEGORIES.reduce(
   {} as Record<MemoryCategory, CategoryMeta>,
 );
 
+// G-7c-6: 페르소나별 권장 의식 트랙 진입 카드.
+// effective(주) 페르소나 기준으로 권장 트랙 1개만 prominent 노출 — R5 부의 권장 차단.
+// 4 트랙은 상호 배제(`isXxxRecommended`)이므로 최대 1개만 매칭.
+interface RecommendedTrack {
+  route: string;
+  title: string;
+  subtitle: string;
+  icon: IconName;
+}
+
 export default function MemoryLogScreen() {
   const { userId } = useUserStore();
+  const personaPrimary = usePersonaStore((s) => s.primary);
+  const personaSecondary = usePersonaStore((s) => s.secondary);
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<MemoryLog[]>([]);
   const [content, setContent] = useState('');
@@ -53,6 +73,17 @@ export default function MemoryLogScreen() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<MemoryCategory | 'all'>('all');
   const [error, setError] = useState<string | null>(null);
+
+  const resolved = resolvePersona(personaPrimary, personaSecondary);
+  const recommendedTrack: RecommendedTrack | null = appliesRecommendation(resolved, isSealRecommended)
+    ? { route: '/memory/seal', title: '있던 시간 그대로 두기', subtitle: '부정 없이 보관해두는 의식', icon: 'archive' }
+    : appliesRecommendation(resolved, isDeclutterRecommended)
+    ? { route: '/memory/declutter', title: '물건 정리 워크시트', subtitle: '정리 작업과 마음 정리를 분리해보자', icon: 'clipboard' }
+    : appliesRecommendation(resolved, isContinuingBondsRecommended)
+    ? { route: '/memory/continuing-bonds', title: '관계의 의미 정리', subtitle: '왜 헤어졌는지와는 별개로 남은 것들', icon: 'heart-handshake' }
+    : appliesRecommendation(resolved, isEncounterPlanRecommended)
+    ? { route: '/memory/encounter-plan', title: '마주칠 일상 정리', subtitle: '예측할 수 있으면 덜 흔들려', icon: 'map-pin' }
+    : null;
 
   useEffect(() => {
     if (!userId) {
@@ -131,6 +162,27 @@ export default function MemoryLogScreen() {
         <Caption className="text-gray-500 mb-6">
           정답은 없어. 너의 속도로 적어두면 돼.
         </Caption>
+
+        {/* G-7c-6: 페르소나 권장 트랙 prominent 카드 (effective 기준 1개만) */}
+        {recommendedTrack && (
+          <Pressable
+            onPress={() => router.push(recommendedTrack.route as never)}
+            accessibilityRole="button"
+            accessibilityLabel={`${recommendedTrack.title} 화면으로 이동`}
+            className="active:opacity-70"
+          >
+            <Card variant="accent" className="mb-6">
+              <View className="flex-row items-center gap-3">
+                <Icon name={recommendedTrack.icon} size={20} color={colors.purple[400]} />
+                <View className="flex-1">
+                  <Body className="font-medium mb-1">{recommendedTrack.title}</Body>
+                  <Caption className="text-gray-500">{recommendedTrack.subtitle}</Caption>
+                </View>
+                <Icon name="chevron-right" size={16} color={colors.purple[400]} />
+              </View>
+            </Card>
+          </Pressable>
+        )}
 
         {/* 입력 영역 */}
         <Card className="mb-4">
