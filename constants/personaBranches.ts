@@ -58,3 +58,48 @@ const SHAME_GUILT_EDU_PERSONAS: PersonaCode[] = ['P14'];
 export function shouldShowShameGuiltEducation(p: PersonaCode | null): boolean {
   return p !== null && SHAME_GUILT_EDU_PERSONAS.includes(p);
 }
+
+// ───────── G-4 나침반 modifier ─────────
+
+/**
+ * 나침반 진입 D+N 게이트 — baseline D+7. 페르소나별 더 늦게 (매트릭스 §2 C4).
+ * P17은 도메인 부적합으로 *영구 비활성* (별도 isCompassDisabled 사용).
+ */
+export function getCompassGateDays(p: PersonaCode | null): number {
+  switch (p) {
+    case 'P02': return 10;  // 회피형 — 늦게
+    case 'P04': return 14;  // 갑작스러운 통보 — 충격 단계 후
+    case 'P07': return 21;  // 첫 이별 — 비교 대상 부재
+    default:    return 7;   // baseline
+  }
+}
+
+/**
+ * 나침반 자체 비활성 페르소나 (매트릭스 §2 C4).
+ * P17(강제 이별) — *결정·방향 차원 부적합*. 본인 결정이 아니라 수용 작업이 우선.
+ */
+const COMPASS_DISABLED_PERSONAS: PersonaCode[] = ['P17'];
+
+export function isCompassDisabledByPersona(p: PersonaCode | null): boolean {
+  return p !== null && COMPASS_DISABLED_PERSONAS.includes(p);
+}
+
+/**
+ * 나침반 verdict 화면 후미 텍스트 (매트릭스 §2 C4).
+ * - P01·P20: "너의 잘못이 아니야" 강제 (자기 판단 손상·트라우마 본딩 자책 차단)
+ * - P19: "지금은 결정 안 해도 괜찮아" (강박 vs 결정 추구 분리)
+ * - P14: "행동 단위로 분해하자" (가해자 자기 정당화 차단)
+ */
+export function getCompassVerdictFooter(p: PersonaCode | null): string | null {
+  switch (p) {
+    case 'P01':
+    case 'P20':
+      return '너의 잘못이 아니야. 사실을 사실대로 본 거야.';
+    case 'P19':
+      return '지금은 결정 안 해도 괜찮아. 결정을 미루는 것도 결정이야.';
+    case 'P14':
+      return '결정의 정당화 대신, 다음 행동을 한 가지만 정해보자.';
+    default:
+      return null;
+  }
+}

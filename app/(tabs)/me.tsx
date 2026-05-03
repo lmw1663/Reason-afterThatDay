@@ -8,6 +8,11 @@ import { Card } from '@/components/ui/Card';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { isAppLocked } from '@/api/safety';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import {
+  getCompassGateDays,
+  isCompassDisabledByPersona,
+} from '@/constants/personaBranches';
 
 /**
  * [나] 탭 — A-3·A-5
@@ -23,8 +28,16 @@ const SELF_INSIGHT_GATE_DAYS = 7;
 
 export default function MeScreen() {
   const { userId, daysElapsed } = useUserStore();
+  const personaPrimary = usePersonaStore(s => s.primary);
+
+  // 분석은 baseline D+7. 나침반은 페르소나별 게이트 (C-2-G-4): P02=10, P04=14, P07=21.
   const insightUnlocked = daysElapsed >= SELF_INSIGHT_GATE_DAYS;
-  const daysLeft = Math.max(0, SELF_INSIGHT_GATE_DAYS - daysElapsed);
+  const compassGateDays = getCompassGateDays(personaPrimary);
+  const compassUnlocked = daysElapsed >= compassGateDays;
+  const compassDisabled = isCompassDisabledByPersona(personaPrimary);
+
+  const insightDaysLeft = Math.max(0, SELF_INSIGHT_GATE_DAYS - daysElapsed);
+  const compassDaysLeft = Math.max(0, compassGateDays - daysElapsed);
 
   // B-1 안전 잠금 — C-SSRS urgent/high 양성 시 결정 트랙 차단
   const [decisionLocked, setDecisionLocked] = useState(false);
@@ -35,8 +48,9 @@ export default function MeScreen() {
       .catch(() => {/* fail open — 잠금 조회 실패 시 보수적으로 unlocked */});
   }, [userId]);
 
-  // 분석·나침반 진입 가능 여부 — D+7 게이트 + 안전 잠금 모두 통과해야
-  const canEnterDecision = insightUnlocked && !decisionLocked;
+  // 분석/나침반 진입 가능 여부
+  const canEnterAnalysis = insightUnlocked && !decisionLocked;
+  const canEnterCompass = compassUnlocked && !decisionLocked && !compassDisabled;
 
   return (
     <ScreenWrapper>
@@ -59,7 +73,7 @@ export default function MeScreen() {
             onPress={() => router.push('/about-me' as never)}
           />
 
-          {/* 분석·나침반 — D+7 baseline 게이트 + B-1 안전 잠금 (decision_locked) */}
+          {/* 분석 — D+7 baseline 게이트 + B-1 안전 잠금 */}
           <MeCard
             icon="search"
             title="관계 분석"
@@ -68,23 +82,25 @@ export default function MeScreen() {
                 ? '안전 확인 후 다시 만나자'
                 : insightUnlocked
                   ? '장단점·이유·역할 정리'
-                  : `${daysLeft}일 뒤 — 지금은 자신을 살피는 시간`
+                  : `${insightDaysLeft}일 뒤 — 지금은 자신을 살피는 시간`
             }
-            disabled={!canEnterDecision}
+            disabled={!canEnterAnalysis}
             onPress={() => router.push('/analysis/pros-cons' as never)}
           />
-          {/* TODO Phase C: 페르소나별 진입 시점 다름. P02=D+10, P04=D+14, P07=D+21, P13/P17=비활성. 매트릭스 §2 C4 참조 */}
+          {/* 나침반 — 페르소나별 게이트 (C-2-G-4) + 안전 잠금 + P17 영구 비활성 */}
           <MeCard
             icon="compass"
             title="오늘의 방향"
             subtitle={
               decisionLocked
                 ? '안전 확인 후 다시 만나자'
-                : insightUnlocked
-                  ? '지금 마음이 어디를 향하는지'
-                  : `${daysLeft}일 뒤 — 결정보다 머무는 시간`
+                : compassDisabled
+                  ? '지금은 결정보다 *수용*에 집중하자'
+                  : compassUnlocked
+                    ? '지금 마음이 어디를 향하는지'
+                    : `${compassDaysLeft}일 뒤 — 결정보다 머무는 시간`
             }
-            disabled={!canEnterDecision}
+            disabled={!canEnterCompass}
             onPress={() => router.push('/compass' as never)}
           />
         </View>

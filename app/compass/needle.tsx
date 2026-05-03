@@ -7,6 +7,8 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import { getCompassVerdictFooter } from '@/constants/personaBranches';
 import { ErrorToast } from '@/components/ui/ErrorToast';
 import { useDecisionStore } from '@/store/useDecisionStore';
 import { useUserStore } from '@/store/useUserStore';
@@ -23,6 +25,8 @@ export default function CompassNeedleScreen() {
   }>();
   const { addDecision } = useDecisionStore();
   const { userId, daysElapsed } = useUserStore();
+  const personaPrimary = usePersonaStore(s => s.primary);
+  const personaFooter = getCompassVerdictFooter(personaPrimary);
   const [saveError, setSaveError] = useState(false);
 
   const diff = Number(params.finalScore ?? '0');
@@ -158,6 +162,13 @@ export default function CompassNeedleScreen() {
             이 나침반은 D+{daysElapsed} 시점의 너를 가리키고 있어.{'\n'}한 달 뒤엔 다르게 가리킬 수도 있어.
           </Body>
         </Card>
+
+        {/* C-2-G-4: 페르소나별 verdict 후미 텍스트 (P01·P19·P20·P14 등) */}
+        {personaFooter && (
+          <Card variant="subtle" accent="purple" tone="weak" className="mb-4">
+            <Body className="text-purple-300 text-sm leading-6">{personaFooter}</Body>
+          </Card>
+        )}
 
         {/* 절대 규칙: "정답이 아니야" 문구 필수 */}
         <Card variant="subtle" accent="purple" tone="weak" className="mb-6">
