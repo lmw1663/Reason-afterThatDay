@@ -42,7 +42,9 @@ export const PERSONA_CARDS: Record<PersonaCode, PersonaCard | null> = {
   P10: { icon: 'sparkles',        title: '몸을 흔들어보자',            subtitle: '운동·찬물 세수·부치지 않을 편지',   route: '/journal/today' },
   P11: { icon: 'heart-handshake', title: '오늘의 작은 루틴 1개',       subtitle: '두 마음이 같이 있는 게 정상',       route: '/about-me' },
   P12: null,
-  P13: { icon: 'feather',         title: '추모 안내',                  subtitle: '사별 회복 전문 자원 보기',          route: '/graduation-paused' },
+  // P13 사별 — 본 앱은 이별 회복 도메인이라 P13은 분류·노출 안 함 (C-1-2).
+  // 일기 NLP에서 사망 언급 감지 시 위기 모달이 별도로 사별 자원 안내.
+  P13: null,
   P14: { icon: 'clipboard',       title: '책임 행동 분해',             subtitle: '사과·관계 회피·재발 방지를 행동으로', route: '/about-me' },
   P15: { icon: 'archive',         title: '행정 체크리스트',            subtitle: '짐·계약·청구·주소이전·공동계좌',     route: '/cooling' },
   P16: { icon: 'users',           title: '법률·재무 자원',             subtitle: '회복은 주(weeks) 단위로',           route: '/about-me' },

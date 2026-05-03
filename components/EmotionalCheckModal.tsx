@@ -15,6 +15,31 @@ import {
 } from '@/api/safety';
 import { getHotlinesForPersona, type Hotline } from '@/utils/crisisHotlines';
 
+/**
+ * 위기 모달 트리거 타입.
+ *
+ * - consecutive_low: 3일 연속 mood_score 1~2점 (기존 안전장치 7-4)
+ * - late_night: 새벽(00~04시) 진입 (기존 안전장치 7-4)
+ * - crisis_screen: C-SSRS 6항 평가 4단계 흐름 (B-1)
+ *
+ * ─────────────────────────────────────────────────────────────────────────
+ * TODO C-1-2 후속: 사별 키워드 감지 안전망 (별도 task)
+ * ─────────────────────────────────────────────────────────────────────────
+ * 본 앱은 이별 회복 도메인이라 사별(P13)을 페르소나로 분류하지 않지만,
+ * *우연 진입한 사별 사용자*가 일기에 사망 관련 표현을 적을 때 안전망이 필요.
+ *
+ * 구현 단계:
+ *  1. EmotionalCheckType union에 'bereavement_keyword_in_journal' 추가
+ *  2. utils/journalNlp.ts (신규) — checkBereavementKeywords(text: string): boolean
+ *     키워드 후보(한국어): "사망", "돌아가셨", "장례", "장례식", "기일", "유서", "추모", "고인"
+ *     (false positive 최소화 위해 *문맥 보정* 필요 — 예: "장례문화" 등 일반 단어 제외)
+ *  3. hooks/useEmotionalSafety.ts에 checkBereavementKeyword 추가 — 일기 저장 직후 호출
+ *  4. 본 모달의 SIMPLE_MESSAGES에 'bereavement_keyword_in_journal' 케이스 추가 —
+ *     "사별의 슬픔은 결이 달라" + `crisis-hotlines.json`의 `grief_clinic_referral` 자원 1탭 안내
+ *  5. CrisisScreenFlow와 분리 — 키워드 트리거는 *안내*만, C-SSRS 평가는 강제하지 않음
+ *
+ * 우선순위: P2 (C-1-2가 도메인 정책만 정리, 안전망 구현은 별도). Phase D 또는 E에서 일정.
+ */
 export type EmotionalCheckType = 'consecutive_low' | 'late_night' | 'crisis_screen';
 
 interface EmotionalCheckModalProps {
