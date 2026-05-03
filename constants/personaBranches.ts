@@ -303,6 +303,16 @@ export function getMemoryReflectGateDays(p: PersonaCode | null): number {
   return 0;
 }
 
+/**
+ * "떠올랐어" 카운터·추세 위젯 노출 페르소나 (매트릭스 §2 C7 P09).
+ * 헌신 소진형 사용자에게 회복 진전 시각화로 도움.
+ */
+const INTRUSIVE_TREND_PERSONAS: PersonaCode[] = ['P09'];
+
+export function shouldShowIntrusiveTrend(p: PersonaCode | null): boolean {
+  return p !== null && INTRUSIVE_TREND_PERSONAS.includes(p);
+}
+
 // ───────── Ref-3 새벽 푸시 차단 (참고용 §2 P03) ─────────
 
 /**

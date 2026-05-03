@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
@@ -5,6 +6,10 @@ import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
 import { colors } from '@/constants/colors';
+import { useUserStore } from '@/store/useUserStore';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import { shouldShowIntrusiveTrend } from '@/constants/personaBranches';
+import { getIntrusiveMemoryTrend } from '@/api/intrusiveMemory';
 
 /**
  * [기록] 탭 — A-3
@@ -16,6 +21,19 @@ import { colors } from '@/constants/colors';
  *  - 추억은 기존 /memories
  */
 export default function RecordsScreen() {
+  const { userId } = useUserStore();
+  const personaPrimary = usePersonaStore(s => s.primary);
+  const showIntrusiveTrend = shouldShowIntrusiveTrend(personaPrimary);
+
+  // C-2-G-7b: P09 떠올랐어 카운터·추세 (헌신 소진형 회복 진전 시각화)
+  const [trend, setTrend] = useState<{ recent: number; previous: number } | null>(null);
+  useEffect(() => {
+    if (!userId || !showIntrusiveTrend) return;
+    void getIntrusiveMemoryTrend(userId, 7)
+      .then(setTrend)
+      .catch(() => {/* fail open — 위젯 미노출 */});
+  }, [userId, showIntrusiveTrend]);
+
   return (
     <ScreenWrapper>
       <ScrollView
@@ -27,6 +45,27 @@ export default function RecordsScreen() {
         <Body className="text-gray-400 mb-8">
           그동안 적은 일기와 회상, 회복의 흔적이 모여 있어.
         </Body>
+
+        {/* C-2-G-7b: P09 떠올랐어 추세 카드 — 헌신 소진형만 노출 */}
+        {showIntrusiveTrend && trend && (
+          <Card className="p-4 mb-3">
+            <View className="flex-row items-start gap-3">
+              <Icon name="trending-up" size={20} color={colors.purple[400]} />
+              <View className="flex-1">
+                <Body className="font-medium mb-1">
+                  지난 7일: {trend.recent}번 떠올랐어
+                </Body>
+                <Caption className="text-gray-400 leading-5">
+                  {trend.recent < trend.previous
+                    ? `그 전 7일(${trend.previous}번)보다 줄었어. 회복이 진행 중이야.`
+                    : trend.recent === trend.previous
+                      ? `그 전 7일과 같아. 평소대로 너를 돌봐주자.`
+                      : `그 전 7일(${trend.previous}번)보다 늘었어. 천천히 자기 욕구를 살펴보자.`}
+                </Caption>
+              </View>
+            </View>
+          </Card>
+        )}
 
         <View className="gap-3">
           <RecordCard
