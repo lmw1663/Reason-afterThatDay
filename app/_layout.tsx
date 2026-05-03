@@ -7,6 +7,7 @@ import { useQuestionPool } from '@/hooks/useQuestionPool';
 import { useAuth } from '@/hooks/useAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { usePersonaReclassify } from '@/hooks/usePersonaReclassify';
 
 // NativeWind v4가 Pressable active: 클래스를 Reanimated로 처리하는 과정에서 발생하는 라이브러리 경고
 LogBox.ignoreLogs([
@@ -18,6 +19,7 @@ function AppBootstrap() {
   useQuestionPool();
   usePushNotifications();
   useOfflineSync();
+  usePersonaReclassify();
   return null;
 }
 
