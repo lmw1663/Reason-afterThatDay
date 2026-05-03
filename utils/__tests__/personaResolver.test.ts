@@ -148,6 +148,17 @@ describe('resolvePersona — 매트릭스 미명세 케이스 (코드 동작 잠
       guardOverlay: 'P15',
     });
   });
+
+  it('P12 + P14 — R3가 R2(부 HARMFUL)보다 앞: effective=P14로 자기 용서 게이트 보존', () => {
+    // P12 baseline + P14(A_safety, HARMFUL). R2는 *주*가 HARMFUL일 때만 발동 → 통과.
+    // R3 진입(P12 주 + 부) → effective=P14, overlay=null. P14의 자기 용서 D+60 게이트는
+    // isSelfForgivenessUnlocked(effective, days) 호출 시 effective=P14에서 그대로 잡힘.
+    expect(resolvePersona('P12', 'P14')).toEqual({
+      source: 'secondary',
+      effective: 'P14',
+      guardOverlay: null,
+    });
+  });
 });
 
 describe('appliesGuard — effective + overlay 양쪽 검사 (OR)', () => {

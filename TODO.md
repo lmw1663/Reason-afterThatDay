@@ -252,7 +252,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | C-3-H-적용 | 4 핵심 화면 마이그레이션 (pros-cons·analysis _layout·me·memory) | §4-2 | ✅ | 5912578 |
 | C-3-H-잔존 | journal/index.tsx 분기 마이그레이션 (R5 권장형 — effective만 검사) | — | ✅ | (본 커밋) |
 | C-3-H-test | 충돌 8 케이스 + 헬퍼 4종 단위 테스트 (vitest 인프라 신설) | §4-2 | ✅ | 344304c |
-| C-3-H-test+ | resolvePersonaPriority 직접 검증 + 매트릭스 미명세 잠금 (P12+P01·P15+P03) — opus 후속 3건 | §4 | ✅ | (본 커밋) |
+| C-3-H-test+ | resolvePersonaPriority 직접 검증 + 매트릭스 미명세 잠금 (P12+P01·P15+P03) — opus 후속 3건 | §4 | ✅ | 936be16 |
+| C-3-H-test++ | 라인 ref 주석 + isSelfForgivenessUnlocked D+60 게이트 + P12+P14 잠금 — opus 선택 권고 2건 | §4 + Ref-4 | ✅ | (본 커밋) |
 
 ## C-4. 나침반 재설계 (본 대화에서 도출된 임상 결함 보강)
 
@@ -347,7 +348,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 - C-1 페르소나 인프라: `8a8090c~3f8923a`
 - C-2 G 시리즈: `8fb8d05` G-2 → `c4d6562` G-3a → `527086b` G-3b → `22ddd8c` G-4 → `2b7164e` G-5a → `eb9f93e` G-6 → `93e9541` G-7a → `ee76a25` G-7b → `165c060` G-10
 - C-2-Ref 참고용: `d614c74` Ref-1 → `a886c2c` Ref-2/4/5 헬퍼 → `6a35a6b` Ref-3 → `cc31e17` Ref-4 → `1908c43` Ref-5
-- C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → (본 커밋) C-3-H-test+ 51 PASS (opus 후속 3건)
+- C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → `936be16` C-3-H-test+ 51 PASS (opus 후속 3건) → (본 커밋) C-3-H-test++ 59 PASS (선택 권고 2건)
 
 ## 다음 할 일 (우선순위 순)
 
