@@ -2,6 +2,10 @@ import { describe, it, expect } from 'vitest';
 import {
   resolvePersonaPriority,
   isSelfForgivenessUnlocked,
+  isSealRecommended,
+  isDeclutterRecommended,
+  isContinuingBondsRecommended,
+  isEncounterPlanRecommended,
 } from '@/constants/personaBranches';
 import type { PersonaCode } from '@/utils/personaClassifier';
 
@@ -133,5 +137,43 @@ describe('isSelfForgivenessUnlocked — P14 D+60 게이트 (personaBranches.ts:2
     it('null + D+0 → true (분류 미정도 미적용)', () => {
       expect(isSelfForgivenessUnlocked(null, 0)).toBe(true);
     });
+  });
+});
+
+// G-7c 회상 의식 트랙 4종 — 매트릭스 §2 C7 P08·P15·P17·P18.
+// 한 페르소나당 *최대 1개 트랙* 권장의 상호 배제 구조 잠금.
+describe('G-7c 회상 의식 트랙 헬퍼 (personaBranches.ts G-7c 섹션)', () => {
+  const tracks: Array<{
+    name: string;
+    fn: (p: PersonaCode | null) => boolean;
+    persona: PersonaCode;
+  }> = [
+    { name: 'isSealRecommended', fn: isSealRecommended, persona: 'P08' },
+    { name: 'isDeclutterRecommended', fn: isDeclutterRecommended, persona: 'P15' },
+    { name: 'isContinuingBondsRecommended', fn: isContinuingBondsRecommended, persona: 'P17' },
+    { name: 'isEncounterPlanRecommended', fn: isEncounterPlanRecommended, persona: 'P18' },
+  ];
+
+  for (const t of tracks) {
+    describe(t.name, () => {
+      it(`권장 페르소나(${t.persona}) → true`, () => {
+        expect(t.fn(t.persona)).toBe(true);
+      });
+      it('비권장 페르소나(P10) → false', () => {
+        expect(t.fn('P10')).toBe(false);
+      });
+      it('null → false', () => {
+        expect(t.fn(null)).toBe(false);
+      });
+    });
+  }
+
+  it('상호 배제 — 각 권장 페르소나는 자기 트랙만 true (다른 3 트랙 모두 false)', () => {
+    for (const t of tracks) {
+      const others = tracks.filter((o) => o !== t);
+      for (const other of others) {
+        expect(other.fn(t.persona)).toBe(false);
+      }
+    }
   });
 });

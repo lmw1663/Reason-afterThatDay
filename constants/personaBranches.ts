@@ -313,6 +313,56 @@ export function shouldShowIntrusiveTrend(p: PersonaCode | null): boolean {
   return p !== null && INTRUSIVE_TREND_PERSONAS.includes(p);
 }
 
+// ───────── G-7c 페르소나별 회상 의식 트랙 (매트릭스 §2 C7 P08·P15·P17·P18) ─────────
+//
+// 각 트랙은 *권장형* 분기 — appliesRecommendation(resolved, isXxxRecommended) 패턴으로
+// effective 페르소나만 검사 (R5 부의 권장 차단 원칙). 한 페르소나당 *최대 1개 트랙*만
+// 권장되는 상호 배제 구조 (페르소나 라벨 비노출 + 사용자 혼란 방지).
+
+/**
+ * 부정 없는 봉인 의식 권장 페르소나 — P08 권태로 끝난 장기 관계.
+ * 분노·배신감 라벨 강요 없이 함께한 5+년 시간의 의미를 *그대로 보관*하는 의식.
+ * 매트릭스 §2 C7 line 158: "부정 없이 봉인 옵션 (태우지 않고 보관)".
+ */
+const SEAL_RECOMMENDED: PersonaCode[] = ['P08'];
+
+export function isSealRecommended(p: PersonaCode | null): boolean {
+  return p !== null && SEAL_RECOMMENDED.includes(p);
+}
+
+/**
+ * 짐 정리 의식 권장 페르소나 — P15 동거 정리.
+ * 사진·물건 분류 워크시트로 *행정·감정 분리* 트랙 진입.
+ * 매트릭스 §2 C7 line 268: "짐 정리 의식 (사진·물건 분류 워크시트)".
+ */
+const DECLUTTER_RECOMMENDED: PersonaCode[] = ['P15'];
+
+export function isDeclutterRecommended(p: PersonaCode | null): boolean {
+  return p !== null && DECLUTTER_RECOMMENDED.includes(p);
+}
+
+/**
+ * Continuing Bonds 회상 권장 페르소나 — P17 강제 이별.
+ * 본인 결정 아닌 이별의 *관계 가치 자체*는 분리해 보존 (catch/let_go 무의미).
+ * 매트릭스 §2 C7 line 300: "관계 가치 보존 회상 (Continuing Bonds)".
+ */
+const CONTINUING_BONDS_RECOMMENDED: PersonaCode[] = ['P17'];
+
+export function isContinuingBondsRecommended(p: PersonaCode | null): boolean {
+  return p !== null && CONTINUING_BONDS_RECOMMENDED.includes(p);
+}
+
+/**
+ * 마주침 동선 정리 권장 페르소나 — P18 사회적 얽힘.
+ * 추억 정리 대신 *일상 트리거 정리*로 변형 (마주침 동선·공통 친구 매핑).
+ * 매트릭스 §2 C7 line 316: "추억 정리 트랙을 *일상 트리거 정리*로 변형".
+ */
+const ENCOUNTER_PLAN_RECOMMENDED: PersonaCode[] = ['P18'];
+
+export function isEncounterPlanRecommended(p: PersonaCode | null): boolean {
+  return p !== null && ENCOUNTER_PLAN_RECOMMENDED.includes(p);
+}
+
 // ───────── Ref-3 새벽 푸시 차단 (참고용 §2 P03) ─────────
 
 /**

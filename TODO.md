@@ -226,7 +226,13 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | C-2-G-6 | C6 분석 pros·cons 분기 (P01·P14·P19·P20) | 20 | ✅ | eb9f93e |
 | C-2-G-7a | C7 추억 미화 차단 + D+21 게이트 (P01·P10·P14·P20·P03) | 20 | ✅ | 93e9541 |
 | C-2-G-7b | C7 P09 떠올랐어 카운터·추세 위젯 | — | ✅ | ee76a25 |
-| C-2-G-7c | C7 추억 잔여 (P08 봉인·P15 짐 정리·P17·P18 마주침) | — | ⬜ | — |
+| C-2-G-7c | C7 추억 잔여 (P08 봉인·P15 짐 정리·P17·P18 마주침) | — | 🔄 | — |
+| └ G-7c-1 | 페르소나 헬퍼 4종(Seal·Declutter·ContinuingBonds·EncounterPlan) + 상호 배제 잠금 | §2 C7 | ✅ | (본 커밋) |
+| └ G-7c-2 | P08 봉인 화면 신규 | line 158 | ⬜ | — |
+| └ G-7c-3 | P15 짐 정리 워크시트 화면 신규 | line 268 | ⬜ | — |
+| └ G-7c-4 | P17 Continuing Bonds 화면 신규 | line 300 | ⬜ | — |
+| └ G-7c-5 | P18 마주침 동선 정리 화면 신규 | line 316 | ⬜ | — |
+| └ G-7c-6 | 진입 통합 (`app/memories/index.tsx` 페르소나 우선 카드) | — | ⬜ | — |
 | C-2-G-8 | C8 쿨링 분기 (021 마이그레이션 + admin 탭) | 20 | ⬜ | 졸업 보류로 진입 제한 |
 | ~~C-2-G-9~~ | ~~C9 졸업 분기~~ | ~~20~~ | ⏸️ **보류** (A-4) | — |
 | C-2-G-10 | C10 위기/푸시 분기 (페르소나별 핫라인 매핑) | 20 | ✅ | 165c060 |
@@ -348,7 +354,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 - C-1 페르소나 인프라: `8a8090c~3f8923a`
 - C-2 G 시리즈: `8fb8d05` G-2 → `c4d6562` G-3a → `527086b` G-3b → `22ddd8c` G-4 → `2b7164e` G-5a → `eb9f93e` G-6 → `93e9541` G-7a → `ee76a25` G-7b → `165c060` G-10
 - C-2-Ref 참고용: `d614c74` Ref-1 → `a886c2c` Ref-2/4/5 헬퍼 → `6a35a6b` Ref-3 → `cc31e17` Ref-4 → `1908c43` Ref-5
-- C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → `936be16` C-3-H-test+ 51 PASS (opus 후속 3건) → (본 커밋) C-3-H-test++ 59 PASS (선택 권고 2건)
+- C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → `936be16` C-3-H-test+ 51 PASS (opus 후속 3건) → `5c38c77` C-3-H-test++ 59 PASS (선택 권고 2건)
+- C-2-G-7c: (본 커밋) G-7c-1 헬퍼 4종 (72 PASS)
 
 ## 다음 할 일 (우선순위 순)
 
