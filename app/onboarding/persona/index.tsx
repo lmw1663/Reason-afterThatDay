@@ -11,6 +11,7 @@ import { usePersonaStore } from '@/store/usePersonaStore';
 import { classifyAndSavePersona } from '@/api/persona';
 import { recordCrisisAssessment, type CrisisResponses } from '@/api/safety';
 import type { OnboardingResponses, PsychAxes } from '@/utils/personaClassifier';
+import { PERSONA_INTRO_CARDS } from '@/constants/personaIntroCards';
 
 /**
  * 페르소나 온보딩 — C-1-3
@@ -135,6 +136,13 @@ export default function PersonaOnboardingScreen() {
       // /safety/release 화면이 24h 경과 + 안전 4문항 통과 시까지 사용자를 안전 자원에 머물게 함.
       if (crisisResult.severity === 'urgent' || crisisResult.severity === 'high') {
         router.replace('/safety/release' as never);
+        return;
+      }
+
+      // C-2-G-1: 페르소나에 사전 안내 카드가 있으면 1화면 강제 노출 후 홈으로.
+      // baseline(P02·P12 등)은 안내 카드 없음 → 홈 직진.
+      if (result.mode === 'standard' && PERSONA_INTRO_CARDS[result.primary]) {
+        router.replace('/onboarding/persona/intro' as never);
       } else {
         router.replace('/(tabs)' as never);
       }
