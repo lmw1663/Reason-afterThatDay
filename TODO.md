@@ -327,11 +327,11 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | X-2-B-2 | 4 ai-* 함수 통합 (journal·comfort·daily-quote·cooling-checkin) + violation fallback | ✅ 92a5f7b |
 | X-2-B-3 | 잔여 ai-* 통합 (graduation-letter·graduation-farewell·journal-response-stream) | ⏸️ 졸업·스트림 별도 작업 |
 | X-3 | 외부 의뢰 임계 JSON + 헬퍼 + 단위 테스트 — 8 트리거 (구현계획 §6-3) · enabled 가드 · 189 PASS | ✅ |
-| X-3-잔여 | 임계 발동 → UI 노출 통합 (3단계 분해) | 🔄 |
-| └ X-3-잔여-1 | 순수 평가 함수 `referralEvaluator.ts` (5 트리거 + priority 정렬) + 26 테스트 | ✅ (본 커밋) |
-| └ X-3-잔여-2 | DB snapshot 조회 wrapper (api/safety + 14일/30일 SQL 윈도우) | ⬜ |
-| └ X-3-잔여-3 | EmotionalCheckModal 통합 (자원 카드 + external_emergency 119 노출) | ⬜ |
-| └ X-3-잔여-4 | verified_by 임상 감수자 채움 | ⬜ |
+| X-3-잔여 | 임계 발동 → UI 노출 통합 (3단계 완료, 임상 감수만 잔존) | ✅ |
+| └ X-3-잔여-1 | 순수 평가 함수 `referralEvaluator.ts` (5 트리거 + priority 정렬) + 26 테스트 | ✅ 7cecabb |
+| └ X-3-잔여-2 | DB snapshot 조회 wrapper `api/referrals.ts` (14일/30일 SQL 윈도우 + personas active) | ✅ (본 커밋) |
+| └ X-3-잔여-3 | EmotionalCheckModal 통합 — 119 prominent + dedup된 추가 자원 + fail-safe | ✅ (본 커밋) |
+| └ X-3-잔여-4 | verified_by 임상 감수자 채움 + women_emergency 트리거 추론 위험 검토 | ⬜ 외부 임상 자문 |
 | X-4 | 텔레메트리·A/B 인프라 | ⬜ |
 | X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 + 졸업 보류 + 페르소나 라벨 비노출 + 핫라인 페르소나 매핑 | ✅ |
 
@@ -370,11 +370,10 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 ## 다음 할 일 (우선순위 순)
 
 1. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수)
-2. **X-3-잔여** 임계 발동 → UI 노출 통합 (위기 모달·자원 카드 자동)
-3. **X-1-잔여** §37 처리정지권 + Share file URL + 계정 삭제 Edge Function (출시 전)
+2. **X-1-잔여** §37 처리정지권 + Share file URL + 계정 삭제 Edge Function (출시 전)
+3. **X-3-잔여-4** verified_by 임상 감수 + women_emergency 트리거 추론 위험 검토 (외부 의존)
 4. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-5. ~~**CLAUDE.md vs 참고용.md 시간 표기 통일**~~ — ✅ 본 커밋 (00:00~05:00 즉 0~4시 inclusive로 통일)
-6. **C-2 dogfood 20명** — 베타 트랙으로 분리
+5. **C-2 dogfood 20명** — 베타 트랙으로 분리
 
 ---
 

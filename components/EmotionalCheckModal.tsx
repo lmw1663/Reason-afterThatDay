@@ -15,6 +15,7 @@ import {
 } from '@/api/safety';
 import { getHotlinesForPersona, type Hotline } from '@/utils/crisisHotlines';
 import { usePersonaStore } from '@/store/usePersonaStore';
+import { getActiveReferrals } from '@/api/referrals';
 
 /**
  * 위기 모달 트리거 타입.
@@ -120,6 +121,9 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
   const [severity, setSeverity] = useState<CrisisSeverity | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [hotlines, setHotlines] = useState<Hotline[]>([]);
+  // X-3-잔여-3: 누적 트리거(P19·P20·P01) 기반 추가 자원 + 119 외부 비상
+  const [externalEmergency, setExternalEmergency] = useState<string | null>(null);
+  const [extraResources, setExtraResources] = useState<Hotline[]>([]);
 
   useEffect(() => {
     if (visible) {
@@ -157,7 +161,31 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
       });
       setSeverity(result.severity);
       // C-2-G-10: 페르소나별 우선 핫라인 매핑 적용. 페르소나 미정 시 baseline.
-      setHotlines(getHotlinesForPersona(personaPrimary));
+      const personaHotlines = getHotlinesForPersona(personaPrimary);
+      setHotlines(personaHotlines);
+
+      // X-3-잔여-3: 평가 후 *누적 트리거* 자원도 합쳐 노출 (P19·P20·P01 등)
+      // + critical 트리거의 external_emergency(119)
+      try {
+        const referrals = await getActiveReferrals(userId);
+        const ext = referrals.find((r) => r.externalEmergency)?.externalEmergency ?? null;
+        setExternalEmergency(ext);
+        // 페르소나 hotline과 dedup해서 *추가만* 노출
+        const personaIds = new Set(personaHotlines.map((h) => h.id));
+        const extras: Hotline[] = [];
+        const seen = new Set<string>();
+        for (const r of referrals) {
+          for (const h of r.resources) {
+            if (personaIds.has(h.id) || seen.has(h.id)) continue;
+            seen.add(h.id);
+            extras.push(h);
+          }
+        }
+        setExtraResources(extras);
+      } catch {
+        // 자원 조회 실패는 silent — 페르소나 hotline만 노출 (fail-safe)
+      }
+
       setStep(4);
     } catch (e) {
       // 잠금 생성 실패 등 안전 인프라 장애 — silent 금지. 사용자에게 즉시 안내 + 직접 전화 옵션.
@@ -272,6 +300,23 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
                 : '아래 자원이 필요할 때 도움이 될 거야. 지금이 아니어도 괜찮아.'}
           </Body>
 
+          {/* X-3-잔여-3: critical 임계의 외부 비상 번호(119)를 최상단 prominent 노출 */}
+          {externalEmergency && (
+            <Pressable
+              onPress={() => callHotline(externalEmergency)}
+              accessibilityRole="button"
+              accessibilityLabel={`응급 ${externalEmergency} 전화 걸기`}
+              className="active:opacity-70 mb-4"
+            >
+              <Card variant="warning" className="p-4 flex-row items-center justify-center gap-2">
+                <Icon name="bell" size={18} color={colors.coral[400]} />
+                <Body className="font-bold" style={{ color: colors.coral[400] }}>
+                  응급 {externalEmergency} 바로 전화
+                </Body>
+              </Card>
+            </Pressable>
+          )}
+
           <View className="gap-2 mb-4">
             {hotlines.map(h => (
               <Card key={h.id} className="p-3">
@@ -291,6 +336,32 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
               </Card>
             ))}
           </View>
+
+          {/* X-3-잔여-3: 누적 트리거(P19·P20·P01)로 발동된 자원 추가 노출 */}
+          {extraResources.length > 0 && (
+            <View className="mb-4">
+              <Caption className="text-gray-500 mb-2">지금 너에게 도움이 될 자원</Caption>
+              <View className="gap-2">
+                {extraResources.map((h) => (
+                  <Card key={h.id} className="p-3">
+                    <Body className="font-semibold mb-1">{h.name}</Body>
+                    {h.number && (
+                      <Pressable
+                        onPress={() => callHotline(h.number!)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${h.name} 전화 걸기 ${h.number}`}
+                        className="active:opacity-70 flex-row items-center gap-2"
+                      >
+                        <Icon name="bell" size={16} color={colors.purple[400]} />
+                        <Body className="text-purple-400 font-bold">{h.number}</Body>
+                      </Pressable>
+                    )}
+                    <Caption className="text-gray-500 mt-1">{h.description}</Caption>
+                  </Card>
+                ))}
+              </View>
+            </View>
+          )}
 
           {(severity === 'urgent' || severity === 'high') ? (
             <View>
