@@ -276,6 +276,9 @@ export default function DataSettingsScreen() {
                 onToggle={toggleAiSuspension}
               />
             </Card>
+            <Caption className="text-gray-600 mt-2 leading-5">
+              *현재 일일 한마디·정기 알림에 적용*. 일기 응답·위로 등 추가 항목은 곧 적용될 예정.
+            </Caption>
           </View>
         )}
 

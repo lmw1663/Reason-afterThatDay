@@ -2,6 +2,7 @@
 import OpenAI from 'npm:openai';
 import { createClient } from 'npm:@supabase/supabase-js';
 import { buildSystemPrompt, lintResponse, appendAutoMessage } from '../_shared/personaPrompts.ts';
+import { isProcessingSuspended } from '../_shared/processingSuspension.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,11 +30,21 @@ Deno.serve(async (req: Request) => {
   try {
     const { daysElapsed, userId, persona } = await req.json();
 
-    // 같은 날 같은 사용자에게 동일한 한마디 반환 (사전생성 캐시 역할)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
+
+    // X-1-잔여 §37: AI 분석 정지 의사가 있으면 fallback만 반환 (OpenAI 호출 X)
+    if (userId && (await isProcessingSuspended(supabase, userId, 'ai_analysis'))) {
+      const fallback = FALLBACKS[Math.floor(Math.random() * FALLBACKS.length)];
+      return new Response(
+        JSON.stringify({ response: fallback, suspended: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // 같은 날 같은 사용자에게 동일한 한마디 반환 (사전생성 캐시 역할)
     const today = new Date().toISOString().slice(0, 10);
 
     const { data: cached } = await supabase

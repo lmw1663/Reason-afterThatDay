@@ -1,6 +1,7 @@
 // @ts-nocheck — Deno runtime
 // pg_cron으로 매일 21:00 KST 실행
 import { createClient } from 'npm:@supabase/supabase-js';
+import { fetchSuspendedUserIds } from '../_shared/processingSuspension.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -33,11 +34,19 @@ Deno.serve(async (req: Request) => {
 
   if (!users?.length) return new Response(JSON.stringify({ sent: 0 }), { headers: corsHeaders });
 
+  // X-1-잔여 §37: 알림 정지 의사가 있는 사용자 일괄 조회 후 스킵
+  const suspendedUserIds = await fetchSuspendedUserIds(
+    supabase,
+    users.map((u: { id: string }) => u.id),
+    'notifications',
+  );
+
   const today = new Date().toISOString().slice(0, 10);
   const messages: unknown[] = [];
 
   for (const user of users) {
     if (coolingUserIds.has(user.id)) continue; // 유예 중 — 스킵
+    if (suspendedUserIds.has(user.id)) continue; // §37 처리정지 — 스킵
 
     // 오늘 일기 작성 여부 확인
     const { data: todayJournal } = await supabase

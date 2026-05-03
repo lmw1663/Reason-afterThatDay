@@ -1,6 +1,7 @@
 // @ts-nocheck — Deno runtime
 // pg_cron으로 매일 실행 — Day 7 최종 알림 1회 전용 (체크인 독촉과 혼용 금지)
 import { createClient } from 'npm:@supabase/supabase-js';
+import { fetchSuspendedUserIds } from '../_shared/processingSuspension.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -29,10 +30,19 @@ Deno.serve(async (req: Request) => {
     return new Response(JSON.stringify({ sent: 0 }), { headers: corsHeaders });
   }
 
+  // X-1-잔여 §37: 알림 정지 의사 일괄 조회 — N+1 회피 (push-daily-reminder와 일관)
+  const suspendedUserIds = await fetchSuspendedUserIds(
+    supabase,
+    readyCooling.map((c: { user_id: string }) => c.user_id),
+    'notifications',
+  );
+
   const messages: unknown[] = [];
   const sentIds: string[] = [];
 
   for (const cooling of readyCooling) {
+    if (suspendedUserIds.has(cooling.user_id)) continue; // §37 처리정지 — 스킵
+
     const { data: user } = await supabase
       .from('users')
       .select('push_token')
