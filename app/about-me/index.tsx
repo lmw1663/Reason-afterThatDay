@@ -9,6 +9,8 @@ import { CoolingOffWarningModal } from '@/components/CoolingOffWarningModal';
 import { useUserStore } from '@/store/useUserStore';
 import { fetchCurrentReflections, type ReflectionCategory, type SelfReflection } from '@/api/selfReflections';
 import { colors } from '@/constants/colors';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import { sortAboutMeCategories } from '@/constants/personaBranches';
 
 const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc: string }[] = [
   { key: 'love_self',                 icon: 'users',            title: '연애에서의 나',    desc: '연애할 때 어떤 사람이었어?' },
@@ -21,8 +23,16 @@ const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc
 
 export default function AboutMeScreen() {
   const { userId, daysElapsed } = useUserStore();
+  const personaPrimary = usePersonaStore(s => s.primary);
   const [showCoolingOff, setShowCoolingOff] = useState(false);
   const [reflections, setReflections] = useState<Partial<Record<ReflectionCategory, SelfReflection>>>({});
+
+  // C-2-G-5a: 페르소나별 카테고리 정렬 (P02 신체·P09 자기인식 우선 등)
+  const defaultOrder = CATEGORIES.map(c => c.key);
+  const sortedKeys = sortAboutMeCategories(defaultOrder, personaPrimary);
+  const sortedCategories = sortedKeys
+    .map(k => CATEGORIES.find(c => c.key === k))
+    .filter((c): c is typeof CATEGORIES[number] => c !== undefined);
 
   useEffect(() => {
     if (daysElapsed < 8) setShowCoolingOff(true);
@@ -59,7 +69,7 @@ export default function AboutMeScreen() {
         </Caption>
 
         <View className="flex-row flex-wrap gap-4">
-          {CATEGORIES.map((cat) => {
+          {sortedCategories.map((cat) => {
             const answered = !!reflections[cat.key];
             return (
               <Pressable

@@ -103,3 +103,44 @@ export function getCompassVerdictFooter(p: PersonaCode | null): string | null {
       return null;
   }
 }
+
+// ───────── G-5a about-me 카테고리 정렬 ─────────
+
+/**
+ * about-me 카테고리 정렬 — 페르소나별 우선 순서 (매트릭스 §2 C5).
+ *
+ * 기존 ReflectionCategory 6개(love_self·ideal_match·self_love·strengths·
+ * self_care_in_relationship·self_care_alone) 위에 *순서*만 분기.
+ * 신규 카테고리(reality-check·identity·body·needs 등)는 G-5b 또는 별도 후속.
+ *
+ * **주의**: 본 strengths는 *내 장점*. 매트릭스의 "상대 장점 비활성"(P01·P14·P20)은
+ * 분석 트랙(C6 pros·cons)에서 처리 — 본 함수 범위 밖.
+ *
+ * @param defaultOrder 기본 카테고리 순서 (about-me/index.tsx에서 전달)
+ * @returns 페르소나별 우선 정렬된 순서
+ */
+export function sortAboutMeCategories<T extends string>(
+  defaultOrder: readonly T[],
+  p: PersonaCode | null,
+): T[] {
+  if (!p) return [...defaultOrder];
+
+  // 페르소나별 우선 카테고리 (key 부분 일치로 매칭)
+  const PRIORITY: Partial<Record<PersonaCode, string[]>> = {
+    P02: ['self_care_alone', 'self_care_in_relationship'],   // 회피형 — 신체 돌봄 우선
+    P04: ['self_love', 'strengths'],                          // 잠수당함 — 자존감 회복 우선
+    // P08: 매트릭스는 신규 *identity* 카테고리 지정. G-5b 신설 전 임시로 love_self·ideal_match 근사 매핑.
+    P08: ['love_self', 'ideal_match'],
+    P09: ['self_love', 'strengths'],                          // 헌신 소진 — 자기 인식 우선
+    // P14: 매트릭스 "자존감 후순위" — self_love 우선 두지 않음. 자기 책임(self_care_alone)만 우선.
+    // strengths(상대 정당화 위험) 차단은 G-5b로 deferred.
+    P14: ['self_care_alone'],
+  };
+
+  const priority = PRIORITY[p];
+  if (!priority) return [...defaultOrder];
+
+  const head = priority.filter(k => defaultOrder.some(d => d === k)) as T[];
+  const tail = defaultOrder.filter(d => !head.includes(d as T));
+  return [...head, ...tail];
+}
