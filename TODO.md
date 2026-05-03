@@ -25,7 +25,7 @@
 A. 인증·구조 재설계:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (a15f8ae~898ebd5)
 B. 안전·임상 (구현계획 1부): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (1b71f61~23361fa)
 C-1 페르소나 인프라:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (8a8090c~3f8923a)
-C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░   88%  🔄 (G-11·G-5b 잔존, G-7c 완료)
+C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   95%  🔄 (G-11 200셀 테스트만 잔존)
 C-2-Ref 참고용 적용:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (d614c74~1908c43)
 C-3 다중 페르소나 충돌:   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (5 화면 + 단위 테스트 26/26 PASS)
 X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░   85%  🔄 (4 ai-* 통합, 졸업·스트림 잔존)
@@ -222,7 +222,9 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | C-2-G-3b | C3 일기 프롬프트·shame≠guilt 카드 | 20 | ✅ | 527086b |
 | C-2-G-4 | C4 나침반 verdict modifier (게이트·후미·deep link) | 20 | ✅ | 22ddd8c |
 | C-2-G-5a | C5 about-me 카테고리 페르소나별 정렬 | 20 | ✅ | 2b7164e |
-| C-2-G-5b | C5 about-me 신규 카테고리 (reality-check·body·needs·identity) | — | ⬜ | — |
+| C-2-G-5b | C5 about-me 신규 카테고리 (reality-check·body·needs·identity) | — | ✅ | 2단계 완료 |
+| └ G-5b-1 | DB 마이그(024) + ReflectionCategory 타입·CATEGORIES·CATEGORY_CONFIGS·PRIORITY 4종 추가 | §2 C5 line 41·57·153·169 | ✅ | 523e05e |
+| └ G-5b-2 | about-me/index C-3-H secondary 검사 + 권장 카테고리 visual highlight | — | ✅ | (본 커밋) |
 | C-2-G-6 | C6 분석 pros·cons 분기 (P01·P14·P19·P20) | 20 | ✅ | eb9f93e |
 | C-2-G-7a | C7 추억 미화 차단 + D+21 게이트 (P01·P10·P14·P20·P03) | 20 | ✅ | 93e9541 |
 | C-2-G-7b | C7 P09 떠올랐어 카운터·추세 위젯 | — | ✅ | ee76a25 |
@@ -345,7 +347,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 # 지금 위치
 
-**→ C-2-G-7c 추억 트랙 완전 완료** (헬퍼 4종 + 신규 화면 4개 + 진입 통합). 잔존: G-5b about-me 신규 카테고리·G-11 200셀 단위 테스트.
+**→ C-2-G-7c 추억 트랙 + C-2-G-5b about-me 카테고리 4종 완료**. C-2 진행도 95%. 잔존: G-11 200셀 단위 테스트.
 
 ## 누적 커밋 (최근 30개)
 
@@ -355,14 +357,14 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 - C-2 G 시리즈: `8fb8d05` G-2 → `c4d6562` G-3a → `527086b` G-3b → `22ddd8c` G-4 → `2b7164e` G-5a → `eb9f93e` G-6 → `93e9541` G-7a → `ee76a25` G-7b → `165c060` G-10
 - C-2-Ref 참고용: `d614c74` Ref-1 → `a886c2c` Ref-2/4/5 헬퍼 → `6a35a6b` Ref-3 → `cc31e17` Ref-4 → `1908c43` Ref-5
 - C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → `936be16` C-3-H-test+ 51 PASS (opus 후속 3건) → `5c38c77` C-3-H-test++ 59 PASS (선택 권고 2건)
-- C-2-G-7c: `00c30e0` G-7c-1 헬퍼 4종 → `3ef0ad9` G-7c-2 P08 봉인 → `d761dee` G-7c-3 P15 짐 정리 → `192a4f4` G-7c-4 P17 Continuing Bonds → `6aa041d` G-7c-5 P18 마주침 동선 → (본 커밋) G-7c-6 진입 통합
+- C-2-G-7c: `00c30e0` G-7c-1 헬퍼 4종 → `3ef0ad9` G-7c-2 P08 봉인 → `d761dee` G-7c-3 P15 짐 정리 → `192a4f4` G-7c-4 P17 Continuing Bonds → `6aa041d` G-7c-5 P18 마주침 동선 → `c6102f6` G-7c-6 진입 통합
+- C-2-G-5b: `523e05e` G-5b-1 카테고리 4종 인프라 → (본 커밋) G-5b-2 secondary 검사 + visual highlight
 
 ## 다음 할 일 (우선순위 순)
 
-1. **C-2-G-5b** about-me 신규 카테고리 — reality-check / body / needs / identity (신규 화면 4개, 큰 작업)
-2. **C-2-G-11** 200셀 단위 테스트 (vitest 인프라 깔림 — 화면별 테스트 추가)
-3. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-4. **X-1·X-3·X-4** PIPA·임계 JSON·텔레메트리 (베타 진입 전 필수)
+1. **C-2-G-11** 200셀 단위 테스트 (vitest 인프라 깔림 — sortAboutMeCategories·trackHelpers·priority swap 화면별 검증)
+2. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
+3. **X-1·X-3·X-4** PIPA·임계 JSON·텔레메트리 (베타 진입 전 필수)
 
 ---
 

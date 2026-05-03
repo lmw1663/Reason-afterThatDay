@@ -11,6 +11,7 @@ import { fetchCurrentReflections, type ReflectionCategory, type SelfReflection }
 import { colors } from '@/constants/colors';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { sortAboutMeCategories } from '@/constants/personaBranches';
+import { resolvePersona } from '@/utils/personaResolver';
 
 const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc: string }[] = [
   { key: 'love_self',                 icon: 'users',            title: '연애에서의 나',    desc: '연애할 때 어떤 사람이었어?' },
@@ -29,15 +30,22 @@ const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc
 export default function AboutMeScreen() {
   const { userId, daysElapsed } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
+  const personaSecondary = usePersonaStore(s => s.secondary);
   const [showCoolingOff, setShowCoolingOff] = useState(false);
   const [reflections, setReflections] = useState<Partial<Record<ReflectionCategory, SelfReflection>>>({});
 
-  // C-2-G-5a: 페르소나별 카테고리 정렬 (P02 신체·P09 자기인식 우선 등)
+  // C-2-G-5a + C-3-H: secondary 페르소나도 검사 (R5 권장형 — effective만)
+  // G-5b: 신규 카테고리 4종(reality_check·body·needs·identity) 페르소나 우선 매핑 적용
+  const resolved = resolvePersona(personaPrimary, personaSecondary);
+  const effectivePersona = resolved.effective;
   const defaultOrder = CATEGORIES.map(c => c.key);
-  const sortedKeys = sortAboutMeCategories(defaultOrder, personaPrimary);
+  const sortedKeys = sortAboutMeCategories(defaultOrder, effectivePersona);
   const sortedCategories = sortedKeys
     .map(k => CATEGORIES.find(c => c.key === k))
     .filter((c): c is typeof CATEGORIES[number] => c !== undefined);
+  // 권장 카테고리 = 정렬 후 첫 항목이 페르소나 우선 매핑 결과인 경우만 (baseline은 hint 없음)
+  const recommendedKey: ReflectionCategory | null =
+    effectivePersona && sortedKeys[0] !== defaultOrder[0] ? sortedKeys[0] : null;
 
   useEffect(() => {
     if (daysElapsed < 8) setShowCoolingOff(true);
@@ -76,26 +84,37 @@ export default function AboutMeScreen() {
         <View className="flex-row flex-wrap gap-4">
           {sortedCategories.map((cat) => {
             const answered = !!reflections[cat.key];
+            // answered + recommended 동시 노출 정책 — 답변 후에도 갱신 진입을 권장하기 위함.
+            // recommended가 borderColor·아이콘 색에서 우선, "완료"/"미완" 라벨은 별도 영역에 유지.
+            const recommended = cat.key === recommendedKey;
+            const borderColor = recommended
+              ? colors.purple[400]
+              : answered
+              ? colors.purple[600]
+              : colors.border;
             return (
               <Pressable
                 key={cat.key}
                 onPress={() => router.push(`/about-me/${cat.key}` as never)}
                 accessibilityRole="button"
-                accessibilityLabel={`${cat.title} - ${answered ? '답변 완료' : '답변 미완'}`}
+                accessibilityLabel={`${cat.title} - ${answered ? '답변 완료' : '답변 미완'}${recommended ? ' (지금 권장)' : ''}`}
                 className="rounded-2xl p-4 active:opacity-70"
                 style={{
                   width: '47%',
                   backgroundColor: colors.surface,
-                  borderWidth: 1,
-                  borderColor: answered ? colors.purple[600] : colors.border,
+                  borderWidth: recommended ? 1.5 : 1,
+                  borderColor,
                 }}
               >
-                <View className="mb-2">
+                <View className="mb-2 flex-row items-center justify-between">
                   <Icon
                     name={cat.icon}
                     size={26}
-                    color={answered ? colors.purple[400] : colors.gray[400]}
+                    color={recommended || answered ? colors.purple[400] : colors.gray[400]}
                   />
+                  {recommended && (
+                    <Caption className="text-purple-400 text-xs">지금 권장</Caption>
+                  )}
                 </View>
                 <Body className="text-white font-semibold mb-1 text-sm">{cat.title}</Body>
                 <Caption className="text-gray-500 text-xs mb-2">{cat.desc}</Caption>
