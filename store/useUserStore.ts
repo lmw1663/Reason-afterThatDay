@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { calcDaysElapsed } from '@/utils/dateUtils';
 import type { DurationRange } from '@/constants/duration';
 import { supabase } from '@/api/supabase';
+import type { ConsentVersionMap } from '@/api/consent';
+import { isConsentValid } from '@/constants/consent';
 
 interface UserState {
   userId: string | null;
@@ -10,12 +12,16 @@ interface UserState {
   onboardingCompleted: boolean;
   pushToken: string | null;
   relationshipDuration: DurationRange | null;
+  consentVersions: ConsentVersionMap | null;
+  consentAcceptedAt: Date | null;
 
   setUserId: (id: string) => void;
   setBreakupDate: (date: Date) => void;
   setOnboardingCompleted: (v: boolean) => void;
   setPushToken: (token: string) => void;
   setRelationshipDuration: (d: DurationRange) => Promise<void>;
+  setConsent: (versions: ConsentVersionMap, acceptedAt: Date) => void;
+  hasValidConsent: () => boolean;
   refreshDaysElapsed: () => void;
   reset: () => void;
 }
@@ -27,6 +33,8 @@ export const useUserStore = create<UserState>((set, get) => ({
   onboardingCompleted: false,
   pushToken: null,
   relationshipDuration: null,
+  consentVersions: null,
+  consentAcceptedAt: null,
 
   setUserId: (id) => set({ userId: id }),
 
@@ -49,6 +57,11 @@ export const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
+  setConsent: (versions, acceptedAt) =>
+    set({ consentVersions: versions, consentAcceptedAt: acceptedAt }),
+
+  hasValidConsent: () => isConsentValid(get().consentVersions ?? null),
+
   refreshDaysElapsed: () => {
     const { breakupDate } = get();
     if (breakupDate) {
@@ -64,5 +77,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       onboardingCompleted: false,
       pushToken: null,
       relationshipDuration: null,
+      consentVersions: null,
+      consentAcceptedAt: null,
     }),
 }));

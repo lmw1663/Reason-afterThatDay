@@ -41,13 +41,19 @@ export function useAuth() {
   async function loadUserProfile(userId: string) {
     const { data } = await supabase
       .from('users')
-      .select('breakup_date, onboarding_completed')
+      .select('breakup_date, onboarding_completed, consent_versions, consent_accepted_at')
       .eq('id', userId)
       .single();
 
     if (data) {
-      setBreakupDate(parseDateStr(data.breakup_date));
+      if (data.breakup_date) setBreakupDate(parseDateStr(data.breakup_date));
       setOnboardingCompleted(data.onboarding_completed);
+      if (data.consent_versions && data.consent_accepted_at) {
+        useUserStore.getState().setConsent(
+          data.consent_versions,
+          new Date(data.consent_accepted_at),
+        );
+      }
     }
   }
 
