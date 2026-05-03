@@ -326,7 +326,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | X-2-B-1 | `_shared/personaPrompts.ts` 19 페르소나 톤·금기·프레이밍 + lint 헬퍼 | ✅ fbcd106 |
 | X-2-B-2 | 4 ai-* 함수 통합 (journal·comfort·daily-quote·cooling-checkin) + violation fallback | ✅ 92a5f7b |
 | X-2-B-3 | 잔여 ai-* 통합 (graduation-letter·graduation-farewell·journal-response-stream) | ⏸️ 졸업·스트림 별도 작업 |
-| X-3 | 외부 의뢰 임계 JSON (`resources/referral-thresholds.json`) | ⬜ |
+| X-3 | 외부 의뢰 임계 JSON + 헬퍼 + 단위 테스트 — 8 트리거 (구현계획 §6-3) · enabled 가드 · 189 PASS | ✅ |
+| X-3-잔여 | 임계 발동 → UI 노출 통합 (위기 모달·자원 카드 자동 노출) + verified_by 임상 감수 | ⬜ |
 | X-4 | 텔레메트리·A/B 인프라 | ⬜ |
 | X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 + 졸업 보류 + 페르소나 라벨 비노출 + 핫라인 페르소나 매핑 | ✅ |
 
@@ -364,8 +365,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ## 다음 할 일 (우선순위 순)
 
-1. **X-3** 외부 의뢰 임계 JSON (`resources/referral-thresholds.json`)
-2. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수)
+1. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수)
+2. **X-3-잔여** 임계 발동 → UI 노출 통합 (위기 모달·자원 카드 자동)
 3. **X-1-잔여** §37 처리정지권 + Share file URL + 계정 삭제 Edge Function (출시 전)
 4. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
 5. **CLAUDE.md vs 참고용.md 시간 표기 통일** — 새벽 boundary 00~04 vs 00~05

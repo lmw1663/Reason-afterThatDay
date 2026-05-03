@@ -1,0 +1,110 @@
+{
+  "_comment": "외부 의뢰 자동 발동 임계 — 구현계획 §6-3. resources/crisis-hotlines.json의 hotline id를 참조해 자원 노출. 출시 전 임상 자문 + 보건복지부 자료로 재검증 필수.",
+  "_schema_version": 1,
+  "verified_at": "2026-05-04",
+  "verified_by": "TODO: 임상 감수자명 입력",
+  "source": "docs/psychology-logic/구현계획.md §6-3 + 페르소나-화면-액션-매트릭스.md §2 C10",
+  "thresholds": [
+    {
+      "id": "cssrs_q4_q6_positive",
+      "trigger": "C-SSRS q4~q6 양성 (자살 행동·실행 의도)",
+      "threshold_count": 1,
+      "threshold_window_days": null,
+      "auto_show_resources": ["suicide_prevention", "mental_health_crisis"],
+      "external_emergency": "119",
+      "ui_priority": "critical",
+      "one_touch_call": true,
+      "follow_up_push_24h": true,
+      "lock_decision_track": true,
+      "_note": "B-1 안전 프로토콜 양성 — EmotionalCheckModal + /safety/release 자동 잠금. 119는 직접 노출 (hotline ID 외)."
+    },
+    {
+      "id": "cssrs_q1_q3_repeat",
+      "trigger": "C-SSRS q1~q3 양성 (자살 사고)",
+      "threshold_count": 2,
+      "threshold_window_days": 14,
+      "auto_show_resources": ["mental_health_crisis"],
+      "ui_priority": "high",
+      "one_touch_call": true,
+      "follow_up_push_24h": false,
+      "_note": "1회 양성은 안내, 2회 누적부터 의뢰 카드 자동 노출"
+    },
+    {
+      "id": "phq9_severe",
+      "trigger": "PHQ-9 ≥ 15 (중등도-중증 우울)",
+      "threshold_count": 1,
+      "threshold_window_days": null,
+      "auto_show_resources": ["mental_health_crisis", "welfare_counseling"],
+      "ui_priority": "high",
+      "one_touch_call": true,
+      "follow_up_push_24h": false,
+      "enabled": false,
+      "phase_dependency": 3,
+      "_note": "Phase 3 검사 통합(D-1) 의존 — 라이선스 회신 후 enabled=true로 활성화"
+    },
+    {
+      "id": "gad7_severe",
+      "trigger": "GAD-7 ≥ 15 (중증 불안)",
+      "threshold_count": 1,
+      "threshold_window_days": null,
+      "auto_show_resources": ["mental_health_crisis"],
+      "ui_priority": "high",
+      "one_touch_call": true,
+      "follow_up_push_24h": false,
+      "enabled": false,
+      "phase_dependency": 3,
+      "_note": "Phase 3 검사 통합(D-1) 의존"
+    },
+    {
+      "id": "icg_pg13_chronic_grief",
+      "trigger": "ICG/PG-13 양성 (복합 비애)",
+      "threshold_count": 1,
+      "threshold_window_days": 90,
+      "min_days_elapsed": 90,
+      "auto_show_resources": ["grief_clinic_referral"],
+      "ui_priority": "moderate",
+      "one_touch_call": false,
+      "enabled": false,
+      "phase_dependency": 5,
+      "_note": "D+90 이후 평가만 의미. Phase 5 의존 (PG-13 라이선스)"
+    },
+    {
+      "id": "p19_decision_flip_repeat",
+      "trigger": "P19(ROCD) 결정 번복 3회 누적",
+      "threshold_count": 3,
+      "threshold_window_days": 30,
+      "tracked_table": "decision_history",
+      "auto_show_resources": ["ocd_specialist_referral"],
+      "ui_priority": "moderate",
+      "one_touch_call": false,
+      "_note": "구현계획 line 717 — decision_history 카운트 + 카드 자동 노출"
+    },
+    {
+      "id": "p20_trauma_bonding_classified",
+      "trigger": "P20(트라우마 본딩) 페르소나 분류 시점",
+      "threshold_count": 1,
+      "threshold_window_days": null,
+      "auto_show_resources": ["women_emergency", "trauma_specialist_referral"],
+      "ui_priority": "high",
+      "one_touch_call": true,
+      "follow_up_push_24h": false,
+      "_note": "분류 즉시 노출. 매트릭스 §2 C10 P20 + 안전 우선 정책"
+    },
+    {
+      "id": "p01_gaslighting_pattern",
+      "trigger": "P01(자기 판단 손상) — Q2(상대 말 의심)+Q6(자기 신뢰 손상) 동시 양성",
+      "threshold_count": 1,
+      "threshold_window_days": null,
+      "auto_show_resources": ["women_emergency", "sexual_violence_counseling"],
+      "ui_priority": "high",
+      "one_touch_call": true,
+      "follow_up_push_24h": false,
+      "_note": "매트릭스 §2 C10 line 49 — 1366 + 한국성폭력상담소 우선"
+    }
+  ],
+  "ui_priority_levels": {
+    "critical": "위기 모달 우선 노출 + 화면 다른 액션 차단",
+    "high": "위기 모달 노출 + 일반 트랙 진입 가능 (의뢰 카드 dismissable)",
+    "moderate": "[나] 트랙 또는 자원 페이지 카드로 노출 (강제 모달 X)"
+  }
+}
