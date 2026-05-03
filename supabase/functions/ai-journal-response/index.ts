@@ -1,5 +1,6 @@
 // @ts-nocheck — Deno runtime
 import OpenAI from 'npm:openai';
+import { buildSystemPrompt, lintResponse, appendAutoMessage } from '../_shared/personaPrompts.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,7 +9,7 @@ const corsHeaders = {
 
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY')! });
 
-const SYSTEM_PROMPT = `
+const BASE_SYSTEM_PROMPT = `
 너는 이별을 정리 중인 사람의 감정 파트너야.
 규칙:
 - 단정 금지: "~해야 해", "~게 맞아" 같은 단정적 표현 사용하지 마
@@ -16,7 +17,6 @@ const SYSTEM_PROMPT = `
 - 결정 강요 금지: 어떤 선택을 강요하지 마
 - 가능성 제시: "~일 수도 있어", "~해 보여" 말투 사용
 - 응답: 2~3문장, 공감 + 관찰 + 열린 질문 또는 응원
-- 말투: 친구처럼 따뜻하게, 존댓말 아닌 반말
 `.trim();
 
 function buildContext({ daysElapsed, recentMoods, direction, freeText }: Record<string, unknown>) {
@@ -47,20 +47,30 @@ Deno.serve(async (req: Request) => {
 
   try {
     const body = await req.json();
-    const { moodScore, direction, freeText, recentMoods, daysElapsed } = body;
+    const { moodScore, direction, freeText, recentMoods, daysElapsed, persona } = body;
 
     const res = await openai.chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSystemPrompt(BASE_SYSTEM_PROMPT, persona ?? null) },
         { role: 'user',   content: buildContext({ daysElapsed, recentMoods, direction, freeText }) },
       ],
       max_tokens: 150,
       temperature: 0.8,
     });
 
+    const raw = res.choices[0].message.content ?? '';
+    const lint = lintResponse(raw, persona ?? null);
+    if (!lint.ok) {
+      console.warn('[ai-journal-response] persona lint violation:', persona, lint.violations);
+      return new Response(
+        JSON.stringify({ response: fallbackResponse(direction) }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ response: res.choices[0].message.content }),
+      JSON.stringify({ response: appendAutoMessage(raw, persona ?? null) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (e) {

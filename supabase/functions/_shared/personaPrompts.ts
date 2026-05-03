@@ -156,7 +156,9 @@ export function buildSystemPrompt(basePrompt: string, persona: PersonaCode | nul
     `톤: ${block.tone}`,
     `절대 사용 금지 키워드: ${block.forbiddenKeywords.join(', ') || '(없음)'}`,
     `권장 프레이밍: ${block.recommendedFraming}`,
-    block.requireHonorific ? '응답은 모두 존댓말' : '응답은 모두 반말 (위기 자원 화면 제외)',
+    block.requireHonorific
+      ? '응답은 모두 존댓말 — "당신"·"~ㅂ니다"체로 정중하게'
+      : '응답은 모두 반말 — "너"·"~야"·"~어"·"~지" 사용. "당신"·"~예요"·"~어요"·"~죠" 어미 절대 금지',
     DISCLAIMER_FOOTER.trim(),
   ];
   return lines.join('\n\n');

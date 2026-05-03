@@ -1,5 +1,6 @@
 // @ts-nocheck — Deno runtime
 import OpenAI from 'npm:openai';
+import { buildSystemPrompt, lintResponse, appendAutoMessage } from '../_shared/personaPrompts.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,10 +10,10 @@ const corsHeaders = {
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY')! });
 
 // 상황별 위로 — 관계 분석/나침반 결과 화면, 감정 급변 시 사용
-const SYSTEM_PROMPT = `
+const BASE_SYSTEM_PROMPT = `
 너는 이별을 정리 중인 사람 곁에 있는 따뜻한 친구야.
 규칙:
-- 반말, 친근하게
+- 친근하게
 - 단정·비난·결정 강요 금지
 - 2~3문장, 공감 우선
 - 가능성과 선택지 열어두기
@@ -31,7 +32,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { situation, context, daysElapsed } = await req.json();
+    const { situation, context, daysElapsed, persona } = await req.json();
 
     const userPrompt = `
 이별 경과 D+${daysElapsed}일.
@@ -43,15 +44,26 @@ Deno.serve(async (req: Request) => {
     const res = await openai.chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSystemPrompt(BASE_SYSTEM_PROMPT, persona ?? null) },
         { role: 'user',   content: userPrompt },
       ],
       max_tokens: 120,
       temperature: 0.85,
     });
 
+    const raw = res.choices[0].message.content ?? '';
+    const lint = lintResponse(raw, persona ?? null);
+    if (!lint.ok) {
+      console.warn('[ai-comfort] persona lint violation:', persona, lint.violations);
+      const fallback = FALLBACKS[situation] ?? FALLBACKS.default;
+      return new Response(
+        JSON.stringify({ response: fallback }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ response: res.choices[0].message.content }),
+      JSON.stringify({ response: appendAutoMessage(raw, persona ?? null) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch {

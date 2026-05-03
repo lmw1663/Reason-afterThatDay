@@ -1,6 +1,7 @@
 // @ts-nocheck — Deno runtime
 import OpenAI from 'npm:openai';
 import { createClient } from 'npm:@supabase/supabase-js';
+import { buildSystemPrompt, lintResponse, appendAutoMessage } from '../_shared/personaPrompts.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,9 @@ const corsHeaders = {
 };
 
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY')! });
+
+const BASE_SYSTEM_PROMPT =
+  '이별 후 회복 중인 사람에게 오늘 하루 힘이 될 짧은 한마디를 써줘. 1~2문장, 따뜻하고 단정하지 않게.';
 
 const FALLBACKS = [
   '오늘도 한 걸음씩. 네 속도가 맞는 속도야.',
@@ -23,7 +27,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { daysElapsed, userId } = await req.json();
+    const { daysElapsed, userId, persona } = await req.json();
 
     // 같은 날 같은 사용자에게 동일한 한마디 반환 (사전생성 캐시 역할)
     const supabase = createClient(
@@ -53,7 +57,7 @@ Deno.serve(async (req: Request) => {
       messages: [
         {
           role: 'system',
-          content: '이별 후 회복 중인 사람에게 오늘 하루 힘이 될 짧은 한마디를 반말로 써줘. 1~2문장, 따뜻하고 단정하지 않게.',
+          content: buildSystemPrompt(BASE_SYSTEM_PROMPT, persona ?? null),
         },
         { role: 'user', content: `이별 후 D+${daysElapsed}일째야.` },
       ],
@@ -61,8 +65,19 @@ Deno.serve(async (req: Request) => {
       temperature: 0.9,
     });
 
+    const raw = res.choices[0].message.content ?? '';
+    const lint = lintResponse(raw, persona ?? null);
+    if (!lint.ok) {
+      console.warn('[ai-daily-quote] persona lint violation:', persona, lint.violations);
+      const fallback = FALLBACKS[Math.floor(Math.random() * FALLBACKS.length)];
+      return new Response(
+        JSON.stringify({ response: fallback }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ response: res.choices[0].message.content }),
+      JSON.stringify({ response: appendAutoMessage(raw, persona ?? null) }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch {

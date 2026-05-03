@@ -2,6 +2,23 @@
 import { supabase } from './supabase';
 import { AppError } from '@/constants/errors';
 import type { Direction } from '@/store/useJournalStore';
+import { usePersonaStore } from '@/store/usePersonaStore';
+import type { PersonaCode } from '@/utils/personaClassifier';
+
+/**
+ * X-2-B-2: 모든 GPT 호출에 현재 사용자 페르소나(primary)를 자동 첨부.
+ * Edge Function 측에서 _shared/personaPrompts.ts의 buildSystemPrompt에 활용.
+ *
+ * 호출자가 이미 persona를 명시했으면(인자에 있으면) 그대로 두고, 아니면 store에서 자동 추출.
+ * 페르소나 미분류 사용자는 null → Edge Function에서 baseline 동작.
+ */
+function withPersona<T extends Record<string, unknown>>(
+  body: T,
+): T & { persona: PersonaCode | null } {
+  if ('persona' in body) return body as T & { persona: PersonaCode | null };
+  const persona = usePersonaStore.getState().primary;
+  return { ...body, persona };
+}
 
 export interface JournalContext {
   moodScore: number;
@@ -72,7 +89,7 @@ export async function fetchJournalResponse(ctx: JournalContext): Promise<string>
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-journal-response',
-      ctx,
+      withPersona(ctx as unknown as Record<string, unknown>),
     );
     return data.response;
   } catch (e: unknown) {
@@ -92,7 +109,7 @@ export async function fetchDailyQuote(
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-daily-quote',
-      { daysElapsed, userId },
+      withPersona({ daysElapsed, userId }),
       6000,
     );
     return data.response;
@@ -114,7 +131,10 @@ export async function fetchComfort(params: {
   };
 
   try {
-    const data = await invokeWithTimeout<{ response: string }>('ai-comfort', params);
+    const data = await invokeWithTimeout<{ response: string }>(
+      'ai-comfort',
+      withPersona(params as unknown as Record<string, unknown>),
+    );
     return data.response;
   } catch {
     return FALLBACKS[params.situation] ?? '지금 이 순간도 잘 버티고 있어. 충분해.';
@@ -139,7 +159,7 @@ export async function fetchCoolingCheckinGPTResponse(params: {
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'cooling-checkin-response',
-      params,
+      withPersona(params as unknown as Record<string, unknown>),
       6000,
     );
     return data.response;
