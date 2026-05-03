@@ -126,6 +126,30 @@ describe('resolvePersona — 보조 분기', () => {
   });
 });
 
+// 매트릭스 §4-2에 명시되지 않은 *코드 동작 잠금* 케이스. opus 검증(344304c) 후속 권고.
+// 향후 매트릭스 §4-2가 보강되면 본 describe를 SSOT 표 검증으로 승격할 것.
+describe('resolvePersona — 매트릭스 미명세 케이스 (코드 동작 잠금)', () => {
+  it('P12 + P01 — R3 우선이 R2(부 HARMFUL)보다 앞: secondary, effective=P01, overlay=null', () => {
+    // P12는 HARMFUL 아니므로 R2 통과 → R3(P12 주 + 부 있음) 진입.
+    // 결과적으로 effective=P01에서 권장+금기 모두 적용 (overlay 없어도 effective 자체에서 검사됨).
+    expect(resolvePersona('P12', 'P01')).toEqual({
+      source: 'secondary',
+      effective: 'P01',
+      guardOverlay: null,
+    });
+  });
+
+  it('P15 + P03 — R4 미발동(부가 non-complexity), R5 fall-through: D+C swap', () => {
+    // P15(D, complexity) + P03(C, non-complexity) → R4 둘 다 complexity 조건 미충족 → R5.
+    // priority(D, C) = 'secondary' → effective=P03, overlay=P15.
+    expect(resolvePersona('P15', 'P03')).toEqual({
+      source: 'primary_with_guard',
+      effective: 'P03',
+      guardOverlay: 'P15',
+    });
+  });
+});
+
 describe('appliesGuard — effective + overlay 양쪽 검사 (OR)', () => {
   const resolved: ResolvedPersona = {
     source: 'primary_with_guard',
