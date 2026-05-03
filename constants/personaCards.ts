@@ -40,8 +40,8 @@ export const PERSONA_CARDS: Record<PersonaCode, PersonaCard | null> = {
   P07: { icon: 'leaf',            title: '회복 가능성',                subtitle: '첫 이별이 가장 강렬한 이유',         route: '/about-me' },
   P08: { icon: 'puzzle',          title: '잃어버린 나 찾기',           subtitle: '관계 안에서 사라진 너의 조각',      route: '/about-me' },
   P09: { icon: 'heart',           title: '오늘 너만의 작은 욕구',      subtitle: '배고픔·졸림부터 되찾자',            route: '/about-me' },
-  // P10 거칠게 모드(raw-mode)는 미구현 — 임시 fallback. TODO D-5: app/journal/raw-mode.tsx
-  P10: { icon: 'sparkles',        title: '몸을 흔들어보자',            subtitle: '운동·찬물 세수·부치지 않을 편지',   route: '/journal/today' },
+  // P10 거칠게 모드(raw-mode)는 D-5 후속. 현재는 *부치지 않을 편지*(C-2-Ref-5)로 venting 우회.
+  P10: { icon: 'sparkles',        title: '몸을 흔들어보자',            subtitle: '운동·찬물 세수·부치지 않을 편지',   route: '/journal/unsent-letter' },
   P11: { icon: 'heart-handshake', title: '오늘의 작은 루틴 1개',       subtitle: '두 마음이 같이 있는 게 정상',       route: '/about-me' },
   P12: null,
   // P13 사별 — PersonaCode 타입에서 제외됨 (C-1-2). 본 Record 키에 들어갈 수 없음.
