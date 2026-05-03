@@ -219,25 +219,14 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* 메뉴 (하단탭 중복 제거: 관계분석·나침반 빠짐) */}
+        {/* 메뉴 — 일기·추억은 [기록] 탭, 자기 통찰·분석·나침반은 [나] 탭에서 모아본다. */}
+        {/* 홈은 *오늘 한 가지*에 집중 — A-3 재구성 후 단축키 최소화. */}
         <View className="px-6 gap-3">
           <QuickLink
             icon="book"
-            title="일기 목록"
-            desc="지나온 감정들 다시 보기"
-            onPress={() => router.push('/journal/history')}
-          />
-          <QuickLink
-            icon="camera"
-            title="추억 돌아보기"
-            desc="그 관계의 기억을 정리해봐"
-            onPress={() => router.push('/memory' as Href)}
-          />
-          <QuickLink
-            icon="archive"
-            title="추억 정리"
-            desc="떠오른 추억을 한 줄씩 모아봐"
-            onPress={() => router.push('/memories' as Href)}
+            title="기록 보기"
+            desc="그동안 쌓인 일기·추억·회복의 흔적"
+            onPress={() => router.push('/(tabs)/records' as Href)}
           />
         </View>
       </ScrollView>
