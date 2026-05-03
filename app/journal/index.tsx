@@ -21,6 +21,7 @@ import {
   getJournalFreeTextPlaceholder,
   shouldShowShameGuiltEducation,
 } from '@/constants/personaBranches';
+import { resolvePersona, appliesRecommendation } from '@/utils/personaResolver';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 
@@ -36,18 +37,22 @@ export default function JournalMoodScreen() {
 
   // 페르소나별 감정 라벨 정렬 (C-2-G-3a) — P08은 "공허/멍함/시들음" 우선 노출.
   // C-2-G-3b: 자유 메모 placeholder + P14 shame≠guilt 안내 카드 분기.
+  // C-3-H: 다중 페르소나 충돌 해소 — 권장형 분기는 R5에 따라 effective(주)만 검사.
   const primaryPersona = usePersonaStore(s => s.primary);
-  const labelsForPersona = getEmotionLabelsForPersona(primaryPersona);
-  const freeTextPlaceholder = getJournalFreeTextPlaceholder(primaryPersona);
+  const secondaryPersona = usePersonaStore(s => s.secondary);
+  const resolved = resolvePersona(primaryPersona, secondaryPersona);
+  const effectivePersona = resolved.effective;
+  const labelsForPersona = getEmotionLabelsForPersona(effectivePersona);
+  const freeTextPlaceholder = getJournalFreeTextPlaceholder(effectivePersona);
 
   // shame≠guilt 카드는 *최초 1회만* — AsyncStorage로 보존 (매트릭스 정합)
   const [showShameGuiltCard, setShowShameGuiltCard] = useState(false);
   useEffect(() => {
-    if (!shouldShowShameGuiltEducation(primaryPersona)) return;
+    if (!appliesRecommendation(resolved, shouldShowShameGuiltEducation)) return;
     AsyncStorage.getItem(SHAME_GUILT_SEEN_KEY).then(v => {
       if (v !== '1') setShowShameGuiltCard(true);
     });
-  }, [primaryPersona]);
+  }, [effectivePersona]);
 
   function dismissShameGuiltCard() {
     setShowShameGuiltCard(false);
