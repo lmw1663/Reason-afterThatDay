@@ -338,7 +338,11 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | └ X-3-잔여-2 | DB snapshot 조회 wrapper `api/referrals.ts` (14일/30일 SQL 윈도우 + personas active) | ✅ (본 커밋) |
 | └ X-3-잔여-3 | EmotionalCheckModal 통합 — 119 prominent + dedup된 추가 자원 + fail-safe | ✅ (본 커밋) |
 | └ X-3-잔여-4 | verified_by 임상 감수자 채움 + women_emergency 트리거 추론 위험 검토 | ⬜ 외부 임상 자문 |
-| X-4 | 텔레메트리·A/B 인프라 | ⬜ |
+| X-4 | 텔레메트리·A/B 인프라 (3단계 분해) | 🔄 |
+| └ X-4-1 | events 테이블 + RLS + 옵트인 컬럼 + telemetry API + UI 토글 (default OFF) | ✅ | (본 커밋) |
+| └ X-4-2 | 인스트루멘테이션 — 각 화면에서 trackEvent 호출 추가 (페르소나 anonymization 가이드 포함) | ⬜ |
+| └ X-4-3 | A/B 실험 인프라 — events 테이블 experiment_id + 변형 할당 로직 | ⬜ |
+| └ X-4-test | telemetry API 단위 테스트 + payload allowlist runtime 검증 | ⬜ |
 | X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 + 졸업 보류 + 페르소나 라벨 비노출 + 핫라인 페르소나 매핑 | ✅ |
 
 ---
@@ -375,11 +379,12 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ## 다음 할 일 (우선순위 순)
 
-1. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수, 사용자 정렬 권장)
-2. **X-3-잔여-4** verified_by 임상 감수 + women_emergency 트리거 추론 위험 검토 (외부 의존)
-3. **X-1-잔여-§37-test** processingSuspension API 단위 테스트 (supabase mock 인프라)
-4. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-5. **C-2 dogfood 20명** — 베타 트랙으로 분리
+1. **X-4-2** 텔레메트리 인스트루멘테이션 (각 화면 trackEvent + 페르소나 anonymization)
+2. **X-4-3** A/B 실험 인프라 (experiment_id + 변형 할당)
+3. **X-1-잔여-§37-test / X-4-test** API 단위 테스트 (supabase mock 인프라)
+4. **X-3-잔여-4** verified_by 임상 감수 (외부 의존)
+5. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
+6. **C-2 dogfood 20명** — 베타 트랙으로 분리
 
 ---
 

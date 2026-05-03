@@ -29,6 +29,11 @@ import {
   updateProcessingSuspension,
   type ProcessingSuspension,
 } from '@/api/processingSuspension';
+import {
+  getTelemetryStatus,
+  setTelemetryOptIn,
+  type TelemetryStatus,
+} from '@/api/telemetry';
 
 // X-1 PIPA 컴플라이언스 — 사용자가 자기 데이터를 *직접* 보고·내보내고·삭제할 수 있는 트랙.
 // 개인정보 보호법 제35조(열람) · 제36조(삭제) · GDPR Art.20(반출) 대응.
@@ -49,6 +54,9 @@ export default function DataSettingsScreen() {
   const [suspension, setSuspension] = useState<ProcessingSuspension | null>(null);
   const [togglingNotif, setTogglingNotif] = useState(false);
   const [togglingAi, setTogglingAi] = useState(false);
+  // X-4 텔레메트리 옵트인
+  const [telemetry, setTelemetry] = useState<TelemetryStatus | null>(null);
+  const [togglingTelemetry, setTogglingTelemetry] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -65,7 +73,25 @@ export default function DataSettingsScreen() {
     getProcessingSuspension(userId)
       .then(setSuspension)
       .catch(() => {/* fail open — 토글 미표시 (모두 활성으로 간주) */});
+    getTelemetryStatus(userId)
+      .then(setTelemetry)
+      .catch(() => {/* fail open — 토글 미표시 */});
   }, [userId]);
+
+  async function toggleTelemetry() {
+    if (!userId || !telemetry || togglingTelemetry) return;
+    setTogglingTelemetry(true);
+    setError(null);
+    const next = !telemetry.optedIn;
+    try {
+      await setTelemetryOptIn(userId, next);
+      setTelemetry({ optedIn: next, optedInAt: next ? new Date().toISOString() : null });
+    } catch {
+      setError('텔레메트리 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
+    } finally {
+      setTogglingTelemetry(false);
+    }
+  }
 
   async function toggleNotificationSuspension() {
     if (!userId || !suspension || togglingNotif) return;
@@ -299,6 +325,26 @@ export default function DataSettingsScreen() {
           </View>
         )}
 
+        {telemetry && (
+          <View className="mb-6">
+            <Caption className="text-gray-500 mb-2">사용 통계</Caption>
+            <Card>
+              <SuspensionRow
+                label="익명 사용 통계 보내기"
+                description="화면 진입·기능 사용 등 *통계*만 수집. 일기 본문·위기 응답 등 민감 정보는 절대 포함 안 함. 언제든 끌 수 있어."
+                value={telemetry.optedIn}
+                loading={togglingTelemetry}
+                onToggle={toggleTelemetry}
+                activeLabel="켜짐"
+                inactiveLabel="꺼짐"
+              />
+            </Card>
+            <Caption className="text-gray-600 mt-2 leading-5">
+              앱 개선에 사용돼. 끄면 통계 발송 즉시 중지. 기본값은 OFF야.
+            </Caption>
+          </View>
+        )}
+
         <Caption className="text-gray-500 mb-2 mt-2">위험 구간</Caption>
         <Card variant="warning">
           <View className="flex-row items-start gap-3 mb-4">
@@ -335,9 +381,20 @@ interface SuspensionRowProps {
   value: boolean;
   loading: boolean;
   onToggle: () => void;
+  /** 칩 라벨 — 기본은 처리정지권 맥락 "정지됨/활성". 텔레메트리는 "켜짐/꺼짐" 등 자연어. */
+  activeLabel?: string;
+  inactiveLabel?: string;
 }
 
-function SuspensionRow({ label, description, value, loading, onToggle }: SuspensionRowProps) {
+function SuspensionRow({
+  label,
+  description,
+  value,
+  loading,
+  onToggle,
+  activeLabel = '정지됨',
+  inactiveLabel = '활성',
+}: SuspensionRowProps) {
   return (
     <Pressable
       onPress={onToggle}
@@ -365,7 +422,7 @@ function SuspensionRow({ label, description, value, loading, onToggle }: Suspens
             fontWeight: '600',
           }}
         >
-          {value ? '정지됨' : '활성'}
+          {value ? activeLabel : inactiveLabel}
         </Caption>
       </View>
     </Pressable>
