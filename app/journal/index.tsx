@@ -22,6 +22,8 @@ import {
   shouldShowShameGuiltEducation,
 } from '@/constants/personaBranches';
 import { resolvePersona, appliesRecommendation } from '@/utils/personaResolver';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 
@@ -44,6 +46,8 @@ export default function JournalMoodScreen() {
   const effectivePersona = resolved.effective;
   const labelsForPersona = getEmotionLabelsForPersona(effectivePersona);
   const freeTextPlaceholder = getJournalFreeTextPlaceholder(effectivePersona);
+
+  useScreenView('journal_mood', { persona_category: anonymizePersona(effectivePersona) });
 
   // shame≠guilt 카드는 *최초 1회만* — AsyncStorage로 보존 (매트릭스 정합)
   const [showShameGuiltCard, setShowShameGuiltCard] = useState(false);

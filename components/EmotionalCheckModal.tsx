@@ -16,6 +16,7 @@ import {
 import { getHotlinesForPersona, type Hotline } from '@/utils/crisisHotlines';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { getActiveReferrals } from '@/api/referrals';
+import { trackEvent } from '@/api/telemetry';
 
 /**
  * 위기 모달 트리거 타입.
@@ -68,6 +69,11 @@ const SIMPLE_MESSAGES = {
 } as const;
 
 export function EmotionalCheckModal({ type, visible, onClose }: EmotionalCheckModalProps) {
+  // X-4-2: 모달 노출 텔레메트리 (visible 변경 시 1회). type만 익명 — 사용자 응답 X
+  useEffect(() => {
+    if (visible) trackEvent('crisis_modal_shown', { type });
+  }, [visible, type]);
+
   if (type === 'crisis_screen') {
     return <CrisisScreenFlow visible={visible} onClose={onClose} />;
   }

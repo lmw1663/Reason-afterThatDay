@@ -15,6 +15,8 @@ import {
   isAnalysisTrackBlockedByPersona,
 } from '@/constants/personaBranches';
 import { resolvePersona, appliesGuard, longestGate } from '@/utils/personaResolver';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
 
 /**
  * [나] 탭 — A-3·A-5
@@ -46,6 +48,8 @@ export default function MeScreen() {
 
   const insightDaysLeft = Math.max(0, SELF_INSIGHT_GATE_DAYS - daysElapsed);
   const compassDaysLeft = Math.max(0, compassGateDays - daysElapsed);
+
+  useScreenView('me', { persona_category: anonymizePersona(resolved.effective) });
 
   // B-1 안전 잠금 — C-SSRS urgent/high 양성 시 결정 트랙 차단
   const [decisionLocked, setDecisionLocked] = useState(false);

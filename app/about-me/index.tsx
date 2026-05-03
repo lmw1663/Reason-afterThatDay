@@ -12,6 +12,8 @@ import { colors } from '@/constants/colors';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { sortAboutMeCategories } from '@/constants/personaBranches';
 import { resolvePersona } from '@/utils/personaResolver';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
 
 const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc: string }[] = [
   { key: 'love_self',                 icon: 'users',            title: '연애에서의 나',    desc: '연애할 때 어떤 사람이었어?' },
@@ -46,6 +48,11 @@ export default function AboutMeScreen() {
   // 권장 카테고리 = 정렬 후 첫 항목이 페르소나 우선 매핑 결과인 경우만 (baseline은 hint 없음)
   const recommendedKey: ReflectionCategory | null =
     effectivePersona && sortedKeys[0] !== defaultOrder[0] ? sortedKeys[0] : null;
+
+  useScreenView('about_me', {
+    persona_category: anonymizePersona(effectivePersona),
+    has_recommended: recommendedKey !== null,
+  });
 
   useEffect(() => {
     if (daysElapsed < 8) setShowCoolingOff(true);

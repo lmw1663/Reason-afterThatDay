@@ -5,6 +5,7 @@ import type { Direction } from '@/store/useJournalStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { useUserStore } from '@/store/useUserStore';
 import { getProcessingSuspension } from './processingSuspension';
+import { trackEvent } from './telemetry';
 import type { PersonaCode } from '@/utils/personaClassifier';
 
 /**
@@ -103,18 +104,20 @@ async function invokeWithTimeout<T>(
 
 // ── 일기 AI 응답 ────────────────────────────────────────────────────
 export async function fetchJournalResponse(ctx: JournalContext): Promise<string> {
-  if (await isAiSuspended()) return fallbackJournal(ctx.direction);
+  if (await isAiSuspended()) {
+    trackEvent('ai_response_fallback', { fn: 'journal', reason: 'suspended' });
+    return fallbackJournal(ctx.direction);
+  }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-journal-response',
       withPersona(ctx as unknown as Record<string, unknown>),
     );
+    trackEvent('ai_response_success', { fn: 'journal' });
     return data.response;
   } catch (e: unknown) {
     const err = e as { code?: string };
-    if (err.code === AppError.AI_TIMEOUT || err.code === AppError.AI_FAILED) {
-      return fallbackJournal(ctx.direction);
-    }
+    trackEvent('ai_response_fallback', { fn: 'journal', reason: err.code ?? 'unknown' });
     return fallbackJournal(ctx.direction);
   }
 }
