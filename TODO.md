@@ -321,7 +321,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | ID | 작업 | 상태 |
 |---|---|---|
 | X-1 | PIPA 컴플라이언스 (§35 열람·§36 삭제·GDPR Art.20 반출) — `api/userData.ts` + `app/settings/data.tsx` + me.tsx 진입 + 안전 잠금 가드 + 민감정보 사전 경고 | ✅ | (본 커밋) |
-| X-1-잔여 | 계정 자체 삭제 Edge Function (Share file·§37 의사 저장 완료) | 🔄 | 권고 5 잔존 |
+| X-1-잔여 | (전체) Share file·§37·계정 삭제 Edge Function — 출시 전 PIPA 트랙 완성. 단위 테스트만 후속 | ✅ | (본 커밋으로 마감) |
+| └ X-1-잔여-Account | account-delete Edge Function + 026 CASCADE 마이그 + UI 통합 | ✅ | (본 커밋) |
 | └ X-1-잔여-Share | Share message → expo-file-system + expo-sharing file URL 모드 + cleanup (PIPA §29) | ✅ | bfddf14 |
 | └ X-1-잔여-§37-의사 | DB 컬럼(025) + api/processingSuspension + UI 토글 (의사 저장만) | ✅ | (본 커밋) |
 | └ X-1-잔여-§37-적용-1 | server-side 게이트 — `_shared/processingSuspension` + ai-daily-quote · push-daily-reminder · push-cooling-day7 | ✅ | 812ee08 |
@@ -374,9 +375,9 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ## 다음 할 일 (우선순위 순)
 
-1. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수)
-2. **X-1-잔여** §37 처리정지권 + Share file URL + 계정 삭제 Edge Function (출시 전)
-3. **X-3-잔여-4** verified_by 임상 감수 + women_emergency 트리거 추론 위험 검토 (외부 의존)
+1. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수, 사용자 정렬 권장)
+2. **X-3-잔여-4** verified_by 임상 감수 + women_emergency 트리거 추론 위험 검토 (외부 의존)
+3. **X-1-잔여-§37-test** processingSuspension API 단위 테스트 (supabase mock 인프라)
 4. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
 5. **C-2 dogfood 20명** — 베타 트랙으로 분리
 

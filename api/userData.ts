@@ -116,6 +116,22 @@ export interface DeleteResult {
  * **주의**: supabase auth.users 자체 삭제는 admin 권한 필요 — 별도 트랙(Edge Function 또는
  * 외부 admin RPC)으로 처리. 본 함수 후 호출자는 supabase.auth.signOut() 권장.
  */
+/**
+ * 계정 자체 삭제 — Edge Function `account-delete` 호출. PIPA §36 완전 처리.
+ * auth.admin.deleteUser → public.users ON DELETE CASCADE로 모든 자식 행 자동 삭제.
+ *
+ * 호출자는 본 함수 success 후 supabase.auth.signOut() + AsyncStorage.clear() + 홈 이동.
+ * 실패 시 호출자가 deleteAllUserData(DB 행만)로 fallback 처리 권장.
+ */
+export async function deleteAccount(): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('account-delete', { body: {} });
+  if (error) throw error;
+  const result = data as { deleted?: boolean; error?: string; message?: string };
+  if (!result.deleted) {
+    throw new Error(result.message ?? result.error ?? 'account_delete_failed');
+  }
+}
+
 export async function deleteAllUserData(userId: string): Promise<DeleteResult> {
   const deletedTables: UserTable[] = [];
   const failedTables: string[] = [];

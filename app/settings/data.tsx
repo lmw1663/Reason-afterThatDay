@@ -21,6 +21,7 @@ import {
   getDataSummary,
   exportUserData,
   deleteAllUserData,
+  deleteAccount,
   type DataSummaryItem,
 } from '@/api/userData';
 import {
@@ -150,8 +151,8 @@ export default function DataSettingsScreen() {
   function confirmDelete() {
     if (!userId || deleting) return;
     Alert.alert(
-      '정말 모든 데이터를 지울까?',
-      '일기·응답·추억·about-me 답변 등 너의 모든 기록이 영구 삭제돼. 되돌릴 수 없어.',
+      '계정과 모든 데이터를 지울까?',
+      '계정 자체와 일기·응답·추억·about-me 답변 등 너의 모든 기록이 영구 삭제돼. 되돌릴 수 없어.',
       [
         { text: '취소', style: 'cancel' },
         {
@@ -160,7 +161,7 @@ export default function DataSettingsScreen() {
           onPress: () => {
             Alert.alert(
               '마지막 확인',
-              '지금 삭제하면 너의 모든 기록이 사라져. 확실해?',
+              '지금 삭제하면 너의 계정과 모든 기록이 사라져. 확실해?',
               [
                 { text: '취소', style: 'cancel' },
                 { text: '삭제 진행', style: 'destructive', onPress: () => doDelete() },
@@ -176,20 +177,36 @@ export default function DataSettingsScreen() {
     if (!userId) return;
     setDeleting(true);
     setError(null);
+    let accountDeleted = false;
+    let fallbackResult: Awaited<ReturnType<typeof deleteAllUserData>> | null = null;
+
     try {
-      const result = await deleteAllUserData(userId);
-      // AsyncStorage 로컬 데이터(memory_seal_v1·declutter·continuing-bonds·encounter-plan
-      // · shame-guilt-seen 등)도 함께 정리
+      // 1차: account-delete Edge Function — auth.admin.deleteUser + ON DELETE CASCADE로
+      // public.users + 자식 모든 행 자동 삭제. PIPA §36 완전 처리.
+      try {
+        await deleteAccount();
+        accountDeleted = true;
+      } catch {
+        // Edge Function 실패(미배포·인증 만료 등) → fallback으로 DB 행만 정리.
+        // auth 계정은 운영팀 후속 처리 안내.
+        fallbackResult = await deleteAllUserData(userId);
+      }
+
+      // 로컬 데이터 정리
       await AsyncStorage.clear().catch(() => {/* fail open */});
       await supabase.auth.signOut().catch(() => {/* ignore */});
 
+      const message = accountDeleted
+        ? '계정과 모든 기록이 영구 삭제됐어. 그동안 함께해줘서 고마워.'
+        : `${fallbackResult?.deletedTables.length ?? 0}개 항목 기록을 지웠어.${
+            (fallbackResult?.failedTables.length ?? 0) > 0
+              ? `\n실패한 ${fallbackResult?.failedTables.length}개 항목과 계정 자체는 운영팀 후속 처리.`
+              : '\n계정 자체 삭제는 운영팀 후속 처리가 필요해.'
+          }`;
+
       Alert.alert(
         '삭제 완료',
-        `${result.deletedTables.length}개 항목에서 너의 기록을 모두 지웠어.${
-          result.failedTables.length > 0
-            ? `\n실패한 항목 ${result.failedTables.length}개는 운영팀 후속 처리.`
-            : ''
-        }\n로그아웃됐어.`,
+        `${message}\n로그아웃됐어.`,
         [{ text: '확인', onPress: () => router.replace('/' as never) }],
       );
     } catch {
@@ -287,10 +304,10 @@ export default function DataSettingsScreen() {
           <View className="flex-row items-start gap-3 mb-4">
             <Icon name="x" size={18} color={colors.coral[400]} />
             <View className="flex-1">
-              <Body className="font-medium mb-1">모든 데이터 삭제</Body>
+              <Body className="font-medium mb-1">계정 + 모든 데이터 영구 삭제</Body>
               <Caption className="text-gray-400 leading-5">
-                일기·응답·추억·about-me 답변 등 모든 기록이 영구 삭제돼.{'\n'}
-                계정 자체 삭제는 운영팀 후속 처리가 필요해 (별도 안내).
+                일기·응답·추억·about-me 답변 등 모든 기록과 계정 자체가 영구 삭제돼.{'\n'}
+                되돌릴 수 없어. 같은 이메일로 다시 가입은 가능해.
               </Caption>
               {decisionLocked && (
                 <Caption className="text-purple-400 mt-2 leading-5">
@@ -300,7 +317,7 @@ export default function DataSettingsScreen() {
             </View>
           </View>
           <PrimaryButton
-            label={deleting ? '삭제 중...' : '모든 데이터 삭제'}
+            label={deleting ? '삭제 중...' : '계정 + 모든 데이터 삭제'}
             variant="ghost"
             onPress={confirmDelete}
             loading={deleting}
