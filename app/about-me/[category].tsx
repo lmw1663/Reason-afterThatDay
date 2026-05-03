@@ -63,7 +63,7 @@ export default function ReflectionCategoryScreen() {
   const [labels, setLabels] = useState<string[]>([]);
   const [text, setText] = useState('');
   const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const config = CATEGORY_CONFIGS[category] ?? CATEGORY_CONFIGS.love_self;
 
@@ -86,15 +86,22 @@ export default function ReflectionCategoryScreen() {
   }
 
   async function handleSave() {
-    if (!userId) return;
+    if (!userId) {
+      setSaveError('로그인 정보가 없어. 앱을 다시 켜볼래?');
+      return;
+    }
     setSaving(true);
-    setSaveError(false);
+    setSaveError(null);
     try {
       await updateReflection(userId, category, { score, labels, textResponse: text });
       router.back();
     } catch (e) {
+      const err = e as { message?: string; code?: string; details?: string };
+      const detail = err.code
+        ? `${err.code}: ${err.message ?? ''}`
+        : err.message ?? '알 수 없는 오류';
       console.warn('[about-me] save failed:', e);
-      setSaveError(true);
+      setSaveError(`저장 실패 — ${detail}`);
     } finally {
       setSaving(false);
     }
@@ -113,9 +120,9 @@ export default function ReflectionCategoryScreen() {
   return (
     <ScreenWrapper keyboardAvoiding>
       <ErrorToast
-        visible={saveError}
-        message="저장이 안 됐어. 다시 시도해볼래?"
-        onHide={() => setSaveError(false)}
+        visible={!!saveError}
+        message={saveError ?? ''}
+        onHide={() => setSaveError(null)}
         action={{ label: '재시도', onPress: handleSave }}
       />
       <ScrollView

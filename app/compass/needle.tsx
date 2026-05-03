@@ -32,8 +32,20 @@ export default function CompassNeedleScreen() {
   const color = VERDICT_COLOR[verdict];
   const label = VERDICT_LABEL[verdict];
 
-  // 나침반 바늘 각도: diff 양수=잡기(왼쪽), 음수=보내기(오른쪽)
-  const needleAngle = Math.max(-80, Math.min(80, -diff * 12));
+  // 나침반 바늘 각도: diff 양수=잡기(왼쪽), 음수=보내기(오른쪽).
+  // verdict별 고정 각도로 단계가 시각적으로 명확히 보이게 함.
+  const needleAngle = (() => {
+    switch (verdict) {
+      case 'strong_catch':              return -85;
+      case 'lean_catch':                return -45;
+      case 'undecided':                 return 0;
+      case 'undecided_with_love':       return -20;
+      case 'undecided_with_resentment': return 20;
+      case 'lean_let_go':               return 45;
+      case 'strong_let_go':             return 85;
+      case 'DANGER_OBSESSION':          return -60;
+    }
+  })();
 
   useEffect(() => {
     const record = {
@@ -90,7 +102,15 @@ export default function CompassNeedleScreen() {
             className="w-48 h-48 rounded-full items-center justify-center"
             style={{ backgroundColor: colors.surface, borderWidth: 2, borderColor: colors.border }}
           >
-            {/* 나침반 바늘 */}
+            {/* 좌(잡기) / 우(보내기) 카디널 마커 — 방향 자체는 needle이 보여주니 라벨은 중립톤 */}
+            <Text style={{ position: 'absolute', left: 12, top: 92, fontSize: 11, color: colors.gray[400], fontWeight: '600' }}>
+              잡기
+            </Text>
+            <Text style={{ position: 'absolute', right: 12, top: 92, fontSize: 11, color: colors.gray[400], fontWeight: '600' }}>
+              보내기
+            </Text>
+
+            {/* 나침반 바늘 — 색칠된 쪽이 가리키는 방향 */}
             <View
               className="absolute"
               style={{ transform: [{ rotate: `${needleAngle}deg` }] }}
@@ -110,10 +130,9 @@ export default function CompassNeedleScreen() {
             />
           </View>
 
-          <View className="flex-row justify-between w-56 mt-2">
-            <Text className="text-purple-400 text-sm font-medium">잡기</Text>
-            <Text className="text-teal-400 text-sm font-medium">보내기</Text>
-          </View>
+          <Caption className="text-gray-500 mt-3 text-center">
+            바늘의 색칠된 쪽이 너의 마음이 향하는 방향이야
+          </Caption>
         </View>
 
         {/* 결과 — verdict별 동적 색상이라 인라인 borderLeftColor 유지 */}

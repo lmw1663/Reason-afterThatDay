@@ -12,10 +12,34 @@ export interface JournalContext {
 }
 
 // ── fallback 응답 (Edge Function 실패 시) ───────────────────────────
+// 같은 방향으로 매일 와도 응답이 단조롭지 않도록, 방향별 풀에서 랜덤 선택.
+const FALLBACK_JOURNAL: Record<Direction, string[]> = {
+  catch: [
+    '잡고 싶은 마음이 느껴져. 그 마음 충분히 이해해.',
+    '함께였던 시간이 떠오르는 날이구나. 그리움도 사랑의 한 모양이야.',
+    '다시 닿고 싶은 마음, 억누르지 않아도 돼. 그게 너의 솔직한 지금이야.',
+    '잡고 싶은 마음이 진심인지, 외로움인지 — 천천히 구분해봐도 괜찮아.',
+    '오늘은 그 사람의 좋은 면이 더 크게 떠오르는 것 같네. 그것도 자연스러운 흐름이야.',
+  ],
+  let_go: [
+    '보내고 싶은 마음도 용기야. 잘 하고 있어.',
+    '한 걸음 앞으로 가려는 너, 그 결심을 응원해.',
+    '놓는다는 건 잊는다는 게 아니야. 너만의 길을 가는 거야.',
+    '오늘 너의 마음이 단단해 보여. 그 단단함도 회복의 한 모양이야.',
+    '보내려 하는 마음에 죄책감 두지 마. 그건 너를 지키는 결정이기도 해.',
+  ],
+  undecided: [
+    '지금 어떤 마음인지 정확히 몰라도 괜찮아. 그게 자연스러운 거야.',
+    '흐릿한 날에는 흐릿한 채로 있어도 돼. 결정은 다음에 해도 돼.',
+    '두 마음이 같이 있는 거, 모순이 아니라 솔직함이야.',
+    '아직 정리되지 않은 마음을 그대로 두는 것도 회복이야.',
+    '오늘은 어느 쪽으로도 기울지 않는 날인 것 같아. 그것도 충분해.',
+  ],
+};
+
 function fallbackJournal(direction: Direction): string {
-  if (direction === 'catch') return '잡고 싶은 마음이 느껴져. 그 마음 충분히 이해해.';
-  if (direction === 'let_go') return '보내고 싶은 마음도 용기야. 잘 하고 있어.';
-  return '지금 어떤 마음인지 정확히 몰라도 괜찮아. 그게 자연스러운 거야.';
+  const pool = FALLBACK_JOURNAL[direction] ?? FALLBACK_JOURNAL.undecided;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 const DAILY_QUOTE_FALLBACKS = [

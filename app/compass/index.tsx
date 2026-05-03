@@ -48,12 +48,12 @@ export default function CompassSummaryScreen() {
                 ? '아직 일기를 쓰지 않았어.'
                 : `잡고 싶어 ${catchCount}회 · 보내고 싶어 ${letGoCount}회 · 모르겠어 ${recentDirections.length - catchCount - letGoCount}회`
             }
-            accent="teal"
+            accent="purple"
           />
           <InsightCard
             tag="평균 감정 온도"
             body={`최근 7일 평균 ${moodAvg}°`}
-            accent="coral"
+            accent="purple"
           />
           {latestVerdict && (
             <InsightCard

@@ -75,16 +75,17 @@ export async function updateReflection(
   source: ReflectionSource = 'manual',
 ): Promise<void> {
   // is_current 기존 row를 false로
-  await supabase
+  const { error: deactivateError } = await supabase
     .from('self_reflections')
     .update({ is_current: false })
     .eq('user_id', userId)
     .eq('category', category)
     .eq('source', source)
     .eq('is_current', true);
+  if (deactivateError) throw deactivateError;
 
   // 새 row 삽입
-  await supabase.from('self_reflections').insert({
+  const { error: insertError } = await supabase.from('self_reflections').insert({
     user_id: userId,
     category,
     score: payload.score ?? null,
@@ -93,4 +94,5 @@ export async function updateReflection(
     source,
     is_current: true,
   });
+  if (insertError) throw insertError;
 }

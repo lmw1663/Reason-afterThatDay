@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '@/api/supabase';
@@ -57,9 +58,26 @@ async function registerForPushNotifications(
     return;
   }
 
-  const token = (await Notifications.getExpoPushTokenAsync()).data;
-  setPushToken(token);
+  // EAS projectId — dev client/bare workflow에선 manifest에서 추론이 안 돼 명시 전달 필요.
+  // 아직 `eas init`이 안 돼 있는 단계에선 projectId 없이 fallback (실패해도 앱이 죽지 않게).
+  const projectId =
+    Constants.expoConfig?.extra?.eas?.projectId ??
+    Constants.easConfig?.projectId ??
+    undefined;
 
-  // DB에 토큰 저장
+  let token: string | null = null;
+  try {
+    const result = projectId
+      ? await Notifications.getExpoPushTokenAsync({ projectId })
+      : await Notifications.getExpoPushTokenAsync();
+    token = result.data;
+  } catch (e) {
+    console.warn('[push] getExpoPushTokenAsync failed:', e);
+    return;
+  }
+
+  if (!token) return;
+
+  setPushToken(token);
   await supabase.from('users').update({ push_token: token }).eq('id', userId);
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, TextInput, View } from 'react-native';
+import { Modal, Pressable, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Body, Caption, Heading } from './ui/Typography';
 import { PrimaryButton } from './ui/PrimaryButton';
@@ -32,10 +32,10 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
     }
   }, [visible]);
 
-  // step 2: 마인드풀니스 문장 2초 후 step 3으로
+  // step 2: 마인드풀니스 문장 3초 후 step 3으로 (사용자가 직접 진행할 수도 있음)
   useEffect(() => {
     if (step !== 2) return;
-    const timer = setTimeout(() => setStep(3), 2000);
+    const timer = setTimeout(() => setStep(3), 3000);
     return () => clearTimeout(timer);
   }, [step]);
 
@@ -84,15 +84,26 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
             <>
               <Heading className="mb-6 text-center">잠깐, 숨 한 번만</Heading>
               <BreathingGuide pattern="quick" onComplete={() => setStep(2)} />
+              <Pressable
+                onPress={() => setStep(3)}
+                accessibilityRole="button"
+                accessibilityLabel="호흡 건너뛰고 바로 기록"
+                className="mt-2 py-2 active:opacity-60"
+              >
+                <Text className="text-center text-sm" style={{ color: colors.gray[400] }}>
+                  건너뛰고 바로 기록할게 →
+                </Text>
+              </Pressable>
             </>
           )}
 
           {step === 2 && (
             <View className="py-8 items-center">
-              <Body className="text-gray-200 text-center leading-relaxed">
+              <Body className="text-gray-200 text-center leading-relaxed mb-6">
                 그 기억은 사실이지만,{'\n'}
                 지금의 너는 그 기억 속이 아니야.
               </Body>
+              <PrimaryButton label="기록하러 가기" onPress={() => setStep(3)} />
             </View>
           )}
 

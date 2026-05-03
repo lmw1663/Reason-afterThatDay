@@ -4,7 +4,6 @@ import { Text, View, Pressable, ScrollView, AppState } from 'react-native';
 import { router, type Href } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
-import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
@@ -114,19 +113,47 @@ export default function HomeScreen() {
         {/* 일기 CTA */}
         <View className="px-6 mb-6">
           {todayEntry ? (
-            <Card variant="subtle" accent="teal" className="rounded-2xl p-4">
-              <Text className="text-teal-400 text-sm font-medium mb-1">오늘 일기 작성 완료</Text>
-              <Text className="text-white text-lg font-semibold">
-                감정 온도 {todayEntry.moodScore}°
-              </Text>
-              <Caption className="mt-1">
-                방향: {
-                  todayEntry.direction === 'catch' ? '잡고 싶어'
-                  : todayEntry.direction === 'let_go' ? '보내고 싶어'
-                  : '아직 모르겠어'
-                }
-              </Caption>
-            </Card>
+            <Pressable
+              onPress={() => router.push('/journal/today')}
+              accessibilityRole="button"
+              accessibilityLabel="오늘 일기 이어쓰기 또는 수정하기"
+              className="active:opacity-80 rounded-2xl p-4"
+              style={{ backgroundColor: colors.surface }}
+            >
+              <View className="flex-row items-center justify-between">
+                <View className="flex-1">
+                  {/* 완료 배지 */}
+                  <View
+                    className="flex-row items-center self-start gap-1 rounded-full px-2 py-0.5 mb-2"
+                    style={{ backgroundColor: colors.overlayPurpleSoft }}
+                  >
+                    <Icon name="check" size={11} color={colors.purple[400]} strokeWidth={2.5} />
+                    <Caption style={{ color: colors.purple[400], fontSize: 11, fontWeight: '600' }}>
+                      오늘 일기 작성 완료
+                    </Caption>
+                  </View>
+
+                  {/* 감정 온도 */}
+                  <View className="flex-row items-baseline gap-1.5">
+                    <Text className="text-white text-2xl font-bold">{todayEntry.moodScore}</Text>
+                    <Caption className="text-gray-500">/ 10</Caption>
+                  </View>
+
+                  <Caption className="text-gray-400 mt-1">
+                    {
+                      todayEntry.direction === 'catch' ? '잡고 싶어'
+                      : todayEntry.direction === 'let_go' ? '보내고 싶어'
+                      : '아직 모르겠어'
+                    }
+                  </Caption>
+                </View>
+
+                <View className="flex-row items-center gap-1">
+                  <Caption className="text-gray-500">이어쓰기</Caption>
+                  <Icon name="chevron-right" size={18} color={colors.gray[400]} />
+                </View>
+              </View>
+            </Pressable>
           ) : (
             <View className="gap-3">
               <Pressable
@@ -137,7 +164,7 @@ export default function HomeScreen() {
                 className="rounded-2xl py-4 px-6 items-center flex-row justify-center gap-3 active:opacity-70 border border-gray-700"
                 style={{ backgroundColor: colors.surface }}
               >
-                <Text className="text-2xl">⚡</Text>
+                <Icon name="thermometer" size={24} color={colors.gray[50]} />
                 <View>
                   <Text className="text-gray-200 font-semibold">오늘은 감정 온도만</Text>
                   <Caption className="text-gray-500">힘든 날엔 이만큼이면 돼</Caption>
@@ -153,7 +180,7 @@ export default function HomeScreen() {
                 style={{ backgroundColor: colors.purple[600] }}
               >
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-2xl">🔥</Text>
+                  <Icon name="pen" size={22} color={colors.white} />
                   <Text className="text-white text-lg font-bold">깊게 쓰고 싶어</Text>
                   <Icon name="chevron-right" color={colors.white} size={20} />
                 </View>
@@ -174,8 +201,8 @@ export default function HomeScreen() {
             className="flex-1 rounded-2xl py-4 px-4 items-center active:opacity-70 border border-gray-700"
             style={{ backgroundColor: colors.surface }}
           >
-            <Text className="text-2xl mb-1">🫧</Text>
-            <Text className="text-gray-200 font-semibold text-sm text-center">갑자기 떠올랐어</Text>
+            <Icon name="fog" size={26} color={colors.purple[400]} />
+            <Text className="text-gray-200 font-semibold text-sm text-center mt-1">갑자기 떠올랐어</Text>
             <Caption className="text-gray-600 text-center text-xs mt-0.5">진정 플로우</Caption>
           </Pressable>
 
@@ -186,8 +213,8 @@ export default function HomeScreen() {
             className="flex-1 rounded-2xl py-4 px-4 items-center active:opacity-70 border border-gray-700"
             style={{ backgroundColor: colors.surface }}
           >
-            <Text className="text-2xl mb-1">🌱</Text>
-            <Text className="text-gray-200 font-semibold text-sm text-center">나에 대해</Text>
+            <Icon name="heart" size={26} color={colors.purple[400]} />
+            <Text className="text-gray-200 font-semibold text-sm text-center mt-1">나에 대해</Text>
             <Caption className="text-gray-600 text-center text-xs mt-0.5">자존감 트랙</Caption>
           </Pressable>
         </View>
@@ -209,7 +236,7 @@ export default function HomeScreen() {
           <QuickLink
             icon="archive"
             title="추억 정리"
-            desc="사진·메시지·장소를 차근차근 정리해봐"
+            desc="떠오른 추억을 한 줄씩 모아봐"
             onPress={() => router.push('/memories' as Href)}
           />
         </View>
