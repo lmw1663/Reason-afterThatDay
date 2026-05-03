@@ -25,7 +25,7 @@
 A. 인증·구조 재설계:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (a15f8ae~898ebd5)
 B. 안전·임상 (구현계획 1부): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (1b71f61~23361fa)
 C-1 페르소나 인프라:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (8a8090c~3f8923a)
-C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   95%  🔄 (G-11 200셀 테스트만 잔존)
+C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100% ✅ 완료 (단위 테스트 162 PASS, dogfood 별도 트랙)
 C-2-Ref 참고용 적용:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (d614c74~1908c43)
 C-3 다중 페르소나 충돌:   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (5 화면 + 단위 테스트 26/26 PASS)
 X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░   85%  🔄 (4 ai-* 통합, 졸업·스트림 잔존)
@@ -238,7 +238,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | C-2-G-8 | C8 쿨링 분기 (021 마이그레이션 + admin 탭) | 20 | ⬜ | 졸업 보류로 진입 제한 |
 | ~~C-2-G-9~~ | ~~C9 졸업 분기~~ | ~~20~~ | ⏸️ **보류** (A-4) | — |
 | C-2-G-10 | C10 위기/푸시 분기 (페르소나별 핫라인 매핑) | 20 | ✅ | 165c060 |
-| C-2-G-11 | 200 셀 단위 테스트 + dogfood 20명 | — | ⬜ | — |
+| C-2-G-11 | 200 셀 단위 테스트 (21 헬퍼 + 6 페르소나 횡단 통합 — 162/162 PASS) / dogfood 20명은 별도 | — | ✅ | (본 커밋, dogfood deferred) |
 
 ## C-2-Ref. 참고용.md 5건 적용
 
@@ -347,7 +347,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 # 지금 위치
 
-**→ C-2-G-7c 추억 트랙 + C-2-G-5b about-me 카테고리 4종 완료**. C-2 진행도 95%. 잔존: G-11 200셀 단위 테스트.
+**→ C-2 화면별 분기 100% 완료** (G-7c·G-5b·G-11 모두). 페르소나 헬퍼 21개 + 화면 횡단 통합 잠금. 다음 트랙: D Phase 검사 통합 (B-0 라이선스 회신 후) 또는 X 횡단(PIPA·텔레메트리).
 
 ## 누적 커밋 (최근 30개)
 
@@ -358,13 +358,15 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 - C-2-Ref 참고용: `d614c74` Ref-1 → `a886c2c` Ref-2/4/5 헬퍼 → `6a35a6b` Ref-3 → `cc31e17` Ref-4 → `1908c43` Ref-5
 - C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → `936be16` C-3-H-test+ 51 PASS (opus 후속 3건) → `5c38c77` C-3-H-test++ 59 PASS (선택 권고 2건)
 - C-2-G-7c: `00c30e0` G-7c-1 헬퍼 4종 → `3ef0ad9` G-7c-2 P08 봉인 → `d761dee` G-7c-3 P15 짐 정리 → `192a4f4` G-7c-4 P17 Continuing Bonds → `6aa041d` G-7c-5 P18 마주침 동선 → `c6102f6` G-7c-6 진입 통합
-- C-2-G-5b: `523e05e` G-5b-1 카테고리 4종 인프라 → (본 커밋) G-5b-2 secondary 검사 + visual highlight
+- C-2-G-5b: `523e05e` G-5b-1 카테고리 4종 인프라 → `a6a1483` G-5b-2 secondary 검사 + visual highlight
+- C-2-G-11: (본 커밋) screenHelpers.test.ts 신규 — 14 헬퍼 + 통합 6 페르소나 (162 PASS)
 
 ## 다음 할 일 (우선순위 순)
 
-1. **C-2-G-11** 200셀 단위 테스트 (vitest 인프라 깔림 — sortAboutMeCategories·trackHelpers·priority swap 화면별 검증)
-2. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-3. **X-1·X-3·X-4** PIPA·임계 JSON·텔레메트리 (베타 진입 전 필수)
+1. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
+2. **X-1·X-3·X-4** PIPA·임계 JSON·텔레메트리 (베타 진입 전 필수)
+3. **CLAUDE.md vs 참고용.md 시간 표기 통일** — 새벽 boundary 00~04 vs 00~05 (G-11 opus 권고)
+4. **C-2 dogfood 20명** — 베타 트랙으로 분리
 
 ---
 
