@@ -276,6 +276,33 @@ export function isUnsentLetterRecommended(p: PersonaCode | null): boolean {
   return p !== null && UNSENT_LETTER_RECOMMENDED.includes(p);
 }
 
+// ───────── G-7a 추억 트랙 분기 (매트릭스 §2 C7) ─────────
+
+/**
+ * 능동 회상 트랙에서 *미화 카테고리* 차단할 페르소나 (매트릭스 §2 C7).
+ * - P01·P20: 자기 판단 손상·트라우마 본딩 — 상대 미화로 단절 의지 약화
+ * - P10: 분노 단계 미화는 분노→슬픔 통합 방해
+ * - P14: 외도 가해 자기 정당화 차단
+ *
+ * 차단 카테고리: 'happy', 'miss' (행복했던 순간·지금도 그리운 것).
+ * 'painful'·'growth'는 회복 작업이라 통과.
+ */
+const MEMORY_GLAMOUR_BLOCKED: PersonaCode[] = ['P01', 'P10', 'P14', 'P20'];
+
+export function isMemoryGlamourBlocked(p: PersonaCode | null): boolean {
+  return p !== null && MEMORY_GLAMOUR_BLOCKED.includes(p);
+}
+
+/**
+ * 능동 회상 트랙 D+N 게이트 (매트릭스 §2 C7).
+ * - P03 (불안형): D+21까지 지연 — 미련 자극 차단
+ * - 기타: 0 (제한 없음)
+ */
+export function getMemoryReflectGateDays(p: PersonaCode | null): number {
+  if (p === 'P03') return 21;
+  return 0;
+}
+
 // ───────── Ref-3 새벽 푸시 차단 (참고용 §2 P03) ─────────
 
 /**
