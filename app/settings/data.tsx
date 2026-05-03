@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Share, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// expo-file-system v19+는 main entry가 신규 File/Directory 객체 API.
+// legacy 서브경로는 v20+에서 제거 가능 — TODO: 신규 API로 마이그레이션.
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
@@ -70,7 +74,30 @@ export default function DataSettingsScreen() {
     try {
       const payload = await exportUserData(userId);
       const json = JSON.stringify(payload, null, 2);
-      await Share.share({ message: json, title: 'reason 데이터 반출' });
+
+      // X-1-잔여: 대용량 안정성 — *파일 첨부* 모드로 share. iOS Share Sheet의 message 잘림
+      // 한계 우회. expo-sharing 미지원 환경(웹 등)은 기존 Share.share message 모드로 fallback.
+      // 민감 정보(C-SSRS·자해 사고 등)가 평문 캐시에 잔존하지 않도록 share 직후 즉시 삭제 (PIPA §29).
+      const fileName = `reason-data-${new Date().toISOString().slice(0, 10)}.json`;
+      const cacheDir = FileSystem.cacheDirectory;
+      if (cacheDir && (await Sharing.isAvailableAsync())) {
+        const fileUri = cacheDir + fileName;
+        try {
+          await FileSystem.writeAsStringAsync(fileUri, json, {
+            encoding: FileSystem.EncodingType.UTF8,
+          });
+          await Sharing.shareAsync(fileUri, {
+            mimeType: 'application/json',
+            dialogTitle: 'reason 데이터 반출',
+            UTI: 'public.json',
+          });
+        } finally {
+          // 캐시 잔존 차단 — 사용자가 share를 취소했더라도 즉시 삭제
+          await FileSystem.deleteAsync(fileUri, { idempotent: true }).catch(() => {/* ignore */});
+        }
+      } else {
+        await Share.share({ message: json, title: 'reason 데이터 반출' });
+      }
     } catch {
       setError('내보내기가 실패했어. 잠시 후 다시 시도해줘.');
     } finally {
