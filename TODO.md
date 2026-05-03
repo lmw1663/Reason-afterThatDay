@@ -320,7 +320,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 | ID | 작업 | 상태 |
 |---|---|---|
-| X-1 | PIPA 컴플라이언스 (조회·삭제·반출 — `app/settings/data.tsx`) | ⬜ |
+| X-1 | PIPA 컴플라이언스 (§35 열람·§36 삭제·GDPR Art.20 반출) — `api/userData.ts` + `app/settings/data.tsx` + me.tsx 진입 + 안전 잠금 가드 + 민감정보 사전 경고 | ✅ | (본 커밋) |
+| X-1-잔여 | §37 처리정지권(알림 OFF·AI 분석 정지) + Share file URL(대용량 안정성) + 계정 자체 삭제 Edge Function | ⬜ | opus 권고 3·4·5 |
 | X-2 | AI 응답 임상 면책 자동 첨부 (X-2-B-1 buildSystemPrompt에 통합 완료) | ✅ |
 | X-2-B-1 | `_shared/personaPrompts.ts` 19 페르소나 톤·금기·프레이밍 + lint 헬퍼 | ✅ fbcd106 |
 | X-2-B-2 | 4 ai-* 함수 통합 (journal·comfort·daily-quote·cooling-checkin) + violation fallback | ✅ 92a5f7b |
@@ -363,10 +364,12 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ## 다음 할 일 (우선순위 순)
 
-1. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-2. **X-1·X-3·X-4** PIPA·임계 JSON·텔레메트리 (베타 진입 전 필수)
-3. **CLAUDE.md vs 참고용.md 시간 표기 통일** — 새벽 boundary 00~04 vs 00~05 (G-11 opus 권고)
-4. **C-2 dogfood 20명** — 베타 트랙으로 분리
+1. **X-3** 외부 의뢰 임계 JSON (`resources/referral-thresholds.json`)
+2. **X-4** 텔레메트리·A/B 인프라 (베타 진입 전 필수)
+3. **X-1-잔여** §37 처리정지권 + Share file URL + 계정 삭제 Edge Function (출시 전)
+4. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
+5. **CLAUDE.md vs 참고용.md 시간 표기 통일** — 새벽 boundary 00~04 vs 00~05
+6. **C-2 dogfood 20명** — 베타 트랙으로 분리
 
 ---
 

@@ -115,6 +115,17 @@ export default function MeScreen() {
           />
         </View>
 
+        {/* X-1 PIPA 데이터 관리 — 항상 노출 (열람·반출·삭제 권리) */}
+        <View className="mt-6">
+          <Caption className="text-gray-500 mb-2">설정</Caption>
+          <MeCard
+            icon="shield"
+            title="내 데이터 관리"
+            subtitle="기록 보기 · 내보내기 · 삭제"
+            onPress={() => router.push('/settings/data' as never)}
+          />
+        </View>
+
         {decisionLocked ? (
           <Card className="mt-6 p-4">
             <View className="flex-row items-start gap-3">
