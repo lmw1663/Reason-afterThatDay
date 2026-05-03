@@ -1,4 +1,5 @@
 import type { PersonaCode } from '@/utils/personaClassifier';
+import { getPersonaTypology } from './personaTypology';
 
 /**
  * 페르소나 분기 predicate 모음 — C-2-G-3a~
@@ -187,4 +188,90 @@ export function sortAboutMeCategories<T extends string>(
   const head = priority.filter(k => defaultOrder.some(d => d === k)) as T[];
   const tail = defaultOrder.filter(d => !head.includes(d as T));
   return [...head, ...tail];
+}
+
+// ───────── Ref-2 다중 페르소나 우선순위 매트릭스 (참고용 §3-1) ─────────
+
+/**
+ * 다중 페르소나 우선순위 결정 — 참고용 §3-1
+ *
+ * 매트릭스 §4-1의 R0~R5 알고리즘을 *유형 기반*으로 보강.
+ * Task 2-3-H(`utils/personaResolver.ts`) 본 구현 시 본 헬퍼를 결합.
+ *
+ * 결정 규칙:
+ *  - 주가 A 안전 → primary (어떤 부 페르소나도 안전 우선)
+ *  - 주 B 접촉 + 부 D 의미 → primary (의미 부여를 머리로만 하면 회피 강화)
+ *  - 주 C 조절 + 부 D 의미 → primary (조절 안 되면 의미 작업 불가)
+ *  - 주 C 조절 + 부 B 접촉 → 'merged' (충동성·해리 양쪽 고려)
+ *  - 주 D 의미 + 부 A/B/C → secondary (부 페르소나가 더 시급)
+ *  - 그 외 → 'merged'
+ *
+ * 매트릭스 R2 책임 분리: HARMFUL_RELATIONSHIP(P01·P14·P20)의 화면별 액션 차단(상대 단점 OFF 등)은
+ * isPartnerProsBlocked 등 별도 헬퍼가 처리. 본 함수는 *유형 기반 시급도*만 산출.
+ * P01은 C 조절로 분류돼 R2 자동 우선에 들어가지 않음 — 의도적 분리 (액션 차단은 별도 헬퍼).
+ */
+export type PriorityResolution = 'primary' | 'secondary' | 'merged';
+
+export function resolvePersonaPriority(
+  primary: PersonaCode | null,
+  secondary: PersonaCode | null,
+): PriorityResolution {
+  const pType = getPersonaTypology(primary);
+  const sType = getPersonaTypology(secondary);
+
+  if (!pType) return 'primary';
+  if (!sType) return 'primary';
+
+  // 안전 우선 — 무조건 주
+  if (pType === 'A_safety') return 'primary';
+  if (sType === 'A_safety') return 'secondary';
+
+  // 의미 재구성보다 감정 접촉/조절이 시급
+  if (pType === 'D_meaning' && (sType === 'B_contact' || sType === 'C_regulation')) {
+    return 'secondary';
+  }
+  if (pType === 'B_contact' && sType === 'D_meaning') return 'primary';
+  if (pType === 'C_regulation' && sType === 'D_meaning') return 'primary';
+
+  // 조절 + 접촉 동시 → merged (런타임 추가 신호로 결정)
+  if (pType === 'C_regulation' && sType === 'B_contact') return 'merged';
+  if (pType === 'B_contact' && sType === 'C_regulation') return 'merged';
+
+  // 같은 유형 또는 외부복잡도 등 → merged
+  return 'merged';
+}
+
+// ───────── Ref-4 P14 자기 용서 트랙 D+60 잠금 (참고용 §2 P14) ─────────
+
+/**
+ * P14(외도 가해 후회) 자기 용서 트랙 잠금 해제 여부.
+ * 참고용: D+60 이전 자기 용서는 자기 정당화로 흐를 위험. 수치심 시기엔 *행동 책임*만.
+ *
+ * 본 함수는 향후 *자기 용서 카드/트랙* 신설 시 게이트로 사용 (D-5 또는 별도 후속).
+ * P14 외 페르소나는 항상 unlocked(true) — 본 게이트는 P14에만 적용.
+ */
+const SELF_FORGIVENESS_GATE_DAYS = 60;
+
+export function isSelfForgivenessUnlocked(
+  p: PersonaCode | null,
+  daysElapsed: number,
+): boolean {
+  if (p !== 'P14') return true;
+  return daysElapsed >= SELF_FORGIVENESS_GATE_DAYS;
+}
+
+// ───────── Ref-5 부치지 않을 편지 권장 페르소나 ─────────
+
+/**
+ * 부치지 않을 편지 보관함 권장 페르소나 (참고용 §2 P02·P10·P17).
+ * - P10: 분노 venting 1차 통로
+ * - P02: 빈 페이지 회피 우회
+ * - P17: 미완의 말 표출
+ *
+ * 다른 페르소나도 사용 가능 — 본 함수는 *권장 노출*에만 사용.
+ */
+const UNSENT_LETTER_RECOMMENDED: PersonaCode[] = ['P02', 'P10', 'P17'];
+
+export function isUnsentLetterRecommended(p: PersonaCode | null): boolean {
+  return p !== null && UNSENT_LETTER_RECOMMENDED.includes(p);
 }
