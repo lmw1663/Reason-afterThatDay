@@ -32,3 +32,29 @@ const EMPTINESS_LABELS_PRIORITY: PersonaCode[] = ['P08'];
 export function isEmptinessLabelsPriority(p: PersonaCode | null): boolean {
   return p !== null && EMPTINESS_LABELS_PRIORITY.includes(p);
 }
+
+// ───────── G-3b 일기 자유 메모 placeholder 분기 ─────────
+
+/**
+ * 페르소나별 일기 자유 메모 placeholder (매트릭스 §2 C3).
+ * 페르소나 미정 또는 baseline은 default 반환.
+ */
+export function getJournalFreeTextPlaceholder(p: PersonaCode | null): string {
+  switch (p) {
+    case 'P04': return '"내가 *아는 것*"과 "내가 *상상한 것*"을 나눠 써봐';
+    case 'P09': return '오늘 *너*에 대한 한 줄. 상대 추측 말고';
+    case 'P17': return '그때 못 한 말, 지금 여기에 풀어볼래';
+    case 'P10': return '거칠게 써도 돼. 표출 후 함께 다른 감정도 보자';
+    default:    return '더 하고 싶은 말이 있으면 써봐 (선택)';
+  }
+}
+
+/**
+ * P14 (외도 가해 후회) — 일기 진입 시 "수치심 ≠ 죄책감" 심리교육 카드 1회 노출.
+ * (매트릭스 §2 C3 P14)
+ */
+const SHAME_GUILT_EDU_PERSONAS: PersonaCode[] = ['P14'];
+
+export function shouldShowShameGuiltEducation(p: PersonaCode | null): boolean {
+  return p !== null && SHAME_GUILT_EDU_PERSONAS.includes(p);
+}

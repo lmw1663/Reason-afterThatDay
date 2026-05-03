@@ -34,4 +34,9 @@ export const OFFLINE_QUESTION_POOL: Question[] = [
   // 졸업 회한 질문 (migration 005)
   { id: 'g_regret_best',       text: '이 관계에서 제일 아쉬웠던 기억이 뭐야?',               context: ['graduation'],            isActive: true, weight: 8  },
   { id: 'g_regret_unsaid',     text: '아직 전하지 못한 말이 있어?',                          context: ['graduation'],            isActive: true, weight: 8  },
+  // 페르소나 분기용 일기 질문 (C-2-G-3b) — 페르소나별 booster로 가중치 부여, 일반 사용자에겐 낮은 가중치.
+  { id: 'j_decision_recall',   text: '왜 그 결정을 했는지, 그날의 일기를 다시 만나러 가볼래?', context: ['journal'],               isActive: true, weight: 2  },
+  { id: 'j_two_minds',         text: '오늘은 두 마음이 어떻게 같이 있었어?',                   context: ['journal'],               isActive: true, weight: 2  },
+  { id: 'j_fact_only',         text: '해석 말고, 그날 *사실*만 써본다면?',                     context: ['journal'],               isActive: true, weight: 2  },
+  { id: 'j_unspoken',          text: '그때 못 한 말, 지금 여기에 풀어볼래?',                   context: ['journal'],               isActive: true, weight: 2  },
 ];
