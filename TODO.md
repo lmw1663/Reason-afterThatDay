@@ -1,230 +1,392 @@
-# TODO.md — reason 개발 로드맵
+# TODO.md — Reason 개발 로드맵
+
+> 갱신일: 2026-05-03
+> 본 문서는 다음 3개 SSOT를 통합한 실행 가능한 작업 목록.
+> - [`docs/psychology-logic/구현계획.md`](docs/psychology-logic/구현계획.md) — 페이즈·태스크 인프라
+> - [`docs/psychology-logic/페르소나-화면-액션-매트릭스.md`](docs/psychology-logic/페르소나-화면-액션-매트릭스.md) — 20×11 분기 SSOT
+> - [`docs/psychology-logic/페르소나.md`](docs/psychology-logic/페르소나.md) + `페르소나-분류체계.md` — 페르소나 정의
+>
+> **재설계 결정 (2026-05-03)**:
+> - 하단바 4탭 → **3탭**: [오늘] [기록] [나] (방향 C)
+> - **졸업 트랙 일시 보류** — 매트릭스 C9 셀은 문서에 보존, 코드 미적용
+> - 첫 진입에 **약관 동의 + OAuth 로그인**(Google·Apple·Kakao) 강제
+> - 분석·나침반은 [나] 안 트랙으로 흡수, 페르소나·D+N 게이트로 노출 제어
+>
+> **상태 범례**: ✅ 완료 · 🔄 진행 중 · ⬜ 대기 · ⏸️ 보류(deferred) · ❌ 블로킹
 
 ---
 
 ## 진행도
 
-> 마지막 업데이트: 2026-04-27  
-> **상태 범례:** ✅ 완료 · 🔄 진행 중 · ⬜ 대기 · ❌ 블로킹
-
 ```
-전체  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  전체 Phase 완료 🎓
+기반 (Phase 0-5):     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료
+심리학 V1 (Phase 6-7): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░   90%  🔄
+─────────────────────────────────────────────────────
+A. 인증·구조 재설계:    ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
+B. 안전·임상 (구현계획 1부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
+C. 페르소나 시스템 (구현계획 2부 + 매트릭스): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
+D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
+E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
+횡단:                  ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
 ```
 
 ---
 
-### 📄 문서 ✅ 완료
+# Phase A — 인증·구조 재설계 (즉시 착수) 🔴
 
-| 항목 | 상태 |
-|------|------|
-| CLAUDE.md — 절대규칙 / 아키텍처 / 빌드 명령어 / 컨벤션 | ✅ |
-| docs/guide 00~09 — 정책 가이드 전체 + mermaid 다이어그램 | ✅ |
-| docs/research.md — 전체 시스템 상세 리서치 | ✅ |
-| TODO.md — 로드맵 / 스니펫 / 피드백 반영 | ✅ |
+> **이유**: 현재 익명 가입 + 4탭(홈/관계분석/나침반/졸업) 구조가 페르소나 매트릭스 적용을 막음. 매트릭스 적용 전 *기반*을 먼저 다진다.
+>
+> **참조**: 본 대화 §"하단바 재설계 방향 C" / 매트릭스 §5-4
 
----
+| ID | 작업 | 상태 | 의존 |
+|---|---|---|---|
+| A-1 | **약관 동의 화면** — 정보처리방침 + 이용약관 | ⬜ | — |
+| A-2 | **OAuth 로그인 화면** — Google·Apple·Kakao 3종 | ⬜ | A-1 |
+| A-3 | **하단바 4탭 → 3탭** [오늘] [기록] [나] | ⬜ | — |
+| A-4 | **졸업 탭 제거** + 졸업 진입 모두 비활성화 | ⬜ | A-3 |
+| A-5 | **분석·나침반을 [나] 트랙 카드로 이동** | ⬜ | A-3 |
+| A-6 | **[오늘] 페르소나 우선 카드 슬롯** 신설 | ⬜ | A-3 |
+| A-7 | **users 테이블 OAuth 컬럼 + consent_versions JSONB** | ⬜ | A-2 |
 
-## Phase 문서 분리 참조 (Claude 토큰 절약)
+## A-1. 약관 동의 화면
 
-- 인덱스: [docs/phases/README.md](docs/phases/README.md)
-- Phase 0: [docs/phases/phase-0.md](docs/phases/phase-0.md)
-- Phase 1: [docs/phases/phase-1.md](docs/phases/phase-1.md)
-- Phase 2: [docs/phases/phase-2.md](docs/phases/phase-2.md)
-- Phase 3: [docs/phases/phase-3.md](docs/phases/phase-3.md)
-- Phase 4: [docs/phases/phase-4.md](docs/phases/phase-4.md)
-- Phase 5: [docs/phases/phase-5.md](docs/phases/phase-5.md)
+**파일**:
+- `app/onboarding/consent.tsx` (신규 — 첫 진입 화면, `app/index.tsx` → consent 라우팅)
+- `resources/terms-of-service.md` (신규)
+- `resources/privacy-policy.md` (신규)
+- `supabase/migrations/018_consent.sql` (신규 — `users.consent_versions JSONB`)
 
-> 작업 시 권장: [CLAUDE.md](CLAUDE.md) 최소 규칙 확인 → 현재 Phase 문서만 읽기 → 공통 규칙은 [docs/phases/common-api-errors.md](docs/phases/common-api-errors.md) 확인
+**필수 조항**:
+1. 정보처리방침 (PIPA 일반)
+2. 서비스 이용약관 (앱 사용 규칙)
+3. 심리 척도 응답 수집·결과 활용 (PIPA 민감정보) — 구현계획 0-3 통합
+4. 페르소나 자동 분류 동의 + 조회·삭제 권리 명시
+5. 위기 응답 수집·응급 외 제3자 공유 없음
+6. C-SSRS 양성 시 자동 동작(졸업 트랙 잠금·푸시) 사전 동의 — *졸업 보류 중에도 명문 유지*
 
----
+**UI 패턴**:
+- 화면 전환형 (CLAUDE.md 절대 규칙)
+- 1화면 = 1조항 그룹, 스크롤 후 [동의] [거부] 양자택일
+- 거부 시 앱 진입 차단 + "동의 없이는 사용할 수 없어" 안내
+- 버전 갱신 시 재동의 (`consent_versions`에 timestamp 기록)
 
-### Phase 0 — 인프라 / DB / 디자인 시스템 ✅ `3 / 3`
-참조: [docs/phases/phase-0.md](docs/phases/phase-0.md)
+## A-2. OAuth 로그인 (Google·Apple·Kakao) — **한국 한정 출시**
 
-| 서브태스크 | 상태 | 비고 |
-|-----------|------|------|
-| 0-1. Expo 프로젝트 초기화 | ✅ | Expo Router + NativeWind v4 |
-| 0-2. Supabase 프로젝트 + DB 스키마 | ✅ | 마이그레이션 001~003 + RLS |
-| 0-3. 디자인 시스템 | ✅ | colors · 공통 컴포넌트 · ScreenWrapper |
+**출시 범위**: 🇰🇷 **한국 시장 한정**. App Store / Google Play 모두 한국 스토어에만 등록. 다른 지역 출시는 별도 의사결정 필요.
 
----
+**파일**:
+- `app/onboarding/login.tsx` (신규 — A-1 직후)
+- `api/auth.ts` (확장)
+- `hooks/useAuth.ts` (확장)
 
-### Phase 1 — 온보딩 / 홈 / 이별 일기 / Auth ✅ `5 / 5`
-참조: [docs/phases/phase-1.md](docs/phases/phase-1.md)
+**구현**:
+- Supabase Auth + 3-party OAuth 프로바이더 등록
+- `expo-auth-session` 사용
+- 패키지: `expo-auth-session`, `@react-native-google-signin/google-signin`, `expo-apple-authentication`, `@react-native-seoul/kakao-login`
+- iOS: Apple 로그인 *필수* (앱스토어 정책)
+- Android: Google + Kakao 우선
+- **카카오는 한국 메인 OAuth**로 1순위 노출 — 한국 사용자 친화
 
-| 서브태스크 | 상태 | 비고 |
-|-----------|------|------|
-| 1-1. Supabase Auth + useUserStore | ✅ | 익명 가입 · D+N 계산 |
-| 1-2. 온보딩 화면 | ✅ | 이별 날짜(캘린더) · 기분 멀티 선택 |
-| 1-3. 홈 화면 | ✅ | D+N 배지 · 일기 CTA · 탭 레이아웃 |
-| 1-4. 이별 일기 4화면 흐름 | ✅ | 감정→방향→질문→AI응답 |
-| 1-5. Zustand 스토어 전체 구조 | ✅ | 6개 스토어 |
+**한국 한정 출시에 따른 영향**:
+- 약관·정책 문서는 **한국어만** (A-1)
+- 핫라인은 한국 핫라인만 (`crisis-hotlines.json` — 1577-0199, 1366, 1388 등)
+- PIPA(개인정보 보호법) 준수만 고려, GDPR 등 타국 법규 미적용
+- 외부 자원도 한국 기관만 (비탄클리닉·강박장애 전문센터 등)
+- 글로벌 확장 시 재논의 필요 항목: 다국어, 카카오 제외, 타국 핫라인, GDPR/CCPA
 
----
+**UI**:
+- 로고 + 한 줄 카피 ("천천히 들여다보자")
+- 3개 버튼 세로 배열, OAuth 표준 디자인 가이드 준수
+- "로그인하면 위 약관에 동의한 것으로 간주" 미표시 (A-1에서 명시 동의 받음)
 
-### Phase 2 — 질문 풀 / 관계 분석 / 나침반 ✅ `3 / 3`
-참조: [docs/phases/phase-2.md](docs/phases/phase-2.md)
+**DB**:
+- `users.provider text check (provider in ('google','apple','kakao'))` 컬럼 추가
+- `users.provider_user_id text` 추가
+- 익명 가입 → OAuth 전환 마이그레이션 흐름 (기존 사용자 보호)
 
-| 서브태스크 | 상태 | 비고 |
-|-----------|------|------|
-| 2-1. 공유 질문 풀 시스템 | ✅ | 상태머신 · 스코어링 · upsert · 오프라인 폴백 |
-| 2-2. 관계 분석 트랙 | ✅ | 이유·장단점·점수 4단계, 가망 진단 미터바 "정답이 아니야" |
-| 2-3. 결정 나침반 트랙 | ✅ | 5단계 흐름, 경계값 판정, "정답이 아니야" 필수 포함 |
+## A-3. 하단바 3탭 재구성
 
----
+**파일**:
+- `app/(tabs)/_layout.tsx` (수정)
+- `app/(tabs)/index.tsx` → "오늘"
+- `app/(tabs)/records.tsx` (신규) → "기록"
+- `app/(tabs)/me.tsx` (신규) → "나"
+- `app/(tabs)/analysis.tsx` (제거 또는 redirect)
+- `app/(tabs)/compass.tsx` (제거 또는 redirect)
+- `app/(tabs)/graduation.tsx` (제거 — A-4)
 
-### Phase 3 — GPT Edge Functions / AI ✅ `3 / 3`
-참조: [docs/phases/phase-3.md](docs/phases/phase-3.md)
+**탭 구성**:
+| 탭 | 내용 | 페르소나 분기 |
+|---|---|---|
+| 오늘 | 페르소나 우선 카드 + 일기 진입 + 위기 자원 | 매트릭스 C2·C3·C10 |
+| 기록 | 일기 history + 회복 곡선 + 추억 archive + 사이클 타임라인(P06) | C7 일부 + 신규 |
+| 나 | about-me 카테고리 + 분석·나침반 트랙 (페르소나 게이트) | C5·C6·C4 통합 |
 
-| 서브태스크 | 상태 | 비고 |
-|-----------|------|------|
-| 3-1. Edge Functions 구조 | ✅ | 4개 함수 · npm:openai · fallback · gpt-4o 졸업편지 |
-| 3-2. 클라이언트 AI API 레이어 | ✅ | api/ai.ts 4개 함수 · 5초 타임아웃 · AppError 코드 |
-| 3-3. AI 응답 지연 대응 | ✅ | SSE 스트리밍(일기), 사전생성(홈), 지수 백오프 Retry |
+## A-4. 졸업 트랙 일시 보류
 
----
+- 하단바 졸업 탭 제거
+- `app/graduation/*.tsx` 진입 경로 모두 비활성화 (코드 보존, deep link 차단)
+- 매트릭스 C9 셀 — 문서엔 유지, 코드 게이트 OFF
+- 기존 [6-9] 졸업 작별 문장 → archive로 이동
+- 보류 해제 조건: 임상 재검증 + 페르소나별 졸업 흐름 별도 설계
 
-### Phase 4 — 졸업 / 유예 / 푸시 알림 ✅ `3 / 3`
-참조: [docs/phases/phase-4.md](docs/phases/phase-4.md)
+## A-5. 분석·나침반 → [나] 안 트랙 이동
 
-| 서브태스크 | 상태 | 비고 |
-|-----------|------|------|
-| 4-1. 졸업 트랙 | ✅ | 성장 리포트·편지(gpt-4o)·확인·신청, 즉시 확정 금지 |
-| 4-2. 유예기간 시스템 | ✅ | D-N 카운트다운, 체크인 보존, Day7 확정·연장·취소 |
-| 4-3. 푸시 알림 | ✅ | 일반 리마인더·Day7 1회 전용, 유예 중 전면 중지 |
+**구현**:
+- `/analysis/*` URL 보존 (deep link 호환), 진입은 [나] 카드로만
+- `/compass/*` URL 보존, [나] 카드로만
+- [나] 화면에 *페르소나·D+N 게이트* 적용 — P02·P04·P07 등은 카드가 비활성/지연 표시
 
----
+## A-6. [오늘] 페르소나 우선 카드 슬롯
 
-### Phase 5 — 오프라인 / 에러 / 배포 ✅ `3 / 3`
-참조: [docs/phases/phase-5.md](docs/phases/phase-5.md)
+**파일**: `app/(tabs)/index.tsx` 수정
 
-| 서브태스크 | 상태 | 비고 |
-|-----------|------|------|
-| 5-1. 오프라인 캐시 + 동기화 | ✅ | AsyncStorage 큐, last-write-wins upsert, 포그라운드 flush |
-| 5-2. 에러 핸들링 + 로딩 상태 | ✅ | ErrorToast, useErrorHandler, LoadingOverlay |
-| 5-3. 앱스토어 배포 | ✅ | pg_cron 마이그레이션, EAS 배포 체크리스트 문서화 |
+- 헤더(D+N 배지) 아래에 *페르소나 우선 카드 슬롯* 추가
+- `usePersonaStore` 미존재 시 baseline 카드 (P12 동작)
+- C-2-G-2 본 구현은 Phase C에서 (여기선 슬롯만)
 
----
+## A-7. users 테이블 확장
 
-### Phase 6 — 감정 회복 강화 (Psychology-Based Improvements) 🔄 `0 / 9`
-참조: [docs/psychology-analysis.md](docs/psychology-analysis.md)
+**파일**: `supabase/migrations/018_consent.sql`, `019_oauth.sql`
 
-*심리학자 관점 분석을 바탕으로 애도 회복(grief work) 프로세스 강화*
+```sql
+-- 018_consent.sql
+alter table public.users add column consent_versions jsonb default '{}'::jsonb;
+alter table public.users add column consent_accepted_at timestamptz;
 
-| 서브태스크 | 상태 | 우선순위 | 비고 |
-|-----------|------|---------|------|
-| 6-1. 일기 감정 입력 다층화 | ⬜ | **P1** | 감정 라벨(분노/죄책감/안도 등) + 신체 신호 체크 추가, mood Pill 컴포넌트 재사용 |
-| 6-2. 방향 선택에 원망↔애정 수평축 추가 | ⬜ | **P1** | `/journal/direction` 또는 `/compass/want`에 수평축 슬라이더 1개, 나침반 verdict 정확도 상향 |
-| 6-3. Day별 유예 콘텐츠 (Day 1~6 회복 작업) | ⬜ | **P2** | `/cooling/index` 동적 콘텐츠 (호흡가이드→회상→분노→차트→의미→미래), 알림 없이 진입 시만 표시 |
-| 6-4. 체크인 GPT 응답 추가 | ⬜ | **P2** | `/cooling/checkin`에 AI 공감 응답 추가, 톤: "결정을 흔들지 않으면서도 지지" |
-| 6-5. 떠오름(intrusive memory) 빠른 진입점 | ⬜ | **P1** | 홈에 "🫧 지금 갑자기 떠올랐어" 버튼, 30초 호흡+진정+감정온도 미니 플로우 (DBT distress tolerance) |
-| 6-6. 분석/나침반 D+7 시간 게이트 | ⬜ | **P1** | D+0~7에서 진입 시 부드러운 만류 ("일주일은 그냥 흘려보내자"), 강제 차단 X |
-| 6-7. 진단 결과에 시간성 명시 | ⬜ | **P1** | `/analysis/result`, `/compass/needle` → "이 수치는 D+N 시점의 너야. 한 달 뒤엔 다른 결과가 나올 거야" 필수 문구 |
-| 6-8. 시점별 장단점 분리 누적 | ⬜ | **P2** | `relationship_profile` 누적 데이터 활용, 시간별로 장점/단점 구분하여 로지스틱 회상 방지 |
-| 6-9. 졸업 의식의 능동성 강화 | ⬜ | **P2** | `/graduation/letter` → 사용자 작별 문장 작성 + AI 응답 수신 (양방향), 의미 부여 기회 확보 |
-
----
-
-### Phase 7 — 기술 안정성 + 감정 안전장치 ⬜ `0 / 4`
-
-*Phase 6 감정 회복 강화를 받쳐주는 기술적 안정성과 위기 신호 감지*
-
-| 서브태스크 | 상태 | 우선순위 | 비고 |
-|-----------|------|---------|------|
-| 7-1. 일기 작성 임시 저장 (draft) | ⬜ | **P1** | AsyncStorage에 draft 저장, 돌아올 때 복구, 재방문 의지 보호 |
-| 7-2. 일기 미니 모드 (감정 온도만) | ✅ | **P2** | `app/journal/mini.tsx` + `is_mini_mode` 컬럼, 홈 ⚡/🔥 두 버튼 분기, mini 10개로 일반 5개 게이트 대체 |
-| 7-3. 분석/졸업 저장 실패 시 재시도 UI | ⬜ | **P1** | console.warn에서 명시적 ErrorToast + "재시도" CTA, 사용자의 의식적 행위 확인 |
-| 7-4. 감정 안전장치 (위기 신호 감지) | ⬜ | **P2** | 3일 연속 온도 1~2점 → 안녕 확인 + 자원 안내, 새벽 시간대 진입 감지, 익명 통계, 위기 핫라인 옵트인 |
-
----
-
-### 지금 위치
-
-**→ Phase 6 P1 (우선순위 1) 시작** — 심리학 분석을 바탕으로 감정 회복 품질 강화. P1 항목 4개(6-1, 6-2, 6-5, 6-6, 6-7)부터 진행.
-
-### 다음 할 일
-
-**Phase 6 P1 (우선순위 1) 실행:**
-- [ ] 6-1. 일기 감정 입력 다층화 — `/journal/index`에 감정 라벨 Pill + 신체 신호 체크 통합
-- [ ] 6-2. 방향 선택에 원망↔애정 수평축 추가 — `/journal/direction` 또는 `/compass/want` 슬라이더
-- [ ] 6-5. 떠오름 빠른 진입점 — 홈에 "🫧 갑자기 떠올랐어" 버튼 + 30초 미니 플로우
-- [ ] 6-6. 분석/나침반 D+7 게이트 — 진입 시 부드러운 만류 메시지
-- [ ] 6-7. 진단 결과에 시간성 명시 — `/analysis/result`, `/compass/needle` 수정
+-- 019_oauth.sql
+alter table public.users add column provider text check (provider in ('google','apple','kakao','anonymous'));
+alter table public.users add column provider_user_id text;
+create unique index users_provider_id on public.users(provider, provider_user_id) where provider is not null;
+```
 
 ---
 
-> 구현 전 검토 필요 — 각 Phase 시작 전 해당 섹션 DoD 확인 후 진행.
+# Phase B — 안전·임상 위해 차단 (구현계획 1부) 🔴
+
+> **참조**: [`docs/psychology-logic/구현계획.md`](docs/psychology-logic/구현계획.md) §1부 / 매트릭스 §5-3
+> **블로킹**: 라이선스·핫라인 검증 (B-0)
+
+| ID | 작업 | 상태 | 의존 |
+|---|---|---|---|
+| B-0-1 | 라이선스 서면 확인 (PHQ/GAD/RSE/C-SSRS/ECR-R/RRS) | ⬜ | — |
+| B-0-2 | 핫라인 데이터 검증·확장 (`crisis-hotlines.json`) | ⬜ | — |
+| B-0-3 | 동의서 옵트인 갱신 (A-1과 통합) | ⬜ | A-1 |
+| B-1 | C-SSRS 안전 프로토콜 (DB·API·UI·Cron·CLAUDE.md) | ⬜ | B-0-1 |
+| B-2 | P19 ROCD ERP 제거 (문서) | ⬜ | — |
+| B-3 | P10 카타르시스 보정 (문서 + 코드 가드) | ⬜ | — |
+| B-4 | 라벨 비노출 lint rule | ⬜ | — |
+
+> **핵심 산출물**:
+> - 마이그레이션 `018_consent.sql`(=A-7), `020_safety_protocol.sql`, `021_data_retention.sql`
+> - `api/safety.ts`, `components/EmotionalCheckModal.tsx` 확장
+> - `app/safety/release.tsx` 신규 (잠금 해제 흐름)
+> - Edge Function `safety-followup-cron/`
+> - **CLAUDE.md 갱신**: C-SSRS 24h 재확인 푸시 예외 절 추가
 
 ---
 
-## Phase 상세 문서는 분리해서 참조
+# Phase C — 페르소나 시스템 + 화면 분기 (구현계획 2부 + 매트릭스 220셀) 🟠
 
-- Phase 0: [docs/phases/phase-0.md](docs/phases/phase-0.md)
-- Phase 1: [docs/phases/phase-1.md](docs/phases/phase-1.md)
-- Phase 2: [docs/phases/phase-2.md](docs/phases/phase-2.md)
-- Phase 3: [docs/phases/phase-3.md](docs/phases/phase-3.md)
-- Phase 4: [docs/phases/phase-4.md](docs/phases/phase-4.md)
-- Phase 5: [docs/phases/phase-5.md](docs/phases/phase-5.md)
-- 공통 API 에러 코드: [docs/phases/common-api-errors.md](docs/phases/common-api-errors.md)
+> **참조**: 구현계획 §2부 + 매트릭스 §2~§4
+> **목표**: 8축 분류 + 20 페르소나 × 10 화면(C9 졸업 제외) = **200 분기 셀** 빠짐없이 적용
 
-> 토큰 절약 원칙: `TODO.md`에서는 진행도/체크리스트/DoD만 보고, 구현 상세는 해당 Phase 문서만 읽는다.
+## C-1. 페르소나 분류 인프라
 
----
+| ID | 작업 | 상태 |
+|---|---|---|
+| C-1-1 | P1 명칭 변경 "가스라이팅" → "자기 판단 손상형" + 임계점 강화 | ⬜ |
+| C-1-2 | P13 사별 분리 + `bereavement-notice.tsx` 신규 | ⬜ |
+| C-1-3 | 8축 + 페르소나 분류 모듈 (DB·API·classifier) | ⬜ |
+| C-1-4 | 재분류 cron (D+7/14/30/60/90) | ⬜ |
 
-## Phase별 DoD (완료 기준)
+**산출물**:
+- 마이그레이션 `022_persona_profiling.sql`
+- `utils/personaClassifier.ts`, `utils/personaScoringRules.json`
+- `api/persona.ts`, `store/usePersonaStore.ts`
+- 온보딩 6+3 화면 (Q1~Q6 페르소나 + C-SSRS 1~3) — A-2 OAuth 직후
 
-각 Phase는 아래 DoD를 모두 통과해야 다음 Phase로 진행한다.
+## C-2. 화면별 페르소나 분기 (매트릭스 §2 / 200셀, C9 제외)
 
-| Phase | DoD |
-|-------|-----|
-| **Phase 0** | ① Expo 앱 실행 + NativeWind 클래스 적용 확인 ② Supabase 연결 + 모든 테이블 RLS(WITH CHECK 포함) 활성화 ③ `ScreenWrapper` fadeUp 에니메이션 정상 동작 |
-| **Phase 1** | ① 온보딩 → 이별 날짜 입력 → 홈 D+N 표시까지 e2e 통과 ② 일기 4화면(감정→방향→질문→AI응답) 작성 → DB 저장 → 홈 CTA 상태 변경 확인 ③ GPT fallback 응답 정상 표시 (오프라인 시뮬레이션) |
-| **Phase 2** | ① 관계 분석 질문 응답 → question_responses upsert 확인 ② 같은 질문이 나침반에서 이전 답변으로 채워져 표시 ③ 가망 진단 미터바 + "정답이 아니야" 문구 포함 확인 |
-| **Phase 3** | ① Edge Function 배포 후 클라이언트 호출 → 응답 수신 ② 5초 타임아웃 → fallback 표시 확인 ③ `OPENAI_API_KEY` 클라이언트 번들에 없는지 확인 |
-| **Phase 4** | ① 졸업 신청 → `graduation_cooling` 생성 → Day 1~6 일반 알림 중지 확인 ② Day 7 알림 1회 발송 + `notifications_sent = 1` ③ 취소/리셋 시 `checkin_responses` 보존 확인 |
-| **Phase 5** | ① 오프라인 일기 작성 → 온라인 복구 후 upsert 확인 ② 모든 에러 코드(`AppError`)가 UI에서 올바른 분기로 처리 ③ EAS build iOS/Android 성공 + 앱스토어 제출 |
+> 각 서브태스크는 *화면 1개 × 20 페르소나*. 매트릭스 §2 표의 셀을 코드로 1:1 매핑.
 
----
+| ID | 작업 | 매트릭스 셀 | 상태 |
+|---|---|---|---|
+| C-2-G-1 | C1 온보딩 — 페르소나별 사전 안내 카드 (20) | 20 | ⬜ |
+| C-2-G-2 | C2 [오늘] 우선 카드 컴포넌트 (20) — A-6 슬롯에 본 구현 | 20 | ⬜ |
+| C-2-G-3 | C3 일기 — 미니/거칠게/주어너/공허라벨 등 (20) | 20 | ⬜ |
+| C-2-G-4 | C4 나침반 verdict modifier — `utils/diagnosis.ts` 확장 | 20 | ⬜ |
+| C-2-G-5 | C5 about-me 카테고리 enum + 노출 분기 (20) | 20 | ⬜ |
+| C-2-G-6 | C6 분석 pros·cons 분기 (컬럼·상한·D+N 게이트) | 20 | ⬜ |
+| C-2-G-7 | C7 추억 트랙 분기 (미화차단·봉인·트리거정리) | 20 | ⬜ |
+| C-2-G-8 | C8 쿨링 분기 (021 마이그레이션 + admin 탭) | 20 | ⬜ |
+| ~~C-2-G-9~~ | ~~C9 졸업 분기~~ | ~~20~~ | ⏸️ **보류** (A-4) |
+| C-2-G-10 | C10 위기/푸시 분기 (`EmotionalCheckModal` + 핫라인 매핑) | 20 | ⬜ |
+| C-2-G-11 | 200 셀 단위 테스트 + dogfood 20명 (페르소나당 1명) | — | ⬜ |
 
-## 검토 체크리스트 (구현 전 확인)
+## C-3. 다중 페르소나 충돌 해소
 
-- [✔️] Phase 0 — DB 스키마 (특히 enum 값, generated column) 동의
-- [✔️] Phase 0 — 라우터 선택 (Expo Router vs React Navigation 직접) 동의 - 라우터는 Expo Router 선택
-- [✔️] Phase 1 — 익명 가입 방식 동의 - 익명 가입으로 하고 처음에는 온보딩하고 익명으로 기록하고 나중에 정보 저장하려면 구글 로그인 방식으로 사용자 저장하고 정보 불러올 수 있게 만들자.
-- [✔️] Phase 1 — 일기 화면 4개 흐름 동의
-- [✔️] Phase 2 — 가망 진단 점수 산식 (가중치) 동의
-- [✔️] Phase 2 — 나침반 경계값 (-3/-1/1/3) 동의
-- [✔️] Phase 3 — fallback 템플릿 문구 동의
-- [✔️] Phase 4 — 유예 reset 시 checkin 데이터 보존 정책 동의
-- [✔️] 전체 — 추가하거나 빼고 싶은 화면/기능 있으면 표시
+| ID | 작업 | 매트릭스 § |
+|---|---|---|
+| C-3-H | `utils/personaResolver.ts` (R0~R5 알고리즘 구현) | §4-1 |
+| C-3-H-test | 충돌 8 케이스 단위 테스트 | §4-2 |
 
----
+## C-4. 나침반 재설계 (본 대화에서 도출된 임상 결함 보강)
 
----
+> **이유**: 11/20 페르소나가 catch/let_go 이분법과 충돌. 매트릭스 §2 C4 셀들과 자연스럽게 통합 필요.
 
-## Phase 6-7 심리학적 가치 분석
-
-### Phase 0-5 현황
-- ✅ 기술 완성도: 100% (모든 기능 구현)
-- ⚠️ 심리학적 깊이: "결정 보조"에 특화, "애도 회복(grief work)" 트랙 비어있음
-
-### Phase 6-7로 달성할 것
-| 개선 | 심리학 근거 | 효과 |
-|------|-----------|------|
-| 다층 감정 입력 | Kübler-Ross 5단계 애도 모델 정상화 | 분노/죄책감/안도 등 복합 감정 처리 |
-| 원망↔애정 축 추가 | 양가감정(ambivalence)의 임상적 구분 | 위험 상태(집착) vs 건강한 수용 식별 |
-| Day별 유예 콘텐츠 | Worden 4과제(고통 통과→적응→재배치) | 7일을 방치가 아니라 회복의 장으로 전환 |
-| 떠오름 진입점 | DBT distress tolerance 모듈 | 가장 자주 호소되는 상황("갑자기 떠올랐을 때") 처리 |
-| 시간 게이트 + 명시 | 이별 직후 인지편향(rosy retrospection) 방어 | 결정 후회 감소, 반추(rumination) 방지 |
-| 졸업 양방향성 | 의미 부여의 능동성 | "졸업"을 의식적 행위로 전환 |
-| 임시 저장 | 재방문 의지 보호 | 무기력 단계의 재진입 장벽 낮춤 |
-| 위기 신호 감지 | 자살 위험 스크리닝 | "혼자가 아니다"는 신호 전달 |
-
-### 기대 효과 (가설)
-- **회복 경험 품질 ↑** — "내 감정이 정상이구나"하는 안정감
-- **재방문 의지 ↑** — 매일 재진입이 아니라 필요 시점의 맞춤형 경험
-- **위기 신호 감지율 ↑** — 3일 연속 최저 감정 → 자동 안녕 확인
+| ID | 작업 |
+|---|---|
+| C-4-1 | verdict 차원 확장: `catch / let_go / mixed / accept / suspend / understand` (6택) |
+| C-4-2 | 나침반 → "오늘의 방향"으로 라벨 변경 (선택적) |
+| C-4-3 | [나] 안에서 페르소나·D+N 게이트로 진입 제어 — A-5와 통합 |
 
 ---
 
-*이 파일은 구현 계획 검토용입니다. Phase 6-7 진행 중 지속적으로 업데이트 예정.*
+# Phase D — 검사 통합 + 회복 추적 (구현계획 3부) 🟡
+
+> **참조**: 구현계획 §3부
+> **블로킹**: B-0-1 라이선스
+
+| ID | 작업 | 상태 |
+|---|---|---|
+| D-1 | 검사 응답 저장 인프라 (`023_assessments.sql`, `api/assessments.ts`) | ⬜ |
+| D-2 | 검사 화면 컴포넌트 (`AssessmentSlider`, `app/assessments/[instrument].tsx`) | ⬜ |
+| D-3 | 측정 시점 자동 트리거 (D+7/14/30 + 졸업 진입 — *졸업 보류 중엔 진입 트리거 없음*) | ⬜ |
+| D-4 | 자가 보고 연락 카운터 (`ContactUrgeChip` + `024_contact_urge.sql`) | ⬜ |
+| D-5 | P10 분노 모드 + 2차 정서 강제 (`app/journal/raw-mode.tsx` + `025_raw_mode.sql`) | ⬜ |
+| D-6 | 회복 추적 화면 (`app/recovery-trace/index.tsx` — 메타포 라벨 검수) | ⬜ |
+
+---
+
+# Phase E — 변별 타당도 + 누락 프레임워크 (구현계획 4부) ⚪
+
+> **참조**: 구현계획 §4부
+> **블로킹**: ECR-R·RRS 라이선스 + 베타 사용자 50+ 동의
+
+| ID | 작업 |
+|---|---|
+| E-1 | ECR-R 단축형 12항 (라이선스 확인 후) |
+| E-2 | RRS 단축형 10항 (D+30 권유) |
+| E-3 | 변별 타당도 베타 검증 (κ ≥ 0.6 게이트) |
+| E-4 | 누락 프레임워크 6종 — Self-Compassion/Polyvagal/ACT/DBT/Worden/Continuing Bonds |
+
+---
+
+# Phase F — 장기 안정화 (구현계획 5부) 🟢
+
+| ID | 작업 |
+|---|---|
+| F-1 | PG-13 / TGI-SR+ (D+90·D+180) |
+| F-2 | 한국 특수 페르소나 P21~P23 (가족압박·결혼직전파혼·종교갈등) |
+| F-3 | LGBTQ+ 페르소나 + outing 위험 가드 |
+| F-4 | 존댓말/반말 톤 옵션 (P12·P16 default 존댓말) |
+
+---
+
+# 횡단 (모든 페이즈에 공통)
+
+| ID | 작업 | 상태 |
+|---|---|---|
+| X-1 | PIPA 컴플라이언스 (조회·삭제·반출 — `app/settings/data.tsx`) | ⬜ |
+| X-2 | AI 응답 임상 면책 자동 첨부 | ⬜ |
+| X-2-B | **GPT 시스템 프롬프트 페르소나 분기 (20 톤·금기)** — `gpt-response/personaPrompts.ts` | ⬜ |
+| X-3 | 외부 의뢰 임계 JSON (`resources/referral-thresholds.json`) | ⬜ |
+| X-4 | 텔레메트리·A/B 인프라 | ⬜ |
+| X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 3건 + 졸업 보류 명시 + 페르소나 라벨 노출 금지 + 핫라인 페르소나 매핑 | ⬜ |
+
+---
+
+# 보류 (Deferred)
+
+> 일시 보류 항목. 매트릭스·구현계획 문서엔 보존, 코드 미적용.
+
+| ID | 항목 | 사유 | 해제 조건 |
+|---|---|---|---|
+| ⏸️ G-9 | C9 졸업 트랙 페르소나 분기 (20 셀) | 졸업 트랙 자체 보류 | A-4 해제 시 |
+| ⏸️ Phase4-1 | 졸업 진입 화면 전체 (`app/graduation/*`) | 사용자 요청 | 임상 재검증 후 |
+
+---
+
+# 지금 위치
+
+**→ Phase A 진입.** Phase 0~5 인프라 위에 *인증·구조 재설계*를 먼저 끝낸 뒤 Phase B(안전) → C(페르소나) 순으로 진행.
+
+## 다음 할 일 (우선순위 순)
+
+1. **A-1** 약관 동의 화면 (정보처리방침 + 이용약관)
+2. **A-2** OAuth 로그인 (Google·Apple·Kakao)
+3. **A-7** users 테이블 OAuth + consent 컬럼
+4. **A-3** 하단바 3탭 재구성
+5. **A-4·A-5** 졸업 제거 + 분석·나침반 [나]로 이동
+6. **A-6** [오늘] 페르소나 카드 슬롯 (이후 C-2-G-2가 채움)
+
+A 완료 후 → **B-0** (라이선스·핫라인) 병행 시작 → **B-1** C-SSRS → **C-1** 페르소나 분류 → **C-2** 200셀 분기.
+
+---
+
+---
+
+# Archive — 완료 / 기존 진행 항목
+
+> 새 로드맵으로 재정렬되기 전 항목들. 코드는 모두 살아있음.
+
+## ✅ 완료된 Phase 0~5 (기반)
+
+| Phase | 내용 | 상태 |
+|---|---|---|
+| Phase 0 | Expo + Supabase + 디자인 시스템 | ✅ |
+| Phase 1 | Auth(익명) + 온보딩 + 홈 + 일기 4화면 + Zustand 6스토어 | ✅ |
+| Phase 2 | 질문 풀 + 관계 분석 + 결정 나침반 | ✅ |
+| Phase 3 | Edge Functions + AI 클라이언트 + SSE 스트리밍 | ✅ |
+| Phase 4 | 졸업·유예·푸시 (졸업은 A-4로 보류) | ✅→⏸️ |
+| Phase 5 | 오프라인 동기화 + 에러 핸들링 + 배포 | ✅ |
+
+## ✅ Phase 6~7 심리학 V1 (기존 작업)
+
+> 본 새 로드맵으로 흡수되기 전의 1차 심리학 작업. 대부분 완료, 일부는 새 매트릭스에 의해 *재설계 대상*.
+
+| 항목 | 상태 | 새 위치 |
+|---|---|---|
+| 6-0 온보딩: 연애 기간 | 부분완료 | C-1-3에 흡수 |
+| 6-1 일기 감정 다층화 | 부분완료 | C-2-G-3 (P08 공허 라벨 등) |
+| 6-2 원망↔애정 수평축 | ✅ | C-2-G-3 (P11 두 마음에 활용) |
+| 6-3 Day별 유예 콘텐츠 | ✅ | C-2-G-8 페르소나별 분기로 확장 |
+| 6-4 체크인 GPT 응답 | ✅ | X-2-B에서 페르소나 분기 추가 |
+| 6-5 떠오름 빠른 진입점 | ✅ | C-2-G-2 P03 우선 카드와 통합 |
+| 6-6 분석 D+7 게이트 | ✅ | C-2-G-6 페르소나별 D+N으로 확장 |
+| 6-7 진단 결과 시간성 | ✅ | C-4 나침반 재설계와 통합 |
+| 6-8 시점별 장단점 | ✅ | C-2-G-6에 흡수 |
+| **6-9 졸업 작별 양방향** | ✅→⏸️ | **보류** (A-4) |
+| 6-10 추억 능동 정리 | ✅ | C-2-G-7 페르소나별 분기로 확장 |
+| 6-11 자기 성찰 트랙 | ✅ | C-2-G-5 about-me에 흡수 |
+| 7-1 일기 draft 임시저장 | ⬜ | 그대로 유지 |
+| 7-2 일기 미니 모드 | ✅ | C-2-G-3 P02 default와 연결 |
+| 7-3 저장 실패 재시도 UI | ⬜ | 그대로 유지 |
+| 7-4 위기 신호 감지 | ✅ | B-1 C-SSRS 프로토콜로 확장 |
+
+## 📁 참조 문서 인덱스
+
+| 문서 | 위치 |
+|---|---|
+| 절대 규칙 + 컨벤션 | [CLAUDE.md](CLAUDE.md) |
+| 페이즈 인덱스 (구) | [docs/phases/README.md](docs/phases/README.md) |
+| 심리학 분석 원본 | [docs/psychology-analysis.md](docs/psychology-analysis.md) |
+| 심리학 태스크 인덱스 (구) | [TODO(psychology).md](TODO(psychology).md) |
+| **신규 SSOT** — 구현계획 | [docs/psychology-logic/구현계획.md](docs/psychology-logic/구현계획.md) |
+| **신규 SSOT** — 페르소나 매트릭스 | [docs/psychology-logic/페르소나-화면-액션-매트릭스.md](docs/psychology-logic/페르소나-화면-액션-매트릭스.md) |
+| **신규 SSOT** — 페르소나 정의 | [docs/psychology-logic/페르소나.md](docs/psychology-logic/페르소나.md) + `페르소나-분류체계.md` |
+
+## 검토 체크리스트 (기존)
+
+- [✔️] Phase 0~5 DoD 통과
+- [✔️] 익명 가입 + OAuth 전환 흐름 동의 → **변경**: 이제 첫 진입부터 OAuth 강제 (A-1·A-2)
+- [✔️] 일기 4화면 흐름 동의
+- [✔️] 가망 진단·나침반 경계값 동의 → **변경**: C-4 재설계로 6택 verdict
+- [✔️] fallback 템플릿 동의
+- [✔️] 유예 reset 시 checkin 보존 동의 → 유지
+- [✔️] 졸업 = 즉시 확정 금지 + 7일 유예 → **보류**: A-4
+
+---
+
+*이 파일은 SSOT 3종(구현계획·매트릭스·페르소나)을 통합한 실행 로드맵. Phase A부터 순차 진행.*
