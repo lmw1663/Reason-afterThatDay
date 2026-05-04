@@ -327,7 +327,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | └ X-1-잔여-§37-의사 | DB 컬럼(025) + api/processingSuspension + UI 토글 (의사 저장만) | ✅ | (본 커밋) |
 | └ X-1-잔여-§37-적용-1 | server-side 게이트 — `_shared/processingSuspension` + ai-daily-quote · push-daily-reminder · push-cooling-day7 | ✅ | 812ee08 |
 | └ X-1-잔여-§37-적용-2 | client-side 게이트 — api/ai.ts wrapper 6 함수 (매 호출 DB query, fail-open) | ✅ | (본 커밋) |
-| └ X-1-잔여-§37-test | processingSuspension API 단위 테스트 (supabase mock 인프라 필요) | ⬜ | 후속 |
+| └ X-1-잔여-§37-test | processingSuspension 단위 테스트 (supabase mock 인프라 신설) | ✅ | (본 커밋) |
 | X-2 | AI 응답 임상 면책 자동 첨부 (X-2-B-1 buildSystemPrompt에 통합 완료) | ✅ |
 | X-2-B-1 | `_shared/personaPrompts.ts` 19 페르소나 톤·금기·프레이밍 + lint 헬퍼 | ✅ fbcd106 |
 | X-2-B-2 | 4 ai-* 함수 통합 (journal·comfort·daily-quote·cooling-checkin) + violation fallback | ✅ 92a5f7b |
@@ -345,7 +345,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | └ X-4-2-3 | 의식 트랙 4 화면(seal·declutter·continuing-bonds·encounter-plan) + safety/release + cooling/index useScreenView | ✅ | (본 커밋) |
 | └ X-4-2-4 | onboarding funnel 5 + persona/intro + cooling/checkin useScreenView (cooling/final은 Redirect 미적용) | ✅ | (본 커밋) |
 | └ X-4-3 | A/B 실험 인프라 — events 테이블 experiment_id + 변형 할당 로직 | ⬜ |
-| └ X-4-test | telemetry API 단위 테스트 + payload allowlist runtime 검증 | ⬜ |
+| └ X-4-test | telemetry API 단위 테스트 + payload 매핑 검증 (allowlist runtime은 후속) | ✅ | (본 커밋) |
 | X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 + 졸업 보류 + 페르소나 라벨 비노출 + 핫라인 페르소나 매핑 | ✅ |
 
 ---
@@ -382,12 +382,10 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ## 다음 할 일 (우선순위 순)
 
-1. **X-4-2** 텔레메트리 인스트루멘테이션 (각 화면 trackEvent + 페르소나 anonymization)
-2. **X-4-3** A/B 실험 인프라 (experiment_id + 변형 할당)
-3. **X-1-잔여-§37-test / X-4-test** API 단위 테스트 (supabase mock 인프라)
-4. **X-3-잔여-4** verified_by 임상 감수 (외부 의존)
-5. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-6. **C-2 dogfood 20명** — 베타 트랙으로 분리
+1. **X-4-3** A/B 실험 인프라 (experiment_id + 변형 할당)
+2. **X-3-잔여-4** verified_by 임상 감수 (외부 의존)
+3. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
+4. **C-2 dogfood 20명** — 베타 트랙으로 분리
 
 ---
 
