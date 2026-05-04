@@ -391,7 +391,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 3. **C-2 dogfood 20명** — 베타 사용자 모집
 
 ### 내부 진행 가능 (라이선스 무관)
-4. **payload allowlist runtime 검증** — telemetry payload 키 화이트리스트 (X-4-test 권고)
+_(현재 우선순위 항목 모두 완료. 외부 의존 항목 외 즉시 진행 가능 작업 없음 — 추가 권고는 opus·구현계획 §4 phase 진입 필요)_
 
 ---
 

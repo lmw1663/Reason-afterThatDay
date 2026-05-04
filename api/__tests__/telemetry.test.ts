@@ -14,6 +14,7 @@ import {
   getTelemetryStatus,
   setTelemetryOptIn,
   trackEvent,
+  sanitizePayload,
 } from '@/api/telemetry';
 import {
   applyChain,
@@ -123,6 +124,30 @@ describe('trackEvent — silent skip 정책', () => {
     await expect(trackEvent('screen_view', { screen: 'home' })).resolves.toBeUndefined();
   });
 
+  it('비허용 키 → silent 차단 후 insert 진행 (allowlist 적용)', async () => {
+    setUserId('user-1');
+    const insertSpy = vi.fn().mockResolvedValue({ error: null });
+    (supabase.from as Mock).mockImplementation((table: string) => {
+      if (table === 'users') {
+        return chainSelectMaybeSingle({
+          telemetry_opted_in: true,
+          telemetry_opted_in_at: null,
+        });
+      }
+      return { insert: insertSpy };
+    });
+    // free_text·user_email 등 PII 후보를 섞어 호출
+    await trackEvent('screen_view', {
+      screen: 'home',
+      free_text: 'sensitive content',
+      user_email: 'a@b.com',
+    });
+    const insertedRow = insertSpy.mock.calls[0][0] as Record<string, unknown>;
+    // payload에서 비허용 키가 제거됐는지
+    expect(insertedRow.payload).toEqual({ screen: 'home' });
+    expect((insertedRow.payload as Record<string, unknown>).free_text).toBeUndefined();
+  });
+
   it('insert 실패 → silent throw 안 함', async () => {
     setUserId('user-1');
     (supabase.from as Mock).mockImplementation((table: string) => {
@@ -135,5 +160,63 @@ describe('trackEvent — silent skip 정책', () => {
       return { insert: vi.fn().mockRejectedValue(new Error('insert failed')) };
     });
     await expect(trackEvent('screen_view', { screen: 'home' })).resolves.toBeUndefined();
+  });
+});
+
+describe('sanitizePayload — EventKind별 allowlist', () => {
+  it('screen_view: screen·persona_category 통과, 나머지 제거', () => {
+    expect(
+      sanitizePayload('screen_view', {
+        screen: 'home',
+        persona_category: 'baseline',
+        free_text: 'leak',
+      }),
+    ).toEqual({ screen: 'home', persona_category: 'baseline' });
+  });
+
+  it('persona_branch_applied: secondary_emotion 포함 (raw-mode 정합)', () => {
+    expect(
+      sanitizePayload('persona_branch_applied', {
+        screen: 'journal_raw_mode',
+        branch: 'raw_mode_completed',
+        persona_category: 'C_regulation',
+        secondary_emotion: '슬픔',
+      }),
+    ).toEqual({
+      screen: 'journal_raw_mode',
+      branch: 'raw_mode_completed',
+      persona_category: 'C_regulation',
+      secondary_emotion: '슬픔',
+    });
+  });
+
+  it('contact_urge_reported: 모든 키 제거 (allowlist 빈 배열)', () => {
+    expect(
+      sanitizePayload('contact_urge_reported', { count: 5, persona: 'P10' }),
+    ).toEqual({});
+  });
+
+  it('experiment_assigned: experiment_id·variant만 통과', () => {
+    expect(
+      sanitizePayload('experiment_assigned', {
+        experiment_id: 'me_card_emphasis',
+        variant: 'highlight',
+        userId: 'leak',
+      }),
+    ).toEqual({ experiment_id: 'me_card_emphasis', variant: 'highlight' });
+  });
+
+  it('ai_response_fallback: fn·reason 통과', () => {
+    expect(
+      sanitizePayload('ai_response_fallback', {
+        fn: 'journal',
+        reason: 'suspended',
+        prompt: 'leak',
+      }),
+    ).toEqual({ fn: 'journal', reason: 'suspended' });
+  });
+
+  it('빈 payload → 빈 결과', () => {
+    expect(sanitizePayload('crisis_modal_shown', {})).toEqual({});
   });
 });
