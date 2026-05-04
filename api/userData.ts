@@ -27,6 +27,7 @@ const USER_TABLES = [
   'crisis_assessments',
   'safety_lockouts',
   'contact_urges',
+  'psych_assessments',
 ] as const;
 
 export type UserTable = typeof USER_TABLES[number];
@@ -48,6 +49,7 @@ const TABLE_LABELS: Record<UserTable, string> = {
   crisis_assessments:        '위기 평가',
   safety_lockouts:           '안전 잠금 이력',
   contact_urges:             '연락 충동 카운터',
+  psych_assessments:         '심리검사 응답',
 };
 
 export interface DataSummaryItem {
