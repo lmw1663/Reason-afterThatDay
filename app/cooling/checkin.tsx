@@ -10,6 +10,7 @@ import { addCheckinResponse } from '@/api/graduation';
 import { fetchCoolingCheckinGPTResponse } from '@/api/ai';
 import { formatDateStr } from '@/utils/dateUtils';
 import { colors } from '@/constants/colors';
+import { useScreenView } from '@/hooks/useScreenView';
 
 function getCoolingDay(requestedAt: string | null): number {
   if (!requestedAt) return 1;
@@ -23,6 +24,8 @@ export default function CoolingCheckinScreen() {
   const { id, requestedAt } = useCoolingStore();
 
   const coolingDay = getCoolingDay(requestedAt);
+
+  useScreenView('cooling_checkin', { day: coolingDay });
 
   async function handleSave() {
     if (!text.trim() || !id) return;

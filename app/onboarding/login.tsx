@@ -8,6 +8,7 @@ import { colors } from '@/constants/colors';
 import { signInWithProvider, type OAuthProvider } from '@/api/auth';
 import { useUserStore } from '@/store/useUserStore';
 import { isConsentValid } from '@/constants/consent';
+import { useScreenView } from '@/hooks/useScreenView';
 
 interface ProviderButton {
   provider: OAuthProvider;
@@ -28,6 +29,7 @@ const PROVIDERS: ProviderButton[] = [
 export default function LoginScreen() {
   const { consentVersions } = useUserStore();
   const [loadingProvider, setLoadingProvider] = useState<OAuthProvider | null>(null);
+  useScreenView('onboarding_login');
 
   // 가드: deep link 등으로 직접 진입한 경우 약관 동의 화면으로 우회
   if (!isConsentValid(consentVersions ?? null)) {

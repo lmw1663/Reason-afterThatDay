@@ -9,9 +9,11 @@ import { colors } from '@/constants/colors';
 import { CONSENT_ITEMS, type ConsentKey } from '@/constants/consent';
 import { acceptAllConsents } from '@/api/consent';
 import { useUserStore } from '@/store/useUserStore';
+import { useScreenView } from '@/hooks/useScreenView';
 
 export default function ConsentScreen() {
   const { userId, setConsent } = useUserStore();
+  useScreenView('onboarding_consent');
   const [checked, setChecked] = useState<Record<ConsentKey, boolean>>(
     () => CONSENT_ITEMS.reduce((acc, i) => ({ ...acc, [i.key]: false }), {} as Record<ConsentKey, boolean>),
   );

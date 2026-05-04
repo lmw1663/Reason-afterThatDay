@@ -12,6 +12,7 @@ import { classifyAndSavePersona } from '@/api/persona';
 import { recordCrisisAssessment, type CrisisResponses } from '@/api/safety';
 import type { OnboardingResponses, PsychAxes } from '@/utils/personaClassifier';
 import { PERSONA_INTRO_CARDS } from '@/constants/personaIntroCards';
+import { useScreenView } from '@/hooks/useScreenView';
 
 /**
  * 페르소나 온보딩 — C-1-3
@@ -85,6 +86,8 @@ const FATIGUE_OPTION_FROM_INDEX = 4;  // 4번째 step부터 "지금은 여기까
 export default function PersonaOnboardingScreen() {
   const { userId, setOnboardingCompleted } = useUserStore();
   const setPersona = usePersonaStore(s => s.setPersona);
+
+  useScreenView('onboarding_persona');
 
   const [step, setStep] = useState<Step>('q1');
   const [r, setR] = useState<Partial<OnboardingResponses>>({});

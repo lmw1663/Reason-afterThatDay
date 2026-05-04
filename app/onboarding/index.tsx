@@ -10,11 +10,14 @@ import { Body, Caption, Display } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { supabase } from '@/api/supabase';
 import { formatDateStr, parseDateStr } from '@/utils/dateUtils';
+import { useScreenView } from '@/hooks/useScreenView';
 
 export default function OnboardingDateScreen() {
   const [selectedDate, setSelectedDate] = useState('');
   const [loading, setLoading] = useState(false);
   const { setBreakupDate } = useUserStore();
+
+  useScreenView('onboarding_breakup_date');
 
   const today = formatDateStr(new Date());
 

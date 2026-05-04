@@ -8,11 +8,13 @@ import { Body, Caption, Display } from '@/components/ui/Typography';
 import { useUserStore } from '@/store/useUserStore';
 import { DURATION_OPTIONS, type DurationRange } from '@/constants/duration';
 import { colors } from '@/constants/colors';
+import { useScreenView } from '@/hooks/useScreenView';
 
 export default function OnboardingDurationScreen() {
   const [selected, setSelected] = useState<DurationRange | null>(null);
   const [loading, setLoading] = useState(false);
   const { setRelationshipDuration } = useUserStore();
+  useScreenView('onboarding_duration');
 
   async function handleNext() {
     setLoading(true);

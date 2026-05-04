@@ -9,6 +9,8 @@ import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { PERSONA_INTRO_CARDS } from '@/constants/personaIntroCards';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
 
 /**
  * 페르소나별 사전 안내 카드 — C-2-G-1
@@ -21,6 +23,8 @@ import { PERSONA_INTRO_CARDS } from '@/constants/personaIntroCards';
 export default function PersonaIntroScreen() {
   const primary = usePersonaStore(s => s.primary);
   const card = primary ? PERSONA_INTRO_CARDS[primary] : null;
+
+  useScreenView('onboarding_persona_intro', { persona_category: anonymizePersona(primary) });
 
   // 안내 카드 없는 페르소나가 직접 진입한 경우 홈으로 우회.
   // render 본문에서 router.replace 호출하면 React 경고 → useEffect로 분리.

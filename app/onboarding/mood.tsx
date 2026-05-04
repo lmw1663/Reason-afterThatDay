@@ -7,6 +7,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 // useUserStore/supabase는 페르소나 온보딩(persona/index.tsx)에서 사용 — 본 화면은 라우팅만
+import { useScreenView } from '@/hooks/useScreenView';
 
 const MOODS = [
   { label: '슬퍼', color: 'purple' as const },
@@ -26,6 +27,7 @@ const MOODS = [
 export default function OnboardingMoodScreen() {
   const [selected, setSelected] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  useScreenView('onboarding_mood');
 
   function toggle(label: string) {
     setSelected((prev) =>
