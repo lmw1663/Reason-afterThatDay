@@ -1,6 +1,6 @@
 # TODO.md — Reason 개발 로드맵
 
-> 갱신일: 2026-05-04
+> 갱신일: 2026-05-04 (X-4-3 A/B 인프라 완료 시점)
 > 본 문서는 다음 3개 SSOT를 통합한 실행 가능한 작업 목록.
 > - [`docs/psychology-logic/구현계획.md`](docs/psychology-logic/구현계획.md) — 페이즈·태스크 인프라
 > - [`docs/psychology-logic/페르소나-화면-액션-매트릭스.md`](docs/psychology-logic/페르소나-화면-액션-매트릭스.md) — 20×11 분기 SSOT
@@ -20,18 +20,18 @@
 
 ```
 기반 (Phase 0-5):     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료
-심리학 V1 (Phase 6-7): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   95%  🔄
+심리학 V1 (Phase 6-7): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░   99%  🔄
 ─────────────────────────────────────────────────────
 A. 인증·구조 재설계:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (a15f8ae~898ebd5)
 B. 안전·임상 (구현계획 1부): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (1b71f61~23361fa)
 C-1 페르소나 인프라:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (8a8090c~3f8923a)
-C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100% ✅ 완료 (단위 테스트 162 PASS, dogfood 별도 트랙)
+C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100% ✅ 완료 (단위 테스트 245 PASS, dogfood 별도)
 C-2-Ref 참고용 적용:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (d614c74~1908c43)
-C-3 다중 페르소나 충돌:   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (5 화면 + 단위 테스트 26/26 PASS)
-X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░   85%  🔄 (4 ai-* 통합, 졸업·스트림 잔존)
-D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
-E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜
-횡단:                  ▓▓▓░░░░░░░░░░░░░░░░░   15%  ⬜
+C-3 다중 페르소나 충돌:   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (5 화면 + 59/59 단위 테스트 PASS)
+X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░   85%  ⏸️ (4 ai-* 통합, 졸업·스트림 deferred — A-4 의존)
+D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ B-0 라이선스 회신 의존
+E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ ECR-R/RRS 라이선스 + 베타 50명 의존
+횡단 (X-1·X-2·X-3·X-4·X-5): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░   95%  🔄 (X-3-잔여-4 임상 감수만 외부 의존)
 ```
 
 ---
@@ -199,10 +199,10 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 | ID | 작업 | 상태 |
 |---|---|---|
-| C-1-1 | P1 명칭 변경 "가스라이팅" → "자기 판단 손상형" + 임계점 강화 | ⬜ |
-| C-1-2 | P13 사별 분리 + `bereavement-notice.tsx` 신규 | ⬜ |
-| C-1-3 | 8축 + 페르소나 분류 모듈 (DB·API·classifier) | ⬜ |
-| C-1-4 | 재분류 cron (D+7/14/30/60/90) | ⬜ |
+| C-1-1 | P1 명칭 변경 "가스라이팅" → "자기 판단 손상형" + 임계점 강화 | ✅ | 분류기·매트릭스 적용 완료 |
+| C-1-2 | P13 사별 분리 (분류기에서 P13 제외, bereavement-notice는 보류 — 도메인 어긋남) | ✅ | personaClassifier에서 P13 미반환 |
+| C-1-3 | 8축 + 페르소나 분류 모듈 (DB·API·classifier) | ✅ | 022 마이그·personaClassifier·api/persona·usePersonaStore |
+| C-1-4 | 재분류 cron (D+7/14/30/60/90) | ✅ | persona-reclassify-cron edge function
 
 **산출물**:
 - 마이그레이션 `022_persona_profiling.sql`
@@ -366,7 +366,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 # 지금 위치
 
-**→ C-2 화면별 분기 100% 완료** (G-7c·G-5b·G-11 모두). 페르소나 헬퍼 21개 + 화면 횡단 통합 잠금. 다음 트랙: D Phase 검사 통합 (B-0 라이선스 회신 후) 또는 X 횡단(PIPA·텔레메트리).
+**→ C-2 + 횡단(X-1·X-3·X-4) 인프라 모두 마감.** 245 테스트 PASS. 잔존은 모두 외부 의존 (X-3-잔여-4 임상 감수, D Phase 라이선스, dogfood 베타).
 
 ## 누적 커밋 (최근 30개)
 
@@ -378,15 +378,23 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 - C-3 + X-2-B: `fbcd106` X-2-B-1 → `6d60a23` C-3-H → `92a5f7b` X-2-B-2 → `5912578` C-3-H 4 화면 적용 → `8781196` C-3-H journal 잔존 → `344304c` C-3-H-test vitest 26 PASS → `936be16` C-3-H-test+ 51 PASS (opus 후속 3건) → `5c38c77` C-3-H-test++ 59 PASS (선택 권고 2건)
 - C-2-G-7c: `00c30e0` G-7c-1 헬퍼 4종 → `3ef0ad9` G-7c-2 P08 봉인 → `d761dee` G-7c-3 P15 짐 정리 → `192a4f4` G-7c-4 P17 Continuing Bonds → `6aa041d` G-7c-5 P18 마주침 동선 → `c6102f6` G-7c-6 진입 통합
 - C-2-G-5b: `523e05e` G-5b-1 카테고리 4종 인프라 → `a6a1483` G-5b-2 secondary 검사 + visual highlight
-- C-2-G-11: (본 커밋) screenHelpers.test.ts 신규 — 14 헬퍼 + 통합 6 페르소나 (162 PASS)
+- C-2-G-11: `6cef8c9` screenHelpers.test.ts — 14 헬퍼 + 통합 6 페르소나 (162 PASS) → `87f38b0` 시간 boundary 통일
+- X-1 PIPA: `05d553b` 열람·삭제·반출 → `bfddf14` Share file URL → `b92e8cc` §37 의사 → `812ee08` §37 server gate → `c2b1384` §37 client gate → `1fb9033` 계정 삭제 Edge Function + 026 CASCADE
+- X-3 외부 의뢰: `e482d97` 임계 JSON + 헬퍼 (189 PASS) → `7cecabb` 평가 함수 (215 PASS) → `a7194ec` modal 통합
+- X-4 텔레메트리: `073bfdf` events + 옵트인 (X-4-1) → `d61d357` 인스트루멘테이션 1차 → `d2f2c32` 잔여 wrapper·branch·preference → `ef6aec5` 의식 트랙 → `650b546` onboarding funnel → `185fe7f` mock test 인프라 (235 PASS) → `76ba4a7` X-4-3 A/B 인프라 (245 PASS)
 
 ## 다음 할 일 (우선순위 순)
 
-1. **X-3-잔여-4** verified_by 임상 감수 (외부 의존)
-2. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-3. **C-2 dogfood 20명** — 베타 트랙으로 분리
+### 외부 의존 (자동 진행 불가)
+1. **X-3-잔여-4** verified_by 임상 감수
+2. **D-1·D-2·D-3·D-6** 검사 통합 — PHQ-9·GAD-7·RSE 라이선스 회신 후
+3. **C-2 dogfood 20명** — 베타 사용자 모집
 
-내부적으로 실행 가능한 큰 트랙은 모두 마감. 외부 의존(임상 감수·라이선스·베타 사용자) 항목만 잔존.
+### 내부 진행 가능 (라이선스 무관)
+4. **D-4** 자가 보고 연락 카운터 (`ContactUrgeChip` + `024_contact_urge.sql`은 G-5b 점유 → 028 신규) — 자체 측정, 라이선스 무관
+5. **D-5** P10 분노 모드 + 2차 정서 강제 (`app/journal/raw-mode.tsx` + 신규 마이그) — P10 페르소나 핵심 도구
+6. **mock helper 추출** — `tests/helpers/supabaseMock.ts`로 중복 제거 (opus 권고)
+7. **payload allowlist runtime 검증** — telemetry payload 키 화이트리스트 (X-4-test 권고)
 
 ---
 
@@ -425,9 +433,9 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | **6-9 졸업 작별 양방향** | ✅→⏸️ | **보류** (A-4) |
 | 6-10 추억 능동 정리 | ✅ | C-2-G-7 페르소나별 분기로 확장 |
 | 6-11 자기 성찰 트랙 | ✅ | C-2-G-5 about-me에 흡수 |
-| 7-1 일기 draft 임시저장 | ⬜ | 그대로 유지 |
+| 7-1 일기 draft 임시저장 | ✅ | useJournalDraft hook 구현, journal/index에서 사용 |
 | 7-2 일기 미니 모드 | ✅ | C-2-G-3 P02 default와 연결 |
-| 7-3 저장 실패 재시도 UI | ⬜ | 그대로 유지 |
+| 7-3 저장 실패 재시도 UI | ✅ | ErrorToast.action='재시도' — today·analysis/result·compass/needle·about-me 4 화면 적용. mini는 silent + 로컬 우선 (의도된 패턴) |
 | 7-4 위기 신호 감지 | ✅ | B-1 C-SSRS 프로토콜로 확장 |
 
 ## 📁 참조 문서 인덱스
