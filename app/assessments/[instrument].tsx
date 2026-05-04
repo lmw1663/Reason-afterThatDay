@@ -4,6 +4,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
 import { ErrorToast } from '@/components/ui/ErrorToast';
@@ -52,6 +53,9 @@ export default function AssessmentScreen() {
   const [responses, setResponses] = useState<Record<number, number>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // PHQ-9 9번 문항(자해 사고)이 양성(≥1)이면 저장 후 C-SSRS 모달로 escalate.
+  // 모달 닫힘 시 recovery-trace로 이동 — 사용자 이탈 방지.
+  const [crisisEscalation, setCrisisEscalation] = useState(false);
 
   const labels = bank?.scale === 'RSE' ? RSE_LABELS : PHQ_GAD_LABELS;
   const total = bank?.items.length ?? 0;
@@ -102,12 +106,25 @@ export default function AssessmentScreen() {
         payload[`item${itemNumber}`] = final;
       }
       await recordAssessment(userId, instrument, payload, source);
+      // PHQ-9 9번 문항(자해 사고) 양성 → C-SSRS 평가로 자동 escalate.
+      // PHQ-9 표준 프로토콜: 9번 문항이 1점 이상이면 즉시 안전 후속 평가 필수.
+      // C-SSRS는 6항을 거쳐 severity='caution|high|urgent'를 결정 → severity별
+      // 잠금/핫라인/119 안내가 자동 처리됨 (api/safety.ts:recordCrisisAssessment).
+      if (instrument === 'PHQ9' && (payload.item9 ?? 0) >= 1) {
+        setCrisisEscalation(true);
+        return;
+      }
       router.replace('/recovery-trace' as Href);
     } catch {
       setError('저장이 안 됐어. 잠시 후 다시 시도해볼래?');
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleCrisisModalClose() {
+    setCrisisEscalation(false);
+    router.replace('/recovery-trace' as Href);
   }
 
   function handleStop() {
@@ -117,6 +134,13 @@ export default function AssessmentScreen() {
 
   return (
     <ScreenWrapper>
+      {crisisEscalation && (
+        <EmotionalCheckModal
+          type="crisis_screen"
+          visible={crisisEscalation}
+          onClose={handleCrisisModalClose}
+        />
+      )}
       <ErrorToast
         visible={!!error}
         message={error ?? ''}
