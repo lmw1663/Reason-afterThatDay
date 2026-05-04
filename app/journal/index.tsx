@@ -19,6 +19,7 @@ import { useJournalDraft, type JournalDraft } from '@/hooks/useJournalDraft';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import {
   getJournalFreeTextPlaceholder,
+  isRawModeAllowed,
   shouldShowShameGuiltEducation,
 } from '@/constants/personaBranches';
 import { resolvePersona, appliesRecommendation } from '@/utils/personaResolver';
@@ -165,7 +166,30 @@ export default function JournalMoodScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Caption className="mb-2">이별 일기 · 1 / 4</Caption>
-        <Heading className="mb-8">지금 감정 온도가 몇 도야?</Heading>
+        <Heading className="mb-2">지금 감정 온도가 몇 도야?</Heading>
+
+        {/* D-5: 분노 페르소나(P10)면 거칠게 모드로 우회 옵션 — 4단계 부담 없이 venting */}
+        {isRawModeAllowed(effectivePersona) && (
+          <Pressable
+            onPress={() => router.push('/journal/raw-mode')}
+            accessibilityRole="button"
+            accessibilityLabel="거칠게 쓰는 모드로 이동"
+            accessibilityHint="분노를 그대로 쏟아내고, 마지막에 함께 다른 감정도 봐"
+            className="mb-6 rounded-xl px-4 py-3 flex-row items-center gap-2 active:opacity-70"
+            style={{ backgroundColor: colors.overlayPurpleSoft, borderWidth: 1, borderColor: colors.purple[800] }}
+          >
+            <Icon name="wind" size={18} color={colors.purple[400]} />
+            <View className="flex-1">
+              <Body className="text-purple-400 text-sm font-semibold">오늘은 거칠게 써볼래?</Body>
+              <Caption className="text-gray-500 text-xs mt-0.5">
+                4단계 없이 한 번에 쏟아낸 뒤 마음 한 가지만 들여다보자
+              </Caption>
+            </View>
+            <Icon name="chevron-right" size={16} color={colors.gray[400]} />
+          </Pressable>
+        )}
+
+        <View className="mt-4" />
 
         <MoodSlider value={score} onChange={handleScoreChange} />
 

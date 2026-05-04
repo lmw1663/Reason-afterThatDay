@@ -15,6 +15,8 @@ function toJournalEntry(row: Record<string, unknown>): JournalEntry {
     freeText: row.free_text as string | undefined,
     aiResponse: row.ai_response as string | undefined,
     isMiniMode: (row.is_mini_mode as boolean) ?? false,
+    isRawMode: (row.is_raw_mode as boolean) ?? false,
+    secondaryEmotion: (row.secondary_emotion as string | null) ?? null,
   };
 }
 
@@ -28,6 +30,8 @@ export async function upsertJournalEntry(params: {
   freeText?: string;
   aiResponse?: string;
   isMiniMode?: boolean;
+  isRawMode?: boolean;
+  secondaryEmotion?: string | null;
 }): Promise<JournalEntry> {
   // PostgREST의 on_conflict 파라미터는 표현식 기반 unique index를 지원하지 않으므로
   // 오늘 항목 존재 여부를 직접 확인 후 insert/update로 분기
@@ -42,6 +46,8 @@ export async function upsertJournalEntry(params: {
     free_text: params.freeText ?? null,
     ai_response: params.aiResponse ?? null,
     is_mini_mode: params.isMiniMode ?? false,
+    is_raw_mode: params.isRawMode ?? false,
+    secondary_emotion: params.secondaryEmotion ?? null,
   };
 
   if (existing) {
@@ -74,6 +80,28 @@ export async function fetchRecentEntries(userId: string, limit = 7): Promise<Jou
 
   if (error) throw error;
   return (data ?? []).map(toJournalEntry);
+}
+
+/**
+ * D-5 raw-mode 일일 진입 카운트 — 오늘 KST 자정~23:59 사이 is_raw_mode=true 행 수.
+ * 정책: 1일 ≤ 2회. 호출자는 결과 ≥ 2면 진입 차단 + 일반 일기 우회.
+ */
+export async function countRawModeToday(userId: string): Promise<number> {
+  const now = new Date();
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(now.getTime() + kstOffset).toISOString().slice(0, 10);
+  const startUtc = new Date(`${kstDate}T00:00:00+09:00`).toISOString();
+  const endUtc = new Date(`${kstDate}T23:59:59+09:00`).toISOString();
+
+  const { count, error } = await supabase
+    .from('journal_entries')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('is_raw_mode', true)
+    .gte('created_at', startUtc)
+    .lte('created_at', endUtc);
+  if (error) throw error;
+  return count ?? 0;
 }
 
 export async function fetchTodayEntry(userId: string): Promise<JournalEntry | null> {

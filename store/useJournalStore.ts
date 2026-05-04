@@ -14,6 +14,8 @@ export interface JournalEntry {
   freeText?: string;
   aiResponse?: string;
   isMiniMode?: boolean;
+  isRawMode?: boolean;
+  secondaryEmotion?: string | null;
 }
 
 interface JournalState {
