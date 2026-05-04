@@ -91,6 +91,38 @@ describe('isTriggered — 트리거별 발동 조건', () => {
       expect(isTriggered(t, { ...empty, classifiedPersonas: ['P14'] })).toBe(false);
     });
   });
+
+  describe('phq9_severe (≥15)', () => {
+    const t = getThresholdById('phq9_severe')!;
+
+    it('14 → false (경계 미만)', () => {
+      expect(isTriggered(t, { ...empty, latestPhq9Score: 14 })).toBe(false);
+    });
+    it('15 → true', () => {
+      expect(isTriggered(t, { ...empty, latestPhq9Score: 15 })).toBe(true);
+    });
+    it('27 → true (최댓값)', () => {
+      expect(isTriggered(t, { ...empty, latestPhq9Score: 27 })).toBe(true);
+    });
+    it('null/미정 → false', () => {
+      expect(isTriggered(t, empty)).toBe(false);
+      expect(isTriggered(t, { ...empty, latestPhq9Score: null })).toBe(false);
+    });
+  });
+
+  describe('gad7_severe (≥15)', () => {
+    const t = getThresholdById('gad7_severe')!;
+
+    it('14 → false', () => {
+      expect(isTriggered(t, { ...empty, latestGad7Score: 14 })).toBe(false);
+    });
+    it('15 → true', () => {
+      expect(isTriggered(t, { ...empty, latestGad7Score: 15 })).toBe(true);
+    });
+    it('null → false', () => {
+      expect(isTriggered(t, empty)).toBe(false);
+    });
+  });
 });
 
 describe('evaluateActiveThresholds — 종합 평가', () => {
@@ -134,17 +166,28 @@ describe('evaluateActiveThresholds — 종합 평가', () => {
     expect(cssrs?.threshold.lock_decision_track).toBe(true);
   });
 
-  it('PHQ/GAD/ICG는 enabled=false → 발동 평가 자체에서 제외', () => {
-    // 이 임계들은 본 PR에서 트리거 평가가 reach하지 않음
+  it('ICG/PG-13는 enabled=false → 발동 평가 자체에서 제외 (PHQ/GAD는 D-1~D-6 활성화로 발동 가능)', () => {
     const result = evaluateActiveThresholds({
       recentCrisisSeverities: ['urgent', 'urgent', 'urgent'],
       recentDecisionFlipCount: 10,
       classifiedPersonas: ['P01', 'P20'],
     });
     const ids = result.map((a) => a.threshold.id);
+    expect(ids).not.toContain('icg_pg13_chronic_grief');
+    // PHQ/GAD는 점수 미정이라 발동 X (정상). enabled=true는 됐지만 latestPhq9/Gad7Score 없음
     expect(ids).not.toContain('phq9_severe');
     expect(ids).not.toContain('gad7_severe');
-    expect(ids).not.toContain('icg_pg13_chronic_grief');
+  });
+
+  it('PHQ-9 score=20 + GAD-7 score=18 → phq9_severe + gad7_severe 발동 (enabled=true)', () => {
+    const result = evaluateActiveThresholds({
+      ...empty,
+      latestPhq9Score: 20,
+      latestGad7Score: 18,
+    });
+    const ids = result.map((a) => a.threshold.id);
+    expect(ids).toContain('phq9_severe');
+    expect(ids).toContain('gad7_severe');
   });
 
   it('자원 매핑 — 발동 임계의 resources가 모두 채워져 있음', () => {

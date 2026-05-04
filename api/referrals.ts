@@ -70,10 +70,32 @@ export async function buildSafetySnapshot(userId: string): Promise<UserSafetySna
     classifiedPersonas.push(personaRow.secondary_persona as PersonaCode);
   }
 
+  // 4. 가장 최근 PHQ-9 / GAD-7 점수 (D-1~D-6 활성화로 phq9/gad7_severe 임계 평가)
+  const [latestPhq9Row, latestGad7Row] = await Promise.all([
+    supabase
+      .from('psych_assessments')
+      .select('raw_score')
+      .eq('user_id', userId)
+      .eq('instrument', 'PHQ9')
+      .order('assessed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from('psych_assessments')
+      .select('raw_score')
+      .eq('user_id', userId)
+      .eq('instrument', 'GAD7')
+      .order('assessed_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
   return {
     recentCrisisSeverities,
     recentDecisionFlipCount,
     classifiedPersonas,
+    latestPhq9Score: (latestPhq9Row.data?.raw_score as number | undefined) ?? null,
+    latestGad7Score: (latestGad7Row.data?.raw_score as number | undefined) ?? null,
   };
 }
 

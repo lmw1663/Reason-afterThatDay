@@ -106,6 +106,18 @@ export default function RecoveryTraceScreen() {
             그 자체가 회복의 결이야.
           </Caption>
         </View>
+
+        {/* 척도 출처 — Pfizer/UMD 공식 라이선스 + 한국어 번역 인용 */}
+        <Pressable
+          onPress={() => router.push('/legal/scales' as Href)}
+          accessibilityRole="button"
+          accessibilityLabel="이 척도들의 출처 보기"
+          className="mt-3 self-start active:opacity-60 px-2 py-1"
+        >
+          <Caption className="text-gray-600 text-xs underline">
+            척도 출처 및 라이선스 보기 ›
+          </Caption>
+        </Pressable>
       </ScrollView>
     </ScreenWrapper>
   );

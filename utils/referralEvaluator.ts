@@ -16,7 +16,7 @@ import type { PersonaCode } from './personaClassifier';
  * 채운 뒤 본 함수에 전달 — 본 모듈은 *DB 무관 순수 평가*라 단위 테스트 용이.
  *
  * 정책:
- *  - PHQ-9·GAD-7·ICG/PG-13(enabled=false)는 자동 제외 (false trigger 차단).
+ *  - ICG/PG-13(enabled=false)는 자동 제외 (false trigger 차단). PHQ-9·GAD-7는 D-1~D-6으로 활성화.
  *  - 시간 윈도우(threshold_window_days)는 snapshot이 *이미 그 윈도우로 필터링*된 데이터를 줘야.
  *    본 함수는 윈도우 자체 검증 X — snapshot의 책임 (호출자 명세).
  *  - 우선순위(critical > high > moderate)는 발동 *순서*로 정렬해 critical이 먼저.
@@ -29,6 +29,13 @@ export interface UserSafetySnapshot {
   recentDecisionFlipCount: number;
   /** 현재 분류된 페르소나 (primary + secondary, null 제외). */
   classifiedPersonas: PersonaCode[];
+  /**
+   * 가장 최근 PHQ-9 raw score (없으면 null).
+   * D-1~D-6 활성화로 phq9_severe 임계(≥15) 평가. snapshot 측에서 fetch.
+   */
+  latestPhq9Score?: number | null;
+  /** 가장 최근 GAD-7 raw score (없으면 null). gad7_severe 임계(≥15) 평가. */
+  latestGad7Score?: number | null;
 }
 
 export interface ActiveThreshold {
@@ -90,8 +97,13 @@ export function isTriggered(t: ReferralThreshold, s: UserSafetySnapshot): boolea
     case 'p01_gaslighting_pattern':
       return s.classifiedPersonas.includes('P01');
 
-    // PHQ/GAD/ICG는 enabled=false라 getEnabledThresholds에서 이미 제외됨 — 도달 불가.
-    // 향후 enabled=true 시 별도 케이스 추가 (검사 통합 D-1 의존).
+    case 'phq9_severe':
+      return typeof s.latestPhq9Score === 'number' && s.latestPhq9Score >= 15;
+
+    case 'gad7_severe':
+      return typeof s.latestGad7Score === 'number' && s.latestGad7Score >= 15;
+
+    // ICG/PG-13는 enabled=false라 getEnabledThresholds에서 이미 제외됨 — 도달 불가.
     default:
       return false;
   }

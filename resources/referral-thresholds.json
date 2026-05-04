@@ -31,29 +31,29 @@
     },
     {
       "id": "phq9_severe",
-      "trigger": "PHQ-9 ≥ 15 (중등도-중증 우울)",
+      "trigger": "PHQ-9 ≥ 15 (modSevere/severe)",
       "threshold_count": 1,
       "threshold_window_days": null,
       "auto_show_resources": ["mental_health_crisis", "welfare_counseling"],
       "ui_priority": "high",
       "one_touch_call": true,
       "follow_up_push_24h": false,
-      "enabled": false,
+      "enabled": true,
       "phase_dependency": 3,
-      "_note": "Phase 3 검사 통합(D-1) 의존 — 라이선스 회신 후 enabled=true로 활성화"
+      "_note": "D-1~D-6 활성화 시점에 enabled=true (Pfizer 공식 퍼블릭 허가, scales-license.md). 메타포 매핑은 utils/scoring.ts:bandMetaphor가 담당."
     },
     {
       "id": "gad7_severe",
-      "trigger": "GAD-7 ≥ 15 (중증 불안)",
+      "trigger": "GAD-7 ≥ 15 (severe)",
       "threshold_count": 1,
       "threshold_window_days": null,
       "auto_show_resources": ["mental_health_crisis"],
       "ui_priority": "high",
       "one_touch_call": true,
       "follow_up_push_24h": false,
-      "enabled": false,
+      "enabled": true,
       "phase_dependency": 3,
-      "_note": "Phase 3 검사 통합(D-1) 의존"
+      "_note": "D-1~D-6 활성화 (Pfizer 공식 퍼블릭 허가). PHQ-9와 동일 정책."
     },
     {
       "id": "icg_pg13_chronic_grief",

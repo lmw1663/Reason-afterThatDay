@@ -282,12 +282,12 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 | ID | 작업 | 상태 |
 |---|---|---|
-| D-1 | 검사 응답 저장 인프라 (`023_assessments.sql`, `api/assessments.ts`) | ⬜ |
-| D-2 | 검사 화면 컴포넌트 (`AssessmentSlider`, `app/assessments/[instrument].tsx`) | ⬜ |
-| D-3 | 측정 시점 자동 트리거 (D+7/14/30 + 졸업 진입 — *졸업 보류 중엔 진입 트리거 없음*) | ⬜ |
+| D-1 | 검사 응답 저장 인프라 (`030_assessments.sql` — 022 점유로 030, `api/assessments.ts` + `utils/scoring.ts` 메타포 매핑) | ✅ |
+| D-2 | 검사 화면 컴포넌트 (`AssessmentSlider`, `app/assessments/[instrument].tsx` — 1문항 1화면 + 거부권) | ✅ |
+| D-3 | 측정 시점 자동 트리거 (홈 권유 카드 D+7/14/30 — 졸업 보류 중에도 노출, 강제 X) | ✅ |
 | D-4 | 자가 보고 연락 카운터 (`ContactUrgeChip` + `028_contact_urge.sql` — 023 점유로 028 채번, 홈 칩 + 7일 sparkline + telemetry) | ✅ |
 | D-5 | P10 분노 모드 + 2차 정서 강제 (`app/journal/raw-mode.tsx` + `029_raw_mode.sql` — 3-step gate→vent→integrate, 1일 ≤2회, 5개 2차 정서 카드 강제) | ✅ |
-| D-6 | 회복 추적 화면 (`app/recovery-trace/index.tsx` — 메타포 라벨 검수) | ⬜ |
+| D-6 | 회복 추적 화면 (`app/recovery-trace/index.tsx` — D+0 vs 현재 메타포 비교 + 시계열 + 척도 출처 링크) | ✅ |
 
 ---
 
@@ -387,7 +387,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ### 외부 의존 (자동 진행 불가)
 1. **X-3-잔여-4** verified_by 임상 감수
-2. **D-1·D-2·D-3·D-6** 검사 통합 — PHQ-9·GAD-7·RSE 라이선스 회신 후
+2. ~~**D-1·D-2·D-3·D-6** 검사 통합~~ — Pfizer/UMD 공식 퍼블릭 허가로 회신 불필요 ([라이선스 정리](docs/legal/scales-license.md)), 모두 ✅ 완료
 3. **C-2 dogfood 20명** — 베타 사용자 모집
 
 ### 내부 진행 가능 (라이선스 무관)

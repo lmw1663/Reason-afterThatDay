@@ -142,6 +142,35 @@ export const LEGAL_DOCUMENTS = {
 
 본 방침에 동의하지 않을 경우 서비스를 이용하실 수 없다.`,
   },
+  scales: {
+    title: '심리검사 척도 출처 및 라이선스',
+    version: 'v1.0.0',
+    effectiveDate: '2026-05-04',
+    body: `본 서비스는 회복 추적의 보조 도구로 다음 세 가지 표준 자기 보고 척도를 사용한다. 모든 척도는 출판사·저자가 명시한 공개 허가 또는 public domain 조건에 따라 사용되며, 학술 인용을 함께 표기한다.
+
+1. PHQ-9 (Patient Health Questionnaire-9)
+· 개발: Kroenke, Spitzer, Williams (2001)
+· 라이선스: Pfizer 공식 퍼블릭 허가 — "All PHQ, GAD-7 screeners and translations are downloadable from this website and no permission is required to reproduce, translate, display or distribute them."
+· 한국어판: 안제용, 박용천, 안창일, 정상섭, 김지혁, 강은호, 우영섭, 박종일, 김원, 정종현 (2013). 한글판 우울증 선별도구(Patient Health Questionnaire-9, PHQ-9)의 신뢰도와 타당도. Anxiety and Mood, 9(1), 7-12.
+
+2. GAD-7 (Generalized Anxiety Disorder-7)
+· 개발: Spitzer, Kroenke, Williams, Löwe (2006)
+· 라이선스: PHQ-9와 동일 (Pfizer 공식 퍼블릭 허가)
+· 한국어판: Seo, J.-G. & Park, S.-P. (2015). Validation of the Generalized Anxiety Disorder-7 (GAD-7) and GAD-2 in patients with migraine. The Journal of Headache and Pain, 16, 97.
+
+3. RSE (Rosenberg Self-Esteem Scale)
+· 개발: Rosenberg, M. (1965). Society and the adolescent self-image. Princeton University Press.
+· 라이선스: University of Maryland Department of Sociology 공식 안내 — "The scale is in the public domain ... The scale may be used without explicit permission."
+· 한국어판: 전병제 (1974). 자아개념 측정 가능성에 관한 연구. 연세논총, 11.
+
+활용 방식
+· 척도 응답·내부 점수는 본인의 회복 결을 보여주는 지표로만 사용되며, 진단·치료의 근거가 아니다.
+· 결과 화면은 점수 대신 메타포로 표시한다. 응답 데이터는 RLS로 본인만 조회 가능하며, 계정 삭제 시 함께 영구 삭제된다.
+· 본 척도들로 의료적 의사결정을 대신하지 말라. 위기 상황 시 자살예방상담전화 1393, 정신건강위기상담 1577-0199로 연락하라.
+
+변경 이력
+· v1.0.0 (2026-05-04) 최초 등재 — PHQ-9·GAD-7·RSE 활성화에 맞춰 척도 출처 및 한국어판 인용 명시.`,
+  },
 } as const;
 
 export type LegalDocumentSlug = keyof typeof LEGAL_DOCUMENTS;

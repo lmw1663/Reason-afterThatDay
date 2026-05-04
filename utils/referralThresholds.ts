@@ -60,7 +60,7 @@ export function getAllThresholds(): ReferralThreshold[] {
 /**
  * 현재 *활성화*된 임계만 반환 — 런타임 트리거 평가용.
  * `enabled !== false` (즉 true 또는 미지정)인 임계만 통과 — false trigger 차단.
- * Phase 3·5 검사 미통합 임계(PHQ/GAD/ICG)는 enabled=false라 자연 제외됨.
+ * Phase 5 ICG/PG-13는 enabled=false라 자연 제외됨. PHQ-9·GAD-7는 D-1~D-6 활성화로 enabled=true.
  */
 export function getEnabledThresholds(): ReferralThreshold[] {
   return data.thresholds.filter((t) => t.enabled !== false);

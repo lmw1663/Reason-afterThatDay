@@ -158,10 +158,10 @@ describe('referralThresholds — 메타·필드 형식 잠금', () => {
 });
 
 describe('referralThresholds — getEnabledThresholds (false trigger 차단)', () => {
-  it('enabled=false인 PHQ-9·GAD-7·ICG/PG-13는 제외', () => {
+  it('enabled=false인 ICG/PG-13만 제외 (PHQ/GAD는 D-1~D-6 활성화)', () => {
     const ids = getEnabledThresholds().map((t) => t.id);
-    expect(ids).not.toContain('phq9_severe');
-    expect(ids).not.toContain('gad7_severe');
+    expect(ids).toContain('phq9_severe');
+    expect(ids).toContain('gad7_severe');
     expect(ids).not.toContain('icg_pg13_chronic_grief');
   });
 
