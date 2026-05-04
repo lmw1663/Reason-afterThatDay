@@ -391,8 +391,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 3. **C-2 dogfood 20명** — 베타 사용자 모집
 
 ### 내부 진행 가능 (라이선스 무관)
-4. **mock helper 추출** — `tests/helpers/supabaseMock.ts`로 중복 제거 (opus 권고)
-5. **payload allowlist runtime 검증** — telemetry payload 키 화이트리스트 (X-4-test 권고)
+4. **payload allowlist runtime 검증** — telemetry payload 키 화이트리스트 (X-4-test 권고)
 
 ---
 

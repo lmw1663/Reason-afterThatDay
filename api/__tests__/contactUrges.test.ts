@@ -6,6 +6,12 @@ vi.mock('@/api/supabase', () => ({
 
 import { supabase } from '@/api/supabase';
 import { recordUrge, fetchUrgeTrend, fetchTodayUrgeCount } from '@/api/contactUrges';
+import {
+  applyChain,
+  chainInsert,
+  chainSelectOrder,
+  chainCountAtGte,
+} from '@/tests/helpers/supabaseMock';
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -13,29 +19,21 @@ beforeEach(() => {
 
 describe('recordUrge', () => {
   it('insert 호출 — user_id + urge_count=1', async () => {
-    const insertSpy = vi.fn().mockResolvedValue({ error: null });
-    (supabase.from as Mock).mockReturnValue({ insert: insertSpy });
+    const chain = applyChain(supabase.from as Mock, chainInsert());
     await recordUrge('user-1');
     expect(supabase.from).toHaveBeenCalledWith('contact_urges');
-    expect(insertSpy.mock.calls[0][0]).toEqual({ user_id: 'user-1', urge_count: 1 });
+    expect(chain.insert.mock.calls[0][0]).toEqual({ user_id: 'user-1', urge_count: 1 });
   });
 
   it('error → throw', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      insert: vi.fn().mockResolvedValue({ error: new Error('rls') }),
-    });
+    applyChain(supabase.from as Mock, chainInsert(new Error('rls')));
     await expect(recordUrge('user-1')).rejects.toThrow();
   });
 });
 
 describe('fetchUrgeTrend', () => {
   it('빈 데이터 → 7개 0-카운트 일자 반환 (오늘 포함, 시간순)', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: [], error: null }),
-    });
+    applyChain(supabase.from as Mock, chainSelectOrder([]));
     const trend = await fetchUrgeTrend('user-1');
     expect(trend.length).toBe(7);
     expect(trend.every((d) => d.count === 0)).toBe(true);
@@ -50,59 +48,37 @@ describe('fetchUrgeTrend', () => {
     const today = new Date();
     today.setHours(12, 0, 0, 0);
     const iso = today.toISOString();
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({
-        data: [{ reported_at: iso }, { reported_at: iso }, { reported_at: iso }],
-        error: null,
-      }),
-    });
+    applyChain(supabase.from as Mock, chainSelectOrder([
+      { reported_at: iso },
+      { reported_at: iso },
+      { reported_at: iso },
+    ]));
     const trend = await fetchUrgeTrend('user-1');
     expect(trend[trend.length - 1].count).toBe(3);
   });
 
   it('error → throw', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      order: vi.fn().mockResolvedValue({ data: null, error: new Error('rls') }),
-    });
+    applyChain(supabase.from as Mock, chainSelectOrder(null, new Error('rls')));
     await expect(fetchUrgeTrend('user-1')).rejects.toThrow();
   });
 });
 
 describe('fetchTodayUrgeCount', () => {
   it('count head=true 호출 → 숫자 반환', async () => {
-    const selectSpy = vi.fn().mockReturnThis();
-    (supabase.from as Mock).mockReturnValue({
-      select: selectSpy,
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockResolvedValue({ count: 4, error: null }),
-    });
+    const chain = applyChain(supabase.from as Mock, chainCountAtGte(4));
     const c = await fetchTodayUrgeCount('user-1');
     expect(c).toBe(4);
-    expect(selectSpy.mock.calls[0]).toEqual(['*', { count: 'exact', head: true }]);
+    expect(chain.select.mock.calls[0]).toEqual(['*', { count: 'exact', head: true }]);
   });
 
   it('count null → 0', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockResolvedValue({ count: null, error: null }),
-    });
+    applyChain(supabase.from as Mock, chainCountAtGte(null));
     const c = await fetchTodayUrgeCount('user-1');
     expect(c).toBe(0);
   });
 
   it('error → throw', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockResolvedValue({ count: null, error: new Error('rls') }),
-    });
+    applyChain(supabase.from as Mock, chainCountAtGte(null, new Error('rls')));
     await expect(fetchTodayUrgeCount('user-1')).rejects.toThrow();
   });
 });

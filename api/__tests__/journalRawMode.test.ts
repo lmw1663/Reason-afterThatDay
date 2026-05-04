@@ -6,6 +6,7 @@ vi.mock('@/api/supabase', () => ({
 
 import { supabase } from '@/api/supabase';
 import { countRawModeToday } from '@/api/journal';
+import { applyChain, chainCountAtLte } from '@/tests/helpers/supabaseMock';
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -13,44 +14,25 @@ beforeEach(() => {
 
 describe('countRawModeToday', () => {
   it('count head=true 호출 — is_raw_mode=true 필터링', async () => {
-    const eqSpy = vi.fn().mockReturnThis();
-    const gteSpy = vi.fn().mockReturnThis();
-    const lteSpy = vi.fn().mockResolvedValue({ count: 1, error: null });
-    const selectSpy = vi.fn().mockReturnThis();
-    (supabase.from as Mock).mockReturnValue({
-      select: selectSpy,
-      eq: eqSpy,
-      gte: gteSpy,
-      lte: lteSpy,
-    });
+    const chain = applyChain(supabase.from as Mock, chainCountAtLte(1));
     const c = await countRawModeToday('user-1');
     expect(c).toBe(1);
     expect(supabase.from).toHaveBeenCalledWith('journal_entries');
-    expect(selectSpy.mock.calls[0]).toEqual(['*', { count: 'exact', head: true }]);
+    expect(chain.select.mock.calls[0]).toEqual(['*', { count: 'exact', head: true }]);
     // eq는 user_id + is_raw_mode 두 번
-    const eqArgs = eqSpy.mock.calls.map((c) => c[0]);
+    const eqArgs = chain.eq.mock.calls.map((c) => c[0]);
     expect(eqArgs).toContain('user_id');
     expect(eqArgs).toContain('is_raw_mode');
   });
 
   it('count null → 0', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      lte: vi.fn().mockResolvedValue({ count: null, error: null }),
-    });
+    applyChain(supabase.from as Mock, chainCountAtLte(null));
     const c = await countRawModeToday('user-1');
     expect(c).toBe(0);
   });
 
   it('error → throw', async () => {
-    (supabase.from as Mock).mockReturnValue({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      gte: vi.fn().mockReturnThis(),
-      lte: vi.fn().mockResolvedValue({ count: null, error: new Error('rls') }),
-    });
+    applyChain(supabase.from as Mock, chainCountAtLte(null, new Error('rls')));
     await expect(countRawModeToday('user-1')).rejects.toThrow();
   });
 });
