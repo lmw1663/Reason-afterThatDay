@@ -285,7 +285,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | D-1 | 검사 응답 저장 인프라 (`023_assessments.sql`, `api/assessments.ts`) | ⬜ |
 | D-2 | 검사 화면 컴포넌트 (`AssessmentSlider`, `app/assessments/[instrument].tsx`) | ⬜ |
 | D-3 | 측정 시점 자동 트리거 (D+7/14/30 + 졸업 진입 — *졸업 보류 중엔 진입 트리거 없음*) | ⬜ |
-| D-4 | 자가 보고 연락 카운터 (`ContactUrgeChip` + `024_contact_urge.sql`) | ⬜ |
+| D-4 | 자가 보고 연락 카운터 (`ContactUrgeChip` + `028_contact_urge.sql` — 023 점유로 028 채번, 홈 칩 + 7일 sparkline + telemetry) | ✅ |
 | D-5 | P10 분노 모드 + 2차 정서 강제 (`app/journal/raw-mode.tsx` + `025_raw_mode.sql`) | ⬜ |
 | D-6 | 회복 추적 화면 (`app/recovery-trace/index.tsx` — 메타포 라벨 검수) | ⬜ |
 
@@ -391,10 +391,9 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 3. **C-2 dogfood 20명** — 베타 사용자 모집
 
 ### 내부 진행 가능 (라이선스 무관)
-4. **D-4** 자가 보고 연락 카운터 (`ContactUrgeChip` + `024_contact_urge.sql`은 G-5b 점유 → 028 신규) — 자체 측정, 라이선스 무관
-5. **D-5** P10 분노 모드 + 2차 정서 강제 (`app/journal/raw-mode.tsx` + 신규 마이그) — P10 페르소나 핵심 도구
-6. **mock helper 추출** — `tests/helpers/supabaseMock.ts`로 중복 제거 (opus 권고)
-7. **payload allowlist runtime 검증** — telemetry payload 키 화이트리스트 (X-4-test 권고)
+4. **D-5** P10 분노 모드 + 2차 정서 강제 (`app/journal/raw-mode.tsx` + 신규 마이그) — P10 페르소나 핵심 도구
+5. **mock helper 추출** — `tests/helpers/supabaseMock.ts`로 중복 제거 (opus 권고)
+6. **payload allowlist runtime 검증** — telemetry payload 키 화이트리스트 (X-4-test 권고)
 
 ---
 

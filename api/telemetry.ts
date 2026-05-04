@@ -22,7 +22,9 @@ export type EventKind =
   // 사용자 토글 변경 (suspension·telemetry)
   | 'preference_toggled'
   // A/B 실험 할당 (X-4-3) — payload: { experiment_id, variant }
-  | 'experiment_assigned';
+  | 'experiment_assigned'
+  // D-4 자가 보고 연락 충동 1탭 — payload: {} (개인 식별 정보 0)
+  | 'contact_urge_reported';
 
 export interface TelemetryStatus {
   optedIn: boolean;

@@ -9,6 +9,7 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { PersonaPriorityCard } from '@/components/PersonaPriorityCard';
+import { ContactUrgeChip } from '@/components/ContactUrgeChip';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { isMiniJournalFirst } from '@/constants/personaBranches';
 import { useUserStore } from '@/store/useUserStore';
@@ -259,6 +260,11 @@ export default function HomeScreen() {
             <Text className="text-gray-200 font-semibold text-sm text-center mt-1">나에 대해</Text>
             <Caption className="text-gray-600 text-center text-xs mt-0.5">자존감 트랙</Caption>
           </Pressable>
+        </View>
+
+        {/* D-4 연락 충동 1탭 보고 — 빠른 진입 아래 보조 칩 (작게, 무판단 톤) */}
+        <View className="px-6 mb-6">
+          <ContactUrgeChip />
         </View>
 
         {/* 메뉴 — 일기·추억은 [기록] 탭, 자기 통찰·분석·나침반은 [나] 탭에서 모아본다. */}
