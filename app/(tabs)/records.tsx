@@ -96,10 +96,9 @@ export default function RecordsScreen() {
           />
           <RecordCard
             icon="chart"
-            title="회복 곡선"
-            subtitle="감정 온도가 변해온 모습"
-            onPress={() => {/* Phase C에서 /recovery-trace 화면 신설 후 연결 */}}
-            comingSoon
+            title="회복의 결"
+            subtitle="처음과 지금의 마음 결을 비교해봐"
+            onPress={() => router.push('/recovery-trace' as never)}
           />
         </View>
       </ScrollView>
