@@ -344,7 +344,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | └ X-4-2-2 | 잔여 화면(home·records·memories) + 5 ai wrapper(daily_quote·comfort 등) + persona_branch_applied 3건 + preference_toggled 3건 일괄 적용 | ✅ | (본 커밋) |
 | └ X-4-2-3 | 의식 트랙 4 화면(seal·declutter·continuing-bonds·encounter-plan) + safety/release + cooling/index useScreenView | ✅ | (본 커밋) |
 | └ X-4-2-4 | onboarding funnel 5 + persona/intro + cooling/checkin useScreenView (cooling/final은 Redirect 미적용) | ✅ | (본 커밋) |
-| └ X-4-3 | A/B 실험 인프라 — events 테이블 experiment_id + 변형 할당 로직 | ⬜ |
+| └ X-4-3 | A/B 실험 인프라 — assignVariant 순수 함수 + useExperiment 훅 + experiment_assigned 이벤트 (DB 무변경, payload 활용) | ✅ | (본 커밋) |
 | └ X-4-test | telemetry API 단위 테스트 + payload 매핑 검증 (allowlist runtime은 후속) | ✅ | (본 커밋) |
 | X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 + 졸업 보류 + 페르소나 라벨 비노출 + 핫라인 페르소나 매핑 | ✅ |
 
@@ -382,10 +382,11 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 ## 다음 할 일 (우선순위 순)
 
-1. **X-4-3** A/B 실험 인프라 (experiment_id + 변형 할당)
-2. **X-3-잔여-4** verified_by 임상 감수 (외부 의존)
-3. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
-4. **C-2 dogfood 20명** — 베타 트랙으로 분리
+1. **X-3-잔여-4** verified_by 임상 감수 (외부 의존)
+2. **D Phase** 검사 통합 (D-1~D-6) — B-0 라이선스 회신 후
+3. **C-2 dogfood 20명** — 베타 트랙으로 분리
+
+내부적으로 실행 가능한 큰 트랙은 모두 마감. 외부 의존(임상 감수·라이선스·베타 사용자) 항목만 잔존.
 
 ---
 

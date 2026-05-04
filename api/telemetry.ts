@@ -20,7 +20,9 @@ export type EventKind =
   // 위기 모달 노출 (어떤 트리거로 열렸는지)
   | 'crisis_modal_shown'
   // 사용자 토글 변경 (suspension·telemetry)
-  | 'preference_toggled';
+  | 'preference_toggled'
+  // A/B 실험 할당 (X-4-3) — payload: { experiment_id, variant }
+  | 'experiment_assigned';
 
 export interface TelemetryStatus {
   optedIn: boolean;
