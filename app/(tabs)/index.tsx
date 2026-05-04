@@ -17,6 +17,9 @@ import { fetchDailyQuote } from '@/api/ai';
 import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
+import { trackEvent } from '@/api/telemetry';
 
 export default function HomeScreen() {
   const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
@@ -28,6 +31,17 @@ export default function HomeScreen() {
   const [showIntrusiveModal, setShowIntrusiveModal] = useState(false);
   const [safetyAlert, setSafetyAlert] = useState<'consecutive_low' | 'late_night' | null>(null);
   const { checkConsecutiveLowTemperature, checkLateNightAccess } = useEmotionalSafety();
+
+  useScreenView('home', { persona_category: anonymizePersona(personaPrimary) });
+  useEffect(() => {
+    if (miniIsPrimary) {
+      trackEvent('persona_branch_applied', {
+        screen: 'home',
+        branch: 'mini_journal_first',
+        persona_category: anonymizePersona(personaPrimary),
+      });
+    }
+  }, [miniIsPrimary, personaPrimary]);
 
   // 새벽 접근 감지 — 홈 진입 시 1회
   useEffect(() => {

@@ -34,6 +34,7 @@ import {
   setTelemetryOptIn,
   type TelemetryStatus,
 } from '@/api/telemetry';
+import { trackEvent } from '@/api/telemetry';
 
 // X-1 PIPA 컴플라이언스 — 사용자가 자기 데이터를 *직접* 보고·내보내고·삭제할 수 있는 트랙.
 // 개인정보 보호법 제35조(열람) · 제36조(삭제) · GDPR Art.20(반출) 대응.
@@ -86,6 +87,9 @@ export default function DataSettingsScreen() {
     try {
       await setTelemetryOptIn(userId, next);
       setTelemetry({ optedIn: next, optedInAt: next ? new Date().toISOString() : null });
+      // OFF→ON 전환만 trackEvent — 옵트아웃은 본인 의사라 telemetry 자체가 그 직전에 OFF.
+      // ON→OFF 전환은 next=false라 본 호출도 실제로 옵트인 OFF에 막혀 silent skip되는 race가 정합.
+      if (next) trackEvent('preference_toggled', { key: 'telemetry_opted_in', next });
     } catch {
       setError('텔레메트리 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
     } finally {
@@ -101,6 +105,7 @@ export default function DataSettingsScreen() {
     try {
       await updateProcessingSuspension(userId, { notificationsSuspended: next });
       setSuspension({ ...suspension, notificationsSuspended: next, updatedAt: new Date().toISOString() });
+      trackEvent('preference_toggled', { key: 'notifications_suspended', next });
     } catch {
       setError('알림 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
     } finally {
@@ -116,6 +121,7 @@ export default function DataSettingsScreen() {
     try {
       await updateProcessingSuspension(userId, { aiAnalysisSuspended: next });
       setSuspension({ ...suspension, aiAnalysisSuspended: next, updatedAt: new Date().toISOString() });
+      trackEvent('preference_toggled', { key: 'ai_analysis_suspended', next });
     } catch {
       setError('AI 분석 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
     } finally {

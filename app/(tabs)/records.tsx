@@ -10,6 +10,9 @@ import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { shouldShowIntrusiveTrend } from '@/constants/personaBranches';
 import { getIntrusiveMemoryTrend } from '@/api/intrusiveMemory';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
+import { trackEvent } from '@/api/telemetry';
 
 /**
  * [기록] 탭 — A-3
@@ -24,6 +27,17 @@ export default function RecordsScreen() {
   const { userId } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
   const showIntrusiveTrend = shouldShowIntrusiveTrend(personaPrimary);
+
+  useScreenView('records', { persona_category: anonymizePersona(personaPrimary) });
+  useEffect(() => {
+    if (showIntrusiveTrend) {
+      trackEvent('persona_branch_applied', {
+        screen: 'records',
+        branch: 'intrusive_trend_widget',
+        persona_category: anonymizePersona(personaPrimary),
+      });
+    }
+  }, [showIntrusiveTrend, personaPrimary]);
 
   // C-2-G-7b: P09 떠올랐어 카운터·추세 (헌신 소진형 회복 진전 시각화)
   const [trend, setTrend] = useState<{ recent: number; previous: number } | null>(null);

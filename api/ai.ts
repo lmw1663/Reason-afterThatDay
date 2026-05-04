@@ -127,8 +127,10 @@ export async function fetchDailyQuote(
   daysElapsed: number,
   userId?: string,
 ): Promise<string> {
+  const fallback = () => DAILY_QUOTE_FALLBACKS[Math.floor(Math.random() * DAILY_QUOTE_FALLBACKS.length)];
   if (await isAiSuspended()) {
-    return DAILY_QUOTE_FALLBACKS[Math.floor(Math.random() * DAILY_QUOTE_FALLBACKS.length)];
+    trackEvent('ai_response_fallback', { fn: 'daily_quote', reason: 'suspended' });
+    return fallback();
   }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
@@ -136,9 +138,11 @@ export async function fetchDailyQuote(
       withPersona({ daysElapsed, userId }),
       6000,
     );
+    trackEvent('ai_response_success', { fn: 'daily_quote' });
     return data.response;
   } catch {
-    return DAILY_QUOTE_FALLBACKS[Math.floor(Math.random() * DAILY_QUOTE_FALLBACKS.length)];
+    trackEvent('ai_response_fallback', { fn: 'daily_quote', reason: 'error' });
+    return fallback();
   }
 }
 
@@ -155,14 +159,19 @@ export async function fetchComfort(params: {
   };
   const fallback = () => FALLBACKS[params.situation] ?? '지금 이 순간도 잘 버티고 있어. 충분해.';
 
-  if (await isAiSuspended()) return fallback();
+  if (await isAiSuspended()) {
+    trackEvent('ai_response_fallback', { fn: 'comfort', reason: 'suspended' });
+    return fallback();
+  }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-comfort',
       withPersona(params as unknown as Record<string, unknown>),
     );
+    trackEvent('ai_response_success', { fn: 'comfort' });
     return data.response;
   } catch {
+    trackEvent('ai_response_fallback', { fn: 'comfort', reason: 'error' });
     return fallback();
   }
 }
@@ -183,15 +192,20 @@ export async function fetchCoolingCheckinGPTResponse(params: {
   checkinText: string;
 }): Promise<string> {
   const fallback = () => CHECKIN_FALLBACK[params.day] ?? CHECKIN_FALLBACK[1];
-  if (await isAiSuspended()) return fallback();
+  if (await isAiSuspended()) {
+    trackEvent('ai_response_fallback', { fn: 'cooling_checkin', reason: 'suspended' });
+    return fallback();
+  }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'cooling-checkin-response',
       withPersona(params as unknown as Record<string, unknown>),
       6000,
     );
+    trackEvent('ai_response_success', { fn: 'cooling_checkin' });
     return data.response;
   } catch {
+    trackEvent('ai_response_fallback', { fn: 'cooling_checkin', reason: 'error' });
     return fallback();
   }
 }
@@ -206,15 +220,20 @@ export async function fetchGraduationFarewellResponse(params: {
   coolingPeriodId: string;
   farewellMessage: string;
 }): Promise<string> {
-  if (await isAiSuspended()) return FAREWELL_FALLBACK;
+  if (await isAiSuspended()) {
+    trackEvent('ai_response_fallback', { fn: 'graduation_farewell', reason: 'suspended' });
+    return FAREWELL_FALLBACK;
+  }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'graduation-farewell-response',
       params,
       6000,
     );
+    trackEvent('ai_response_success', { fn: 'graduation_farewell' });
     return data.response;
   } catch {
+    trackEvent('ai_response_fallback', { fn: 'graduation_farewell', reason: 'error' });
     return FAREWELL_FALLBACK;
   }
 }
@@ -231,15 +250,20 @@ export async function fetchGraduationLetter(params: {
   checkinNotes?: string[];    // 유예 기간 체크인 메모 배열
 }): Promise<string> {
   const FALLBACK = '지금 이 순간까지 버텨온 나에게.\n\n쉽지 않았어. 그 마음 알아. 그런데 있잖아, 지금 여기까지 온 것만으로도 충분해.\n\n앞으로 어떻게 될지 모르겠어. 근데 그게 나쁜 건 아닐 것 같아. 아직 쓰여지지 않은 페이지가 있다는 거니까.';
-  if (await isAiSuspended()) return FALLBACK;
+  if (await isAiSuspended()) {
+    trackEvent('ai_response_fallback', { fn: 'graduation_letter', reason: 'suspended' });
+    return FALLBACK;
+  }
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-graduation-letter',
       params,
       10000,
     );
+    trackEvent('ai_response_success', { fn: 'graduation_letter' });
     return data.response;
   } catch {
+    trackEvent('ai_response_fallback', { fn: 'graduation_letter', reason: 'error' });
     return FALLBACK;
   }
 }

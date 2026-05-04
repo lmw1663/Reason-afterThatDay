@@ -25,6 +25,9 @@ import {
   isEncounterPlanRecommended,
 } from '@/constants/personaBranches';
 import { resolvePersona, appliesRecommendation } from '@/utils/personaResolver';
+import { useScreenView } from '@/hooks/useScreenView';
+import { anonymizePersona } from '@/utils/telemetryHelpers';
+import { trackEvent } from '@/api/telemetry';
 import {
   addMemoryLog,
   deleteMemoryLog,
@@ -84,6 +87,23 @@ export default function MemoryLogScreen() {
     : appliesRecommendation(resolved, isEncounterPlanRecommended)
     ? { route: '/memory/encounter-plan', title: '마주칠 일상 정리', subtitle: '예측할 수 있으면 덜 흔들려', icon: 'map-pin' }
     : null;
+
+  useScreenView('memories', {
+    persona_category: anonymizePersona(resolved.effective),
+    has_recommended_track: recommendedTrack !== null,
+  });
+  useEffect(() => {
+    if (recommendedTrack) {
+      trackEvent('persona_branch_applied', {
+        screen: 'memories',
+        branch: 'recommended_track',
+        track_route: recommendedTrack.route,
+        persona_category: anonymizePersona(resolved.effective),
+      });
+    }
+    // memories는 mount 시 1회 — recommendedTrack은 페르소나 분류로만 결정되므로 stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recommendedTrack?.route]);
 
   useEffect(() => {
     if (!userId) {
