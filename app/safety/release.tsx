@@ -9,6 +9,7 @@ import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { acknowledgeLockout, isAppLocked } from '@/api/safety';
+import { useScreenView } from '@/hooks/useScreenView';
 
 /**
  * 안전 잠금 해제 화면 — B-1
@@ -35,6 +36,8 @@ export default function SafetyReleaseScreen() {
   const [touched, setTouched] = useState<boolean[]>([false, false, false, false]);
   const [lockedAt, setLockedAt] = useState<Date | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useScreenView('safety_release');
 
   useEffect(() => {
     if (!userId) return;

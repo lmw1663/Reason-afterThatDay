@@ -9,6 +9,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { formatDateStr } from '@/utils/dateUtils';
+import { useScreenView } from '@/hooks/useScreenView';
 
 // G-7c-3: P15 동거 정리 사용자를 위한 *짐 정리 워크시트* (매트릭스 §2 C7 line 268).
 // 사진·물건 분류로 *행정·감정 분리* 트랙. 정리 작업과 마음 정리를 한 화면에서 섞지 않음.
@@ -50,6 +51,8 @@ export default function MemoryDeclutterScreen() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<DeclutterAction | 'all'>('all');
   const toast = useRef(new Animated.Value(0)).current;
+
+  useScreenView('memory_declutter');
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((v) => {

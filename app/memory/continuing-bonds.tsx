@@ -9,6 +9,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { formatDateStr } from '@/utils/dateUtils';
+import { useScreenView } from '@/hooks/useScreenView';
 
 // G-7c-4: P17 강제 이별 사용자를 위한 *Continuing Bonds* 회상 (매트릭스 §2 C7 line 300).
 // 본인 결정이 아닌 이별의 *관계 가치 자체*는 분리해 보존. catch/let_go 이분법 무의미.
@@ -27,6 +28,8 @@ export default function MemoryContinuingBondsScreen() {
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const toast = useRef(new Animated.Value(0)).current;
+
+  useScreenView('memory_continuing_bonds');
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((v) => {

@@ -9,6 +9,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { formatDateStr } from '@/utils/dateUtils';
+import { useScreenView } from '@/hooks/useScreenView';
 
 // G-7c-2: P08 권태형 사용자를 위한 *부정 없는 봉인* 의식 (매트릭스 §2 C7 line 158).
 // 분노·배신감 라벨을 강요하지 않고 함께한 시간을 *그대로 보관*하는 트랙.
@@ -30,6 +31,8 @@ export default function MemorySealScreen() {
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const toast = useRef(new Animated.Value(0)).current;
+
+  useScreenView('memory_seal');
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((v) => {

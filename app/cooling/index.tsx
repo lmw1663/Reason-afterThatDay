@@ -22,6 +22,7 @@ import {
   fetchLastEntryBefore,
 } from '@/api/coolingReflections';
 import { colors } from '@/constants/colors';
+import { useScreenView } from '@/hooks/useScreenView';
 
 function getCoolingDay(requestedAt: string): number {
   const start = new Date(requestedAt);
@@ -43,6 +44,8 @@ export default function CoolingDashboardScreen() {
   const [saving, setSaving] = useState(false);
 
   const coolingDay = requestedAt ? getCoolingDay(requestedAt) : 1;
+
+  useScreenView('cooling_home', { day: coolingDay });
 
   const isDay7 = coolingEndsAt
     ? new Date(coolingEndsAt).getTime() - Date.now() < 24 * 60 * 60 * 1000

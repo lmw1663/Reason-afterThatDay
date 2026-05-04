@@ -9,6 +9,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { formatDateStr } from '@/utils/dateUtils';
+import { useScreenView } from '@/hooks/useScreenView';
 
 // G-7c-5: P18 사회적 얽힘 사용자를 위한 *마주침 동선 정리* (매트릭스 §2 C7 line 316).
 // 추억 정리 대신 *일상 트리거 정리*로 변형 — 마주침 시간/장소/계획을 미리 적어두는 통제감 회복.
@@ -49,6 +50,8 @@ export default function MemoryEncounterPlanScreen() {
   const [saving, setSaving] = useState(false);
   const [filter, setFilter] = useState<EncounterContext | 'all'>('all');
   const toast = useRef(new Animated.Value(0)).current;
+
+  useScreenView('memory_encounter_plan');
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((v) => {

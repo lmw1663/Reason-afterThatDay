@@ -342,7 +342,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | └ X-4-1 | events 테이블 + RLS + 옵트인 컬럼 + telemetry API + UI 토글 (default OFF) | ✅ | (본 커밋) |
 | └ X-4-2 | 인스트루멘테이션 1차 — useScreenView hook + anonymizePersona + me·about_me·journal·EmotionalCheckModal·fetchJournalResponse 시범 적용 | ✅ | (본 커밋) |
 | └ X-4-2-2 | 잔여 화면(home·records·memories) + 5 ai wrapper(daily_quote·comfort 등) + persona_branch_applied 3건 + preference_toggled 3건 일괄 적용 | ✅ | (본 커밋) |
-| └ X-4-2-3 | 의식 트랙 4 화면(seal·declutter·continuing-bonds·encounter-plan) + cooling/safety/onboarding funnel useScreenView | ⬜ |
+| └ X-4-2-3 | 의식 트랙 4 화면(seal·declutter·continuing-bonds·encounter-plan) + safety/release + cooling/index useScreenView | ✅ | (본 커밋) |
+| └ X-4-2-4 | onboarding funnel(consent·login·duration·mood·persona) useScreenView + cooling/checkin·final | ⬜ |
 | └ X-4-3 | A/B 실험 인프라 — events 테이블 experiment_id + 변형 할당 로직 | ⬜ |
 | └ X-4-test | telemetry API 단위 테스트 + payload allowlist runtime 검증 | ⬜ |
 | X-5 | **CLAUDE.md 갱신** — 유예 알림 예외 + 졸업 보류 + 페르소나 라벨 비노출 + 핫라인 페르소나 매핑 | ✅ |
