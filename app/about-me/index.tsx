@@ -29,12 +29,17 @@ const CATEGORIES: { key: ReflectionCategory; icon: IconName; title: string; desc
   { key: 'identity',                  icon: 'user',             title: '잃어버린 나',      desc: '관계 안에서 줄어든 너의 부분' },
 ];
 
+// G-12: 권장 외 카드는 기본 4개만 노출. "전체 보기" 토글로 모두 펼침.
+// 홈 G-1·G-2 정리(시각 경쟁자 ↓)와 동일 처방 — 한 화면 8+ 룰 위반 해소.
+const DEFAULT_SHOWN = 4;
+
 export default function AboutMeScreen() {
   const { userId, daysElapsed } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
   const personaSecondary = usePersonaStore(s => s.secondary);
   const [showCoolingOff, setShowCoolingOff] = useState(false);
   const [reflections, setReflections] = useState<Partial<Record<ReflectionCategory, SelfReflection>>>({});
+  const [showAll, setShowAll] = useState(false);
 
   // C-2-G-5a + C-3-H: secondary 페르소나도 검사 (R5 권장형 — effective만)
   // G-5b: 신규 카테고리 4종(reality_check·body·needs·identity) 페르소나 우선 매핑 적용
@@ -48,6 +53,18 @@ export default function AboutMeScreen() {
   // 권장 카테고리 = 정렬 후 첫 항목이 페르소나 우선 매핑 결과인 경우만 (baseline은 hint 없음)
   const recommendedKey: ReflectionCategory | null =
     effectivePersona && sortedKeys[0] !== defaultOrder[0] ? sortedKeys[0] : null;
+
+  // 권장 카드는 별도로 큰 카드로 분리. 나머지에서 미완 우선 정렬 후 N개만 노출.
+  const recommendedCategory = recommendedKey
+    ? sortedCategories.find(c => c.key === recommendedKey) ?? null
+    : null;
+  const restCategories = sortedCategories.filter(c => c.key !== recommendedKey);
+  const restWithPriority = [
+    ...restCategories.filter(c => !reflections[c.key]),
+    ...restCategories.filter(c => !!reflections[c.key]),
+  ];
+  const visibleRest = showAll ? restWithPriority : restWithPriority.slice(0, DEFAULT_SHOWN);
+  const hasMore = restWithPriority.length > DEFAULT_SHOWN;
 
   useScreenView('about_me', {
     persona_category: anonymizePersona(effectivePersona),
@@ -88,57 +105,75 @@ export default function AboutMeScreen() {
           답하고 싶은 것만 답해도 돼. 언제든 수정할 수 있어.
         </Caption>
 
-        <View className="flex-row flex-wrap gap-4">
-          {sortedCategories.map((cat) => {
+        {/* 권장 카드 — 페르소나 매핑이 있을 때만 큰 단일 카드로 강조 */}
+        {recommendedCategory && (
+          <Pressable
+            onPress={() => router.push(`/about-me/${recommendedCategory.key}` as never)}
+            accessibilityRole="button"
+            accessibilityLabel={`${recommendedCategory.title} (지금 권장)${reflections[recommendedCategory.key] ? ' - 답변 완료' : ''}`}
+            className="rounded-2xl p-5 mb-5 active:opacity-80"
+            style={{ backgroundColor: colors.purple[600] }}
+          >
+            <View className="flex-row items-center gap-3">
+              <Icon name={recommendedCategory.icon} size={28} color={colors.white} />
+              <View className="flex-1">
+                <Caption className="text-purple-50 opacity-80 text-xs mb-0.5">지금 권장</Caption>
+                <Body className="text-white font-bold text-base">{recommendedCategory.title}</Body>
+                <Caption className="text-purple-50 opacity-80 mt-0.5">{recommendedCategory.desc}</Caption>
+              </View>
+              <Icon name="chevron-right" size={20} color={colors.white} />
+            </View>
+          </Pressable>
+        )}
+
+        {/* 나머지 카테고리 — 미완 우선, 기본 4개 / 전체 보기로 펼침 */}
+        <View className="flex-row flex-wrap gap-3">
+          {visibleRest.map((cat) => {
             const answered = !!reflections[cat.key];
-            // answered + recommended 동시 노출 정책 — 답변 후에도 갱신 진입을 권장하기 위함.
-            // recommended가 borderColor·아이콘 색에서 우선, "완료"/"미완" 라벨은 별도 영역에 유지.
-            const recommended = cat.key === recommendedKey;
-            const borderColor = recommended
-              ? colors.purple[400]
-              : answered
-              ? colors.purple[600]
-              : colors.border;
             return (
               <Pressable
                 key={cat.key}
                 onPress={() => router.push(`/about-me/${cat.key}` as never)}
                 accessibilityRole="button"
-                accessibilityLabel={`${cat.title} - ${answered ? '답변 완료' : '답변 미완'}${recommended ? ' (지금 권장)' : ''}`}
+                accessibilityLabel={`${cat.title}${answered ? ' - 답변 완료' : ''}`}
                 className="rounded-2xl p-4 active:opacity-70"
                 style={{
                   width: '47%',
                   backgroundColor: colors.surface,
-                  borderWidth: recommended ? 1.5 : 1,
-                  borderColor,
+                  borderWidth: 1,
+                  borderColor: answered ? colors.purple[600] : colors.border,
                 }}
               >
                 <View className="mb-2 flex-row items-center justify-between">
                   <Icon
                     name={cat.icon}
-                    size={26}
-                    color={recommended || answered ? colors.purple[400] : colors.gray[400]}
+                    size={24}
+                    color={answered ? colors.purple[400] : colors.gray[400]}
                   />
-                  {recommended && (
-                    <Caption className="text-purple-400 text-xs">지금 권장</Caption>
+                  {answered && (
+                    <Icon name="check" size={14} color={colors.purple[400]} strokeWidth={2.5} />
                   )}
                 </View>
                 <Body className="text-white font-semibold mb-1 text-sm">{cat.title}</Body>
-                <Caption className="text-gray-500 text-xs mb-2">{cat.desc}</Caption>
-                <View className="flex-row items-center gap-1">
-                  <Icon
-                    name={answered ? 'check' : 'plus'}
-                    size={12}
-                    color={answered ? colors.purple[400] : colors.gray[600]}
-                  />
-                  <Caption className={answered ? 'text-purple-400' : 'text-gray-600'}>
-                    {answered ? '완료' : '미완'}
-                  </Caption>
-                </View>
+                <Caption className="text-gray-500 text-xs">{cat.desc}</Caption>
               </Pressable>
             );
           })}
         </View>
+
+        {hasMore && (
+          <Pressable
+            onPress={() => setShowAll(v => !v)}
+            accessibilityRole="button"
+            accessibilityLabel={showAll ? '접기' : '전체 보기'}
+            hitSlop={8}
+            className="mt-4 active:opacity-60"
+          >
+            <Caption className="text-center text-gray-500 py-3">
+              {showAll ? '접기 ↑' : `전체 보기 (${restWithPriority.length - DEFAULT_SHOWN}개 더) ↓`}
+            </Caption>
+          </Pressable>
+        )}
       </ScrollView>
     </ScreenWrapper>
   );
