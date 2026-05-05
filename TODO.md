@@ -330,8 +330,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | G-4 | **메타 라벨 제거** — "진정 플로우", "자존감 트랙" 등 *내부 분류 용어* 사용자 노출 정리 | ✅ | G-1·G-2 (G-2 작업 시 같이 정리됨, grep 검증 완료) |
 | G-5 | **보조 진입 chip 격하** — "갑자기 떠올랐어"는 작은 icon chip으로 (큰 카드 → 칩) | ✅ | G-2 |
 | G-6 | **조건부 카드 묶음** — PHQ 권유 + ContactUrgeChip을 같은 컨테이너로 묶어 *한 단위*로 시각 인식 (Predictable layout). ContactUrgeChip 매일 노출 정책은 보존 | ✅ | — |
-| G-7 | **시각 톤 위계 정리** — 1차/2차/3차 카드의 cornerRadius/배경/그림자 차등 명확화 | ⬜ | G-1~G-6 |
-| G-8 | **페르소나 우선 카드 노출 조건 강화** — 액션이 있을 때만 노출, 매일 보이는 부담 감소 | ⬜ | G-7 |
+| G-7 | **시각 톤 위계 정리** — 1차/2차/3차 카드의 cornerRadius/배경/그림자 차등 명확화 | ✅ | G-1~G-6 (G-1~G-6 작업으로 자연스럽게 5단계 위계 잡힘 — 추가 변경 0건) |
+| G-8 | **페르소나 우선 카드 dismiss 24h** — 매일 무조건 노출되던 학습 부담 ↓. AssessmentRecommendationCard 패턴 차용해 일관성 | ✅ | G-7 |
 
 **검증**: G-1·G-2·G-3 완료 후 시뮬레이터에서 신규 익명 user 진입 → 시각 경쟁자 ≤ 5개, primary CTA 1개로 줄었는지 확인.
 
