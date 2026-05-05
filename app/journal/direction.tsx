@@ -93,23 +93,27 @@ export default function JournalDirectionScreen() {
             ))}
           </View>
 
-          {/* 4가지 임상 상태 분류 (psychology-analysis.md §3) */}
+          {/* G-14: 4가지 임상 상태 분류 (psychology-analysis.md §3) — *임상 어휘 노출 제거*.
+              "미해결 애착·상호의존 신호·건강한 수용 진입·분노 단계 통과 중" 같은 진단명-유사
+              어휘는 사용자가 자기 진단·분류하게 만들어 CLAUDE.md "페르소나 라벨 비노출"
+              정신과 충돌. label(상태 묘사)은 유지하고 meaning은 부드러운 안내로 교체.
+              "지금 너의 마음:" 단정 표현도 가능성 톤("지금 이 마음은")으로 완화. */}
           {(() => {
             if (!direction) return null;
             let label: string | null = null;
             let meaning: string | null = null;
             if (direction === 'catch' && affectionLevel >= 7) {
               label = '잡고 싶고 좋아하는 마음';
-              meaning = '미해결 애착 — 천천히 들여다봐도 돼';
+              meaning = '천천히 들여다봐도 돼';
             } else if (direction === 'catch' && affectionLevel <= 3) {
               label = '잡고 싶지만 미운 마음';
-              meaning = '가장 흔들리기 쉬운 시점이야 (상호의존 신호)';
+              meaning = '가장 흔들리기 쉬운 시점이야';
             } else if (direction === 'let_go' && affectionLevel >= 7) {
               label = '보내지만 여전히 좋아하는 마음';
-              meaning = '건강한 수용 진입이야';
+              meaning = '천천히 가는 결이야';
             } else if (direction === 'let_go' && affectionLevel <= 3) {
               label = '보내고 미움도 큰 마음';
-              meaning = '분노 단계 통과 중이야 — 정상적이야';
+              meaning = '지금은 자연스러운 흐름이야';
             }
             if (!label) {
               return (
@@ -124,11 +128,11 @@ export default function JournalDirectionScreen() {
                 style={{
                   backgroundColor: colors.surface,
                   borderWidth: 1,
-                  borderColor: colors.purple[600],
+                  borderColor: colors.border,
                 }}
               >
-                <Caption className="text-purple-400 mb-1">지금 너의 마음:</Caption>
-                <Body className="text-white font-semibold mb-1">{label}</Body>
+                <Caption className="text-gray-500 mb-1">지금 이 마음은</Caption>
+                <Body className="text-white font-medium mb-1">{label}</Body>
                 <Caption className="text-gray-400">{meaning}</Caption>
               </View>
             );

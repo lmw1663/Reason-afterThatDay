@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { colors } from '@/constants/colors';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -38,8 +38,9 @@ export default function JournalResponseScreen() {
   const affectionLevel = params.affectionLevel != null ? Number(params.affectionLevel) : null;
   const recentMoods = entries.slice(0, 3).map((e) => e.moodScore);
 
+  const [reflectionDismissed, setReflectionDismissed] = useState(false);
   const showSelfReflectionSuggestion =
-    tags.includes('자존감 흔들림') && (daysElapsed ?? 0) >= 8;
+    tags.includes('자존감 흔들림') && (daysElapsed ?? 0) >= 8 && !reflectionDismissed;
 
   useEffect(() => {
     const ctx = {
@@ -132,21 +133,22 @@ export default function JournalResponseScreen() {
             <Caption className="text-gray-400 mb-4">
               너 자신에 대해 한 가지만 생각해볼래?
             </Caption>
-            <View className="flex-row gap-3">
-              <View className="flex-1">
-                <PrimaryButton
-                  label="나에 대해 알아가기 →"
-                  onPress={() => router.push('/about-me/self_love' as never)}
-                />
-              </View>
-              <View className="flex-1">
-                <PrimaryButton
-                  label="지금은 됐어"
-                  variant="ghost"
-                  onPress={() => {}}
-                />
-              </View>
-            </View>
+            {/* G-15: 추천 Card 안에 PrimaryButton 2개가 동등 무게로 박혀있던 것을
+                primary 1개 + 텍스트 링크로 격하. 화면 하단의 "홈으로" 주 CTA가
+                여전히 가장 강한 무게를 유지하도록 — 단일 primary 원칙 보존. */}
+            <PrimaryButton
+              label="나에 대해 알아가기 →"
+              onPress={() => router.push('/about-me/self_love' as never)}
+            />
+            <Pressable
+              onPress={() => setReflectionDismissed(true)}
+              accessibilityRole="button"
+              accessibilityLabel="이 추천은 지금은 됐어"
+              hitSlop={8}
+              className="active:opacity-60 mt-1"
+            >
+              <Caption className="text-center text-gray-500 py-3">지금은 됐어</Caption>
+            </Pressable>
           </Card>
         )}
       </View>

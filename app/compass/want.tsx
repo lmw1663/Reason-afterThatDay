@@ -13,23 +13,25 @@ import { colors } from '@/constants/colors';
 
 const AFFECTION_STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-// 4가지 임상 상태 분류 (psychology-analysis.md §3)
+// 4가지 상태 분류 (psychology-analysis.md §3) — G-14 일관성 위해 임상 어휘 제거.
+// label은 사용자 친화적 묘사 유지, meaning은 평이한 안내로. journal/direction.tsx와
+// 동일한 톤으로 자매 화면 일관성 확보.
 function classifyClinicalState(
   direction: Direction | null,
   affectionLevel: number,
 ): { label: string; meaning: string } | null {
   if (!direction) return null;
   if (direction === 'catch' && affectionLevel >= 7) {
-    return { label: '잡고 싶고 좋아하는 마음', meaning: '미해결 애착 — 천천히 들여다봐도 돼' };
+    return { label: '잡고 싶고 좋아하는 마음', meaning: '천천히 들여다봐도 돼' };
   }
   if (direction === 'catch' && affectionLevel <= 3) {
-    return { label: '잡고 싶지만 미운 마음', meaning: '가장 흔들리기 쉬운 시점이야 (상호의존 신호)' };
+    return { label: '잡고 싶지만 미운 마음', meaning: '가장 흔들리기 쉬운 시점이야' };
   }
   if (direction === 'let_go' && affectionLevel >= 7) {
-    return { label: '보내지만 여전히 좋아하는 마음', meaning: '건강한 수용 진입이야' };
+    return { label: '보내지만 여전히 좋아하는 마음', meaning: '천천히 가는 결이야' };
   }
   if (direction === 'let_go' && affectionLevel <= 3) {
-    return { label: '보내고 미움도 큰 마음', meaning: '분노 단계 통과 중이야 — 정상적이야' };
+    return { label: '보내고 미움도 큰 마음', meaning: '지금은 자연스러운 흐름이야' };
   }
   return null;
 }

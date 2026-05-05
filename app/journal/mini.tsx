@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, ScrollView, ActivityIndicator } from 'react-native';
+import { View, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -94,13 +94,21 @@ export default function JournalMiniScreen() {
           />
         </View>
 
-        <View className="px-6 pb-10 gap-3">
-          <PrimaryButton
-            label="더 깊게 쓸래?"
-            variant="ghost"
-            onPress={() => router.replace('/journal')}
-          />
+        {/* G-15: 저장 후 화면에 PrimaryButton 2개가 동등 무게로 박혀있던 것을
+            primary 1개("홈으로") + 텍스트 링크("더 깊게 쓸래?")로 격하. 미니 모드는
+            *무기력 페르소나 진입로*라 마침을 부드럽게 안내하는 게 맞음 — 깊게 쓰기는
+            의지가 있을 때만 따라가도록. */}
+        <View className="px-6 pb-10 gap-1">
           <PrimaryButton label="홈으로" onPress={() => router.replace('/(tabs)')} />
+          <Pressable
+            onPress={() => router.replace('/journal')}
+            accessibilityRole="button"
+            accessibilityLabel="더 깊게 쓸래"
+            hitSlop={8}
+            className="active:opacity-60"
+          >
+            <Caption className="text-center text-gray-500 py-3">더 깊게 쓸래? →</Caption>
+          </Pressable>
         </View>
       </ScreenWrapper>
     );

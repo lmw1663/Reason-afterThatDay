@@ -201,7 +201,7 @@ function getDescription(verdict: ReturnType<typeof compassVerdict>): string {
     case 'undecided_with_love':
       return '좋아하는 마음이 남아있는 채로 모르겠는 것 같아. 그 마음도 괜찮아.';
     case 'undecided_with_resentment':
-      return '지금은 분노 단계를 통과 중인 것 같아. 이 감정도 정상적인 과정이야.';
+      return '미움이 큰 시기를 지나고 있는 것 같아. 이 감정도 자연스러운 흐름이야.';
     case 'lean_let_go':
       return '보내는 쪽으로 조금 기울어진 것 같아. 그 마음도 충분히 이해할 수 있어.';
     case 'strong_let_go':

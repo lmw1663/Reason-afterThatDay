@@ -337,6 +337,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | G-11 | **journal/question CTA 단일화** — 두 PrimaryButton(다음·건너뛸게 ghost)이 동등 무게로 박혀있던 것을 단일 primary + 텍스트 링크로 격하. 홈 G-1 패턴 재적용 | ✅ | — |
 | G-12 | **about-me 카드 그리드 축소** — 10개 카드 동시 노출 → 권장 1개(큰 카드) + 미완 우선 4개(그리드) + "전체 보기" 토글. 시각 경쟁자 10 → 6. 홈 G-1·G-2 패턴 재적용 | ✅ | — |
 | G-13 | **journal/index.tsx 시각 경쟁자 9→7** — 거칠게 chip 격하(P10) + "정상적인 단계야" 박스 강조 + 신체 신호 collapsible(기본 접힘, 입력시 자동 펼침). 한 화면 8+ 룰 충족 | ✅ | — |
+| G-14 | **임상 어휘 노출 제거** — direction·compass/want·compass/needle·CoolingOffWarningModal 4 파일에서 "미해결 애착·상호의존 신호·건강한 수용 진입·분노 단계 통과 중" 등 진단명-유사 어휘 제거. label(상태 묘사)은 유지, "지금 너의 마음:" 단정 톤도 가능성 톤("지금 이 마음은")으로 완화 | ✅ | — |
+| G-15 | **journal CTA 다중 정리** — response.tsx 추천 Card 2 PrimaryButton(+버그: ghost no-op이라 dismiss 안 되던 것까지 fix) → primary 1 + 텍스트 링크. mini.tsx 저장 후 2 PrimaryButton → primary 1("홈으로") + 텍스트 링크 | ✅ | — |
 
 **검증**: G-1·G-2·G-3 완료 후 시뮬레이터에서 신규 익명 user 진입 → 시각 경쟁자 ≤ 5개, primary CTA 1개로 줄었는지 확인.
 
