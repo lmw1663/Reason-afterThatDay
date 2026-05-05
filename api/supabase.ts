@@ -12,3 +12,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 });
+
+supabase.auth.getSession().catch(async (err) => {
+  if (err?.message?.includes('Refresh Token')) {
+    await supabase.auth.signOut();
+  }
+});
