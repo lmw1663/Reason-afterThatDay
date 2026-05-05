@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text as RNText, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -75,7 +75,7 @@ export default function ConsentScreen() {
         <Display className="mb-2">시작하기 전에</Display>
         <Body className="text-gray-400 mb-8">
           네 이야기를 안전하게 다루기 위한 약관과 처리방침을 먼저 보여줄게.
-          모두 *필수* 항목이야.
+          모두 <RNText className="text-purple-400 font-semibold">필수</RNText> 항목이야.
         </Body>
 
         {/* 모두 동의 */}

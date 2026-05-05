@@ -1,16 +1,16 @@
-import { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { useMemo, useState, type ReactNode } from 'react';
+import { Alert, Pressable, ScrollView, Text as RNText, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
-import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { classifyAndSavePersona } from '@/api/persona';
 import { recordCrisisAssessment, type CrisisResponses } from '@/api/safety';
 import type { OnboardingResponses, PsychAxes } from '@/utils/personaClassifier';
+import type { DurationRange } from '@/constants/duration';
 import { PERSONA_INTRO_CARDS } from '@/constants/personaIntroCards';
 import { useScreenView } from '@/hooks/useScreenView';
 
@@ -47,13 +47,6 @@ const Q3_CHOICES: Choice<OnboardingResponses['q3_count']>[] = [
   { value: 'multiple_different',   label: '여러 번이지만 다 다른 사람' },
 ];
 
-const Q4_CHOICES: Choice<OnboardingResponses['q4_duration_range']>[] = [
-  { value: '<6m',   label: '6개월 미만' },
-  { value: '6m-2y', label: '6개월 ~ 2년' },
-  { value: '2y-5y', label: '2년 ~ 5년' },
-  { value: '5y+',   label: '5년 이상' },
-];
-
 const Q5_CHOICES: Choice<OnboardingResponses['q5_emotion']>[] = [
   { value: 'anger',   label: '화가 나 / 분해' },
   { value: 'empty',   label: '멍하고 비어 있어' },
@@ -66,7 +59,6 @@ const COMPLEXITY_CHOICES: Choice<OnboardingResponses['q_complexity']>[] = [
   { value: 'none',          label: '없어' },
   { value: 'shared_circle', label: '같은 직장·동아리·친구 그룹이야' },
   { value: 'cohabitation',  label: '함께 살던 집·짐을 정리해야 해' },
-  { value: 'marriage',      label: '결혼 관계였어' },
 ];
 
 const REASON_CHOICES: Choice<OnboardingResponses['q_breakup_reason']>[] = [
@@ -76,7 +68,7 @@ const REASON_CHOICES: Choice<OnboardingResponses['q_breakup_reason']>[] = [
 ];
 
 type Step =
-  | 'q1' | 'q2' | 'q3' | 'q4_duration' | 'q4_married' | 'q5'
+  | 'q1' | 'q2' | 'q3' | 'q5'
   | 'q6' | 'q_self_infidelity' | 'q_complexity' | 'q_breakup_reason'
   | 'crisis_q1' | 'crisis_q2' | 'crisis_q3'
   | 'classifying';
@@ -84,7 +76,7 @@ type Step =
 const FATIGUE_OPTION_FROM_INDEX = 4;  // 4번째 step부터 "지금은 여기까지" 노출
 
 export default function PersonaOnboardingScreen() {
-  const { userId, setOnboardingCompleted } = useUserStore();
+  const { userId, relationshipDuration, setOnboardingCompleted } = useUserStore();
   const setPersona = usePersonaStore(s => s.setPersona);
 
   useScreenView('onboarding_persona');
@@ -104,30 +96,34 @@ export default function PersonaOnboardingScreen() {
     !step.startsWith('crisis_');
 
   function pick<K extends keyof OnboardingResponses>(key: K, value: OnboardingResponses[K]) {
-    setR(prev => ({ ...prev, [key]: value }));
-    advance();
+    const updatedR = { ...r, [key]: value };
+    setR(updatedR);
+    advance(updatedR, crisis);
   }
 
   function pickCrisis<K extends keyof CrisisResponses>(key: K, value: boolean) {
-    setCrisis(prev => ({ ...prev, [key]: value }));
-    advance();
+    const updatedCrisis = { ...crisis, [key]: value };
+    setCrisis(updatedCrisis);
+    advance(r, updatedCrisis);
   }
 
-  function advance() {
-    const next = nextStep(step, { ...r });
+  // setR/setCrisis가 비동기라 closure가 stale한 값을 잡지 않도록 *최신 응답을 명시 전달*.
+  // 특히 C-SSRS는 마지막 응답이 누락되면 위험도 평가가 틀어져 안전 잠금까지 영향받음.
+  function advance(currentR: Partial<OnboardingResponses>, currentCrisis: CrisisResponses) {
+    const next = nextStep(step, currentR, currentCrisis);
     setStep(next);
-    if (next === 'classifying') void runClassification();
+    if (next === 'classifying') void runClassification(currentR, currentCrisis);
   }
 
-  async function runClassification() {
+  async function runClassification(currentR: Partial<OnboardingResponses>, currentCrisis: CrisisResponses) {
     if (!userId) return;
     setSubmitting(true);
     try {
       // C-SSRS 응답 기록 — severity가 high/urgent면 잠금 자동 생성 (B-1)
-      const crisisResult = await recordCrisisAssessment(userId, { source: 'onboarding', responses: crisis });
+      const crisisResult = await recordCrisisAssessment(userId, { source: 'onboarding', responses: currentCrisis });
 
-      const responses = buildResponses(r);
-      const axes = inferAxes(responses, crisis);
+      const responses = buildResponses(currentR, relationshipDuration);
+      const axes = inferAxes(responses, currentCrisis);
 
       const result = await classifyAndSavePersona(userId, { responses, axes }, 'onboarding');
       if (result.mode === 'standard') {
@@ -185,34 +181,30 @@ export default function PersonaOnboardingScreen() {
           <SingleChoice title="이번 이별은 누가 결정했어?" choices={Q1_CHOICES} onPick={v => pick('q1_initiator', v)} />
         )}
         {step === 'q2' && (
-          <SingleChoice title="관계 중에 자주 들었거나 떠올랐던 말은?" choices={Q2_CHOICES} onPick={v => pick('q2_thought', v)} />
+          <SingleChoice title="사귀는 도중에 자주 들었거나 떠올랐던 말은?" choices={Q2_CHOICES} onPick={v => pick('q2_thought', v)} />
         )}
         {step === 'q3' && (
           <SingleChoice title="이번이 몇 번째 진지한 이별이야?" choices={Q3_CHOICES} onPick={v => pick('q3_count', v)} />
-        )}
-        {step === 'q4_duration' && (
-          <SingleChoice title="관계는 얼마나 지속됐어?" choices={Q4_CHOICES} onPick={v => pick('q4_duration_range', v)} />
-        )}
-        {step === 'q4_married' && (
-          <SingleChoice
-            title="혹시 결혼한 사이였어?"
-            choices={[{ value: 'no', label: '아니야' }, { value: 'yes', label: '응' }]}
-            onPick={v => pick('q4_married', v === 'yes')}
-          />
         )}
         {step === 'q5' && (
           <SingleChoice title="지금 가장 가까운 마음은?" choices={Q5_CHOICES} onPick={v => pick('q5_emotion', v)} />
         )}
         {step === 'q6' && (
           <SingleChoice
-            title="혹시 관계 중에 *내 기억과 상대 말이 자주 달랐던* 경험이 있어?"
+            title={
+              <>
+                혹시 관계 중에{' '}
+                <RNText className="text-purple-400">내 기억과 상대 말이 자주 달랐던</RNText>
+                {' '}경험이 있어?
+              </>
+            }
             choices={[{ value: 'no', label: '아니야 / 가끔' }, { value: 'yes', label: '응, 자주 그랬어' }]}
             onPick={v => pick('q6_memory_diverged', v === 'yes')}
           />
         )}
         {step === 'q_self_infidelity' && (
           <SingleChoice
-            title="이별의 원인 중 *내가 외도한* 부분이 있었어?"
+            title="이별의 원인 중 내가 바람피운 부분이 있었어?"
             choices={[{ value: 'no', label: '없어' }, { value: 'yes', label: '있어' }]}
             onPick={v => pick('q_self_infidelity', v === 'yes')}
           />
@@ -233,7 +225,13 @@ export default function PersonaOnboardingScreen() {
         )}
         {step === 'crisis_q2' && (
           <SingleChoice
-            title='자해나 자살에 대해 *적극적으로* 생각해본 적 있어?'
+            title={
+              <>
+                자해나 자살에 대해{' '}
+                <RNText className="text-purple-400">적극적으로</RNText>
+                {' '}생각해본 적 있어?
+              </>
+            }
             choices={[{ value: 'no', label: '아니야' }, { value: 'yes', label: '응' }]}
             onPick={v => pickCrisis('q2', v === 'yes')}
           />
@@ -275,7 +273,7 @@ export default function PersonaOnboardingScreen() {
 }
 
 interface SingleChoiceProps<V extends string> {
-  title: string;
+  title: ReactNode;
   choices: Choice<V>[];
   onPick: (v: V) => void;
 }
@@ -306,18 +304,16 @@ function SingleChoice<V extends string>({ title, choices, onPick }: SingleChoice
 /* ──────────── 흐름 제어 ──────────── */
 
 const STEP_ORDER: Step[] = [
-  'q1', 'q2', 'q3', 'q4_duration', 'q4_married', 'q5',
+  'q1', 'q2', 'q3', 'q5',
   'q6', 'q_self_infidelity', 'q_complexity', 'q_breakup_reason',
   'crisis_q1', 'crisis_q2', 'crisis_q3', 'classifying',
 ];
 
-function nextStep(current: Step, r: Partial<OnboardingResponses>): Step {
+function nextStep(current: Step, r: Partial<OnboardingResponses>, crisis: CrisisResponses): Step {
   switch (current) {
     case 'q1': return 'q2';
     case 'q2': return 'q3';
-    case 'q3': return 'q4_duration';
-    case 'q4_duration': return 'q4_married';
-    case 'q4_married': return 'q5';
+    case 'q3': return 'q5';
     case 'q5':
       // Q2 ① 양성 시만 Q6 묻기, 아니면 건너뛰기
       return r.q2_thought === 'too_sensitive' ? 'q6' : 'q_self_infidelity';
@@ -326,18 +322,45 @@ function nextStep(current: Step, r: Partial<OnboardingResponses>): Step {
     case 'q_complexity': return 'q_breakup_reason';
     case 'q_breakup_reason': return 'crisis_q1';
     case 'crisis_q1': return 'crisis_q2';
-    case 'crisis_q2': return 'crisis_q3';
+    // C-SSRS 표준: 적극적 자살 사고가 음성이면 구체적 방법 질문은 skip — 사용자 부담 완화 + 의미 없는 질문 회피.
+    case 'crisis_q2': return crisis.q2 ? 'crisis_q3' : 'classifying';
     case 'crisis_q3': return 'classifying';
     default: return current;
   }
 }
 
-function buildResponses(r: Partial<OnboardingResponses>): OnboardingResponses {
+/**
+ * 메인 온보딩의 DurationRange → 페르소나 분류용 q4_duration_range 매핑.
+ *
+ * 두 화면이 묻는 옵션 구간이 달라 정확한 1:1 매핑이 안 되니 *평균값 기준*으로 결정:
+ *  · under_1y(평균 6개월) → '6m-2y' (1년 미만 다수가 6개월 이상)
+ *  · 1_to_3y(평균 2년)    → '2y-5y' (1~3년 평균은 2년, 더 긴 그룹에 가까움)
+ *  · 3_to_5y(평균 4년)    → '2y-5y' (정확 매핑)
+ *  · over_5y              → '5y+' (정확 매핑)
+ *  · skip / null          → '6m-2y' (안전 기본값)
+ *
+ * 결과: a4_duration 축은 0(`<6m`)이 더 이상 트리거되지 않음. 이는 의도적 — duration 화면에
+ * "6개월 미만" 선택지가 없으므로, 페르소나 분류에서도 해당 카테고리는 비활성.
+ */
+function durationToRange(d: DurationRange | null): OnboardingResponses['q4_duration_range'] {
+  switch (d) {
+    case 'under_1y': return '6m-2y';
+    case '1_to_3y':  return '2y-5y';
+    case '3_to_5y':  return '2y-5y';
+    case 'over_5y':  return '5y+';
+    default:         return '6m-2y';
+  }
+}
+
+function buildResponses(
+  r: Partial<OnboardingResponses>,
+  duration: DurationRange | null,
+): OnboardingResponses {
   return {
     q1_initiator: r.q1_initiator ?? 'mutual',
     q2_thought: r.q2_thought ?? 'none',
     q3_count: r.q3_count ?? 'second_or_third',
-    q4_duration_range: r.q4_duration_range ?? '6m-2y',
+    q4_duration_range: durationToRange(duration),
     q4_married: r.q4_married ?? false,
     q5_emotion: r.q5_emotion ?? 'unsure',
     q6_memory_diverged: r.q6_memory_diverged,
