@@ -99,10 +99,11 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
 
           {step === 2 && (
             <View className="py-8 items-center">
-              <Body className="text-gray-200 text-center leading-relaxed mb-6">
+              {/* G-16: 침투 사고 진정의 핵심 메시지 — Body 단색에서 Heading 톤으로 격상 */}
+              <Heading className="text-center leading-snug mb-6">
                 그 기억은 사실이지만,{'\n'}
                 지금의 너는 그 기억 속이 아니야.
-              </Body>
+              </Heading>
               <PrimaryButton label="기록하러 가기" onPress={() => setStep(3)} />
             </View>
           )}
@@ -146,10 +147,18 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
             <View className="py-4">
               <Heading className="mb-2 text-center">기록됐어.</Heading>
               <Caption className="text-gray-400 text-center mb-6">고마워.</Caption>
-              <View className="gap-3">
-                <PrimaryButton label="일기 쓰러 가기" onPress={handleGoJournal} />
-                <PrimaryButton label="뒤로 가기" variant="ghost" onPress={onClose} />
-              </View>
+              {/* G-16: PrimaryButton 2개 → primary 1 + 텍스트 링크. 모달 dismiss는
+                  본래 백드롭 탭/X 버튼으로 충분한데 별도 CTA로 시각 노이즈였음. */}
+              <PrimaryButton label="일기 쓰러 가기" onPress={handleGoJournal} />
+              <Pressable
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel="뒤로 가기"
+                hitSlop={8}
+                className="active:opacity-60"
+              >
+                <Caption className="text-center text-gray-500 py-3">뒤로 가기</Caption>
+              </Pressable>
             </View>
           )}
         </Pressable>

@@ -202,17 +202,22 @@ export default function AssessmentScreen() {
           ))}
         </View>
 
-        {/* 디스클레이머 — 정답이 아니야 (CLAUDE.md 정신) */}
-        <View
-          className="mt-6 rounded-xl px-4 py-3 flex-row items-start gap-2"
-          style={{ backgroundColor: colors.overlayPurpleSoft }}
-        >
-          <Icon name="leaf" size={16} color={colors.purple[400]} />
-          <Caption className="text-gray-400 flex-1 leading-5">
-            정답이 아니야 — 오늘 결을 보는 거야. 결과는 내부에서 메타포로
-            보여줄게.
-          </Caption>
-        </View>
+        {/* G-17: 디스클레이머 — 정답이 아니야 (CLAUDE.md 정신).
+            매 문항 반복 노출되며 시선 빠짐 → 첫 문항(맥락 인지)·마지막 문항
+            (결과 직전 안내)에만 노출. "내부에서 메타포로"는 시스템 자기 설명
+            메타 어휘 → "부드러운 비유로" 평이하게. */}
+        {(step === 0 || isLast) && (
+          <View
+            className="mt-6 rounded-xl px-4 py-3 flex-row items-start gap-2"
+            style={{ backgroundColor: colors.overlayPurpleSoft }}
+          >
+            <Icon name="leaf" size={16} color={colors.purple[400]} />
+            <Caption className="text-gray-400 flex-1 leading-5">
+              정답이 아니야 — 오늘 결을 보는 거야. 결과는 부드러운 비유로
+              보여줄게.
+            </Caption>
+          </View>
+        )}
       </ScrollView>
 
       <View className="px-6 pb-10 gap-2">
