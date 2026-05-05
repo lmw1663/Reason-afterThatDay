@@ -6,7 +6,9 @@
     "orientation": "portrait",
     "scheme": "reason",
     "userInterfaceStyle": "dark",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.reason.afterhatday"
@@ -26,7 +28,8 @@
           "color": "#3C3489",
           "defaultChannel": "default"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
