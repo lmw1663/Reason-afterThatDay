@@ -1,10 +1,71 @@
 import { Platform } from 'react-native';
 import { supabase } from './supabase';
 import * as Linking from 'expo-linking';
+import type { Session } from '@supabase/supabase-js';
 
 export type OAuthProvider = 'google' | 'apple' | 'kakao';
 
 const REDIRECT_URL = 'reason://auth/callback';
+
+/**
+ * Supabase OAuth 콜백 URL → Session 변환.
+ *
+ * 두 가지 flow 모두 처리:
+ * - PKCE flow: `reason://auth/callback?code=...` → exchangeCodeForSession
+ * - Implicit flow: `reason://auth/callback#access_token=...&refresh_token=...` → setSession
+ *
+ * Supabase Dashboard에서 어느 flow를 쓰든 클라이언트가 적응. 기본은 implicit이고
+ * 토큰이 hash fragment에 박혀와서 `Linking.parse`의 queryParams로는 안 잡힘 — 직접 파싱.
+ */
+async function resolveCallbackUrl(url: string, label: string): Promise<Session | null> {
+  const parsed = Linking.parse(url);
+  console.log(`[auth] ${label} parsed:`, JSON.stringify({
+    scheme: parsed.scheme, hostname: parsed.hostname, path: parsed.path,
+    queryParams: parsed.queryParams,
+  }));
+
+  // queryParams의 error_code 우선 처리 (호출자가 분기)
+  const errorCode = parsed.queryParams?.error_code as string | undefined;
+  if (errorCode) {
+    const desc = parsed.queryParams?.error_description as string | undefined;
+    throw new Error(`OAuth_ERROR:${errorCode}:${desc ?? ''}`);
+  }
+
+  // 1. queryParams의 code (PKCE)
+  const code = (parsed.queryParams?.code as string | undefined) ?? null;
+  if (code) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    return data.session;
+  }
+
+  // 2. fragment의 access_token + refresh_token (implicit)
+  if (url.includes('#')) {
+    const fragment = url.split('#')[1] ?? '';
+    const fragParams = new URLSearchParams(fragment);
+
+    // fragment에 error가 있을 수도
+    const fragErrCode = fragParams.get('error_code');
+    if (fragErrCode) {
+      const fragErrDesc = fragParams.get('error_description');
+      throw new Error(`OAuth_ERROR:${fragErrCode}:${fragErrDesc ?? ''}`);
+    }
+
+    const accessToken = fragParams.get('access_token');
+    const refreshToken = fragParams.get('refresh_token');
+    if (accessToken && refreshToken) {
+      console.log(`[auth] ${label} implicit flow — setSession`);
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+      if (error) throw error;
+      return data.session;
+    }
+  }
+
+  return null;
+}
 
 /**
  * expo-web-browser는 OAuth 브라우저 세션에 필수.
@@ -80,7 +141,9 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<{ ses
   if (error) throw error;
   if (!data?.url) throw new Error('OAuth URL을 받지 못했어');
 
+  console.log('[auth] OAuth start:', { provider, authUrl: data.url, redirectUrl: REDIRECT_URL });
   const result = await WebBrowser.openAuthSessionAsync(data.url, REDIRECT_URL);
+  console.log('[auth] WebBrowser result type:', result.type);
   if (result.type !== 'success') {
     if (result.type === 'cancel' || result.type === 'dismiss') {
       throw new Error('로그인을 취소했어');
@@ -88,34 +151,59 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<{ ses
     throw new Error('로그인에 실패했어');
   }
 
-  // URL에서 code 추출 (PKCE)
-  const parsed = Linking.parse(result.url);
-  const code = (parsed.queryParams?.code as string | undefined) ?? null;
-  if (!code) throw new Error('인증 코드를 받지 못했어');
+  let session: Session | null = null;
+  try {
+    session = await resolveCallbackUrl(result.url, 'primary');
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : '';
+    // identity_already_exists: 이미 같은 OAuth identity가 *다른 user*에 link됨 (보통 이전 익명 세션 잔존).
+    // 익명 세션을 버리고 *기존 user로 직접 로그인* (signInWithOAuth fallback).
+    // 익명 세션의 데이터는 손실되나, 사용자는 이미 가입된 본인 계정으로 진입 가능.
+    if (msg.startsWith('OAuth_ERROR:identity_already_exists')) {
+      console.log('[auth] identity already linked — falling back to signInWithOAuth');
+      await supabase.auth.signOut();
+      const { data: signInData, error: signInErr } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: REDIRECT_URL, skipBrowserRedirect: true },
+      });
+      if (signInErr) throw signInErr;
+      if (!signInData?.url) throw new Error('OAuth URL을 받지 못했어 (재시도)');
 
-  const { data: exchanged, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-  if (exchangeError) throw exchangeError;
+      const retry = await WebBrowser.openAuthSessionAsync(signInData.url, REDIRECT_URL);
+      console.log('[auth] retry WebBrowser result type:', retry.type);
+      if (retry.type !== 'success') throw new Error('로그인에 실패했어 (재시도)');
+      session = await resolveCallbackUrl(retry.url, 'retry');
+      if (!session) throw new Error('세션을 받지 못했어 (재시도)');
+      return { session };
+    }
+    // 다른 에러는 사용자에게 그대로 노출
+    if (msg.startsWith('OAuth_ERROR:')) {
+      const parts = msg.split(':');
+      throw new Error(`로그인 실패 (${parts[1] ?? 'unknown'})`);
+    }
+    throw e;
+  }
+
+  if (!session) throw new Error('세션을 받지 못했어');
 
   // user.id가 유지됐는지 확인 (linkIdentity가 정상 동작했는지 sanity check)
-  if (exchanged.session?.user.id && exchanged.session.user.id !== oldUserId) {
+  if (session.user.id !== oldUserId) {
     console.warn('[auth] user.id changed after linkIdentity — data may be orphaned', {
       oldUserId,
-      newUserId: exchanged.session.user.id,
+      newUserId: session.user.id,
     });
   }
 
   // users.provider/provider_user_id만 update — 다른 컬럼(breakup_date·consent 등) 보존
-  if (exchanged.session?.user.id) {
-    const meta = exchanged.session.user.user_metadata as { sub?: string; provider_id?: string } | undefined;
-    const providerUserId = meta?.sub ?? meta?.provider_id ?? null;
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ provider, provider_user_id: providerUserId })
-      .eq('id', exchanged.session.user.id);
-    if (updateError) console.warn('[auth] provider update failed:', updateError.message);
-  }
+  const meta = session.user.user_metadata as { sub?: string; provider_id?: string } | undefined;
+  const providerUserId = meta?.sub ?? meta?.provider_id ?? null;
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({ provider, provider_user_id: providerUserId })
+    .eq('id', session.user.id);
+  if (updateError) console.warn('[auth] provider update failed:', updateError.message);
 
-  return { session: exchanged.session };
+  return { session };
 }
 
 /**
