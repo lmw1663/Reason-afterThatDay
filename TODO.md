@@ -336,6 +336,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | G-10 | **별표 마크다운 sweep 완성** — journal(index/raw-mode/unsent-letter) 3건 + opus 추가 발견 5건(data·pros-cons·memory) 모두 inline RNText 강조 또는 평문화. 코드베이스 전체 잔존 0건 확인 | ✅ | G-9 |
 | G-11 | **journal/question CTA 단일화** — 두 PrimaryButton(다음·건너뛸게 ghost)이 동등 무게로 박혀있던 것을 단일 primary + 텍스트 링크로 격하. 홈 G-1 패턴 재적용 | ✅ | — |
 | G-12 | **about-me 카드 그리드 축소** — 10개 카드 동시 노출 → 권장 1개(큰 카드) + 미완 우선 4개(그리드) + "전체 보기" 토글. 시각 경쟁자 10 → 6. 홈 G-1·G-2 패턴 재적용 | ✅ | — |
+| G-13 | **journal/index.tsx 시각 경쟁자 9→7** — 거칠게 chip 격하(P10) + "정상적인 단계야" 박스 강조 + 신체 신호 collapsible(기본 접힘, 입력시 자동 펼침). 한 화면 8+ 룰 충족 | ✅ | — |
 
 **검증**: G-1·G-2·G-3 완료 후 시뮬레이터에서 신규 익명 user 진입 → 시각 경쟁자 ≤ 5개, primary CTA 1개로 줄었는지 확인.
 

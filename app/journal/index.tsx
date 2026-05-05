@@ -124,6 +124,15 @@ export default function JournalMoodScreen() {
     setPendingDraft(null);
   }
 
+  // G-13: 신체 신호는 *선택사항*이라 평소엔 접어두고 명시적으로 펼치는 collapsible 패턴.
+  // 시각 경쟁자 9 → 7로 감소. 신호를 입력한 적이 있으면 자동 펼침 (draft 복원 포함).
+  // 한 번 펼친 후 다시 접는 UI는 의도적으로 두지 않음 — 펼친 의지를 가진 사용자가
+  // 다시 닫고 싶어할 빈도가 낮고, 토글 자체가 또 다른 시각 노이즈가 되기 때문.
+  const [showPhysical, setShowPhysical] = useState(false);
+  useEffect(() => {
+    if (physicalSignals.length > 0 && !showPhysical) setShowPhysical(true);
+  }, [physicalSignals.length]);
+
   async function handleNext() {
     await saveDraft(buildDraft());
     router.push({
@@ -168,28 +177,24 @@ export default function JournalMoodScreen() {
         <Caption className="mb-2">이별 일기 · 1 / 4</Caption>
         <Heading className="mb-2">지금 감정 온도가 몇 도야?</Heading>
 
-        {/* D-5: 분노 페르소나(P10)면 거칠게 모드로 우회 옵션 — 4단계 부담 없이 venting */}
+        {/* D-5: 분노 페르소나(P10)면 거칠게 모드로 우회 옵션. G-13: 4단계 진입과 *대등한*
+            큰 카드로 박혀있어 분기 결정 부담 — 작은 chip으로 격하해 시각 무게 ↓ */}
         {isRawModeAllowed(effectivePersona) && (
           <Pressable
             onPress={() => router.push('/journal/raw-mode')}
             accessibilityRole="button"
             accessibilityLabel="거칠게 쓰는 모드로 이동"
             accessibilityHint="분노를 그대로 쏟아내고, 마지막에 함께 다른 감정도 봐"
-            className="mb-6 rounded-xl px-4 py-3 flex-row items-center gap-2 active:opacity-70"
-            style={{ backgroundColor: colors.overlayPurpleSoft, borderWidth: 1, borderColor: colors.purple[800] }}
+            hitSlop={8}
+            className="mb-4 self-start rounded-full py-2 px-4 flex-row items-center gap-2 active:opacity-70"
+            style={{ backgroundColor: colors.overlayPurpleSoft }}
           >
-            <Icon name="wind" size={18} color={colors.purple[400]} />
-            <View className="flex-1">
-              <Body className="text-purple-400 text-sm font-semibold">오늘은 거칠게 써볼래?</Body>
-              <Caption className="text-gray-500 text-xs mt-0.5">
-                4단계 없이 한 번에 쏟아낸 뒤 마음 한 가지만 들여다보자
-              </Caption>
-            </View>
-            <Icon name="chevron-right" size={16} color={colors.gray[400]} />
+            <Icon name="wind" size={14} color={colors.purple[400]} />
+            <Caption className="text-purple-400 font-semibold">거칠게 써볼래</Caption>
           </Pressable>
         )}
 
-        <View className="mt-4" />
+        <View className="mt-2" />
 
         <MoodSlider value={score} onChange={handleScoreChange} />
 
@@ -207,39 +212,62 @@ export default function JournalMoodScreen() {
               />
             ))}
           </View>
+          {/* G-13: 감정 라벨 선택 후 피드백 — 정서적으로 가장 중요한 한 줄. Caption에서
+              Body로 격상하고 보라 강조로 시각 무게 충분히 부여. */}
           {emotionLabels.length > 0 && (
-            <Caption className="mt-3 text-purple-400">
-              지금 그 감정, 정상적인 단계야.
-            </Caption>
+            <View
+              className="mt-4 rounded-xl px-4 py-3 flex-row items-center gap-2"
+              style={{ backgroundColor: colors.overlayPurpleSoft }}
+            >
+              <Icon name="leaf" size={16} color={colors.purple[400]} />
+              <Body className="text-purple-400 font-medium flex-1">
+                지금 그 감정, 정상적인 단계야.
+              </Body>
+            </View>
           )}
         </View>
 
-        {/* 1.6단계: 신체 신호 (선택사항) */}
+        {/* G-13: 신체 신호는 선택사항이라 collapsible. 평소 접혀있고 명시적으로 펼침. */}
         <View className="mt-8 mb-2">
-          <Body className="text-gray-300 mb-1">몸도 변화가 있었어?</Body>
-          <Caption className="text-gray-500 mb-4">선택사항이야, 건너뛰어도 돼</Caption>
-          {PHYSICAL_SIGNALS.map((signal) => (
+          {!showPhysical ? (
             <Pressable
-              key={signal}
-              onPress={() => toggleSignal(signal)}
-              className="flex-row items-center mb-3"
-              accessibilityRole="checkbox"
-              accessibilityState={{ checked: physicalSignals.includes(signal) }}
+              onPress={() => setShowPhysical(true)}
+              accessibilityRole="button"
+              accessibilityLabel="몸의 변화도 함께 보기"
+              hitSlop={8}
+              className="flex-row items-center gap-2 active:opacity-60 py-2"
             >
-              <View
-                className={`w-5 h-5 rounded border mr-3 items-center justify-center ${
-                  physicalSignals.includes(signal)
-                    ? 'bg-purple-500 border-purple-500'
-                    : 'border-gray-500'
-                }`}
-              >
-                {physicalSignals.includes(signal) && (
-                  <Body className="text-white text-xs leading-none">✓</Body>
-                )}
-              </View>
-              <Body className="text-gray-300">{PHYSICAL_SIGNAL_LABELS[signal]}</Body>
+              <Icon name="plus" size={14} color={colors.gray[400]} />
+              <Caption className="text-gray-500">몸의 변화도 함께 보기 (선택)</Caption>
             </Pressable>
-          ))}
+          ) : (
+            <>
+              <Body className="text-gray-300 mb-1">몸도 변화가 있었어?</Body>
+              <Caption className="text-gray-500 mb-4">선택사항이야, 건너뛰어도 돼</Caption>
+              {PHYSICAL_SIGNALS.map((signal) => (
+                <Pressable
+                  key={signal}
+                  onPress={() => toggleSignal(signal)}
+                  className="flex-row items-center mb-3"
+                  accessibilityRole="checkbox"
+                  accessibilityState={{ checked: physicalSignals.includes(signal) }}
+                >
+                  <View
+                    className={`w-5 h-5 rounded border mr-3 items-center justify-center ${
+                      physicalSignals.includes(signal)
+                        ? 'bg-purple-500 border-purple-500'
+                        : 'border-gray-500'
+                    }`}
+                  >
+                    {physicalSignals.includes(signal) && (
+                      <Body className="text-white text-xs leading-none">✓</Body>
+                    )}
+                  </View>
+                  <Body className="text-gray-300">{PHYSICAL_SIGNAL_LABELS[signal]}</Body>
+                </Pressable>
+              ))}
+            </>
+          )}
         </View>
 
         {/* C-2-G-3b: P14 (외도 가해 후회) — 일기 진입 시 *수치심 ≠ 죄책감* 심리교육 1회 노출.
