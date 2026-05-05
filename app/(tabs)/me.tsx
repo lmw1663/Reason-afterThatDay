@@ -93,7 +93,7 @@ export default function MeScreen() {
               decisionLocked
                 ? '안전 확인 후 다시 만나자'
                 : analysisDisabled
-                  ? '지금은 *너에 대해* 트랙이 더 도움돼'
+                  ? '지금은 내 이야기에 더 집중하자'
                   : insightUnlocked
                     ? '장단점·이유·역할 정리'
                     : `${insightDaysLeft}일 뒤 — 지금은 자신을 살피는 시간`
@@ -109,7 +109,7 @@ export default function MeScreen() {
               decisionLocked
                 ? '안전 확인 후 다시 만나자'
                 : compassDisabled
-                  ? '지금은 결정보다 *수용*에 집중하자'
+                  ? '지금은 결정보다 수용에 집중하자'
                   : compassUnlocked
                     ? '지금 마음이 어디를 향하는지'
                     : `${compassDaysLeft}일 뒤 — 결정보다 머무는 시간`

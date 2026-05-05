@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Alert, Linking, Pressable, Text as RNText, View } from 'react-native';
 import { router } from 'expo-router';
 import { Modal } from './ui/Modal';
 import { Body, Caption, Heading } from './ui/Typography';
@@ -240,7 +240,13 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
             onChange={v => setResponse('q1', v)}
           />
           <YesNoQuestion
-            label="자해나 자살에 대해 *적극적으로* 생각해본 적 있어?"
+            label={
+              <>
+                자해나 자살에 대해{' '}
+                <RNText className="text-purple-400">적극적으로</RNText>
+                {' '}생각해본 적 있어?
+              </>
+            }
             value={responses.q2}
             onChange={v => setResponse('q2', v)}
           />
@@ -396,7 +402,7 @@ function YesNoQuestion({
   value,
   onChange,
 }: {
-  label: string;
+  label: ReactNode;
   value: boolean;
   onChange: (v: boolean) => void;
 }) {

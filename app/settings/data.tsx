@@ -134,7 +134,7 @@ export default function DataSettingsScreen() {
     // opus 권고 2: 민감 정보(C-SSRS·자해 사고 기록 등) 평문 반출 사전 경고
     Alert.alert(
       '내보내기 전 확인',
-      '내보내는 데이터에는 위기 평가 응답·안전 잠금 이력 같은 *민감 정보*가 포함될 수 있어.\n평문 JSON으로 외부 앱(메일·메신저 등)에 전달돼. 계속할까?',
+      '내보내는 데이터에는 위기 평가 응답·안전 잠금 이력 같은 민감 정보가 포함될 수 있어.\n평문 JSON으로 외부 앱(메일·메신저 등)에 전달돼. 계속할까?',
       [
         { text: '취소', style: 'cancel' },
         { text: '계속', onPress: () => handleExport() },
@@ -337,7 +337,7 @@ export default function DataSettingsScreen() {
             <Card>
               <SuspensionRow
                 label="익명 사용 통계 보내기"
-                description="화면 진입·기능 사용 등 *통계*만 수집. 일기 본문·위기 응답 등 민감 정보는 절대 포함 안 함. 언제든 끌 수 있어."
+                description="화면 진입·기능 사용 등 통계만 수집. 일기 본문·위기 응답 등 민감 정보는 절대 포함 안 함. 언제든 끌 수 있어."
                 value={telemetry.optedIn}
                 loading={togglingTelemetry}
                 onToggle={toggleTelemetry}
