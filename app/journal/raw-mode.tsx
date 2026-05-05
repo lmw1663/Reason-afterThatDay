@@ -229,8 +229,9 @@ export default function RawModeScreen() {
         >
           <Icon name="leaf" size={16} color={colors.purple[400]} />
           <Caption className="text-gray-400 flex-1 leading-5">
-            분노는 다른 감정의 *겉모양*인 경우가 많아. 아래를 봐주는 것만으로
-            소화가 시작돼.
+            분노는 다른 감정의{' '}
+            <Text className="text-purple-400 font-semibold">겉모양</Text>
+            인 경우가 많아. 아래를 봐주는 것만으로 소화가 시작돼.
           </Caption>
         </View>
       </ScrollView>

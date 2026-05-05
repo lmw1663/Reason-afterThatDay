@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, Share, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Share, Text as RNText, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // expo-file-system v19+는 main entry가 신규 File/Directory 객체 API.
 // legacy 서브경로는 v20+에서 제거 가능 — TODO: 신규 API로 마이그레이션.
@@ -266,8 +266,10 @@ export default function DataSettingsScreen() {
           개인정보 보호법에 따라 너의 모든 기록을 직접 보고·내보내고·지울 수 있어.
         </Body>
         <Caption className="text-gray-500 mb-6 leading-5">
-          *내보내기*는 JSON 형식으로 너의 데이터를 다른 앱이나 메일로 보내.{'\n'}
-          *삭제*는 되돌릴 수 없어.
+          <RNText className="text-purple-400 font-semibold">내보내기</RNText>
+          는 JSON 형식으로 너의 데이터를 다른 앱이나 메일로 보내.{'\n'}
+          <RNText className="text-purple-400 font-semibold">삭제</RNText>
+          는 되돌릴 수 없어.
         </Caption>
 
         <Card className="mb-4">

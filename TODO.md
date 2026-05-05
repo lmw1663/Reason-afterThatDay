@@ -333,6 +333,8 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 | G-7 | **시각 톤 위계 정리** — 1차/2차/3차 카드의 cornerRadius/배경/그림자 차등 명확화 | ✅ | G-1~G-6 (G-1~G-6 작업으로 자연스럽게 5단계 위계 잡힘 — 추가 변경 0건) |
 | G-8 | **페르소나 우선 카드 dismiss 24h** — 매일 무조건 노출되던 학습 부담 ↓. AssessmentRecommendationCard 패턴 차용해 일관성 | ✅ | G-7 |
 | G-9 | **별표 마크다운 잔존 정리** — me·data·EmotionalCheckModal에 남은 `*...*` 4건 (코드베이스 grep 검증). me/data는 평문화, CSSRS Q2는 inline RNText 강조 유지(passive/active 표준 구분 필수) | ✅ | — |
+| G-10 | **별표 마크다운 sweep 완성** — journal(index/raw-mode/unsent-letter) 3건 + opus 추가 발견 5건(data·pros-cons·memory) 모두 inline RNText 강조 또는 평문화. 코드베이스 전체 잔존 0건 확인 | ✅ | G-9 |
+| G-11 | **journal/question CTA 단일화** — 두 PrimaryButton(다음·건너뛸게 ghost)이 동등 무게로 박혀있던 것을 단일 primary + 텍스트 링크로 격하. 홈 G-1 패턴 재적용 | ✅ | — |
 
 **검증**: G-1·G-2·G-3 완료 후 시뮬레이터에서 신규 익명 user 진입 → 시각 경쟁자 ≤ 5개, primary CTA 1개로 줄었는지 확인.
 

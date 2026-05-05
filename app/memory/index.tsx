@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, ScrollView, Pressable } from 'react-native';
+import { View, ScrollView, Pressable, Text as RNText } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -104,8 +104,15 @@ export default function MemoryIndexScreen() {
               <View className="flex-1">
                 <Body className="font-medium mb-1">미화 회상은 닫아뒀어</Body>
                 <Caption className="text-gray-400 leading-5">
-                  지금 *행복했던 순간*·*그리움*을 떠올리면 사실을 흐리게 만들 수 있어.
-                  *아팠던 순간*과 *성장한 부분*만 함께 보자.
+                  지금{' '}
+                  <RNText className="text-purple-400 font-semibold">행복했던 순간</RNText>
+                  ·
+                  <RNText className="text-purple-400 font-semibold">그리움</RNText>
+                  을 떠올리면 사실을 흐리게 만들 수 있어.{' '}
+                  <RNText className="text-purple-400 font-semibold">아팠던 순간</RNText>
+                  과{' '}
+                  <RNText className="text-purple-400 font-semibold">성장한 부분</RNText>
+                  만 함께 보자.
                 </Caption>
               </View>
             </View>

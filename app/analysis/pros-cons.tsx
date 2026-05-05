@@ -133,7 +133,9 @@ export default function AnalysisProsCons() {
         {currentTabBlocked && (
           <Card className="mb-4 p-4">
             <Body className="text-gray-300 text-sm leading-6">
-              지금은 이 탭을 닫아뒀어. 균형이 아니라 *너의 안전*이 먼저야.
+              지금은 이 탭을 닫아뒀어. 균형이 아니라{' '}
+              <Text className="text-purple-400 font-semibold">너의 안전</Text>
+              이 먼저야.
             </Body>
           </Card>
         )}
@@ -142,8 +144,11 @@ export default function AnalysisProsCons() {
         {Number.isFinite(itemLimit) && limitReached && !currentTabBlocked && (
           <Card className="mb-4 p-4">
             <Body className="text-gray-300 text-sm leading-6">
-              {itemLimit}개면 충분해. 더 추가하는 건 *생각을 정리*하는 게 아니라
-              *반복하는 것*에 가까워.
+              {itemLimit}개면 충분해. 더 추가하는 건{' '}
+              <Text className="text-purple-400 font-semibold">생각을 정리</Text>
+              하는 게 아니라{' '}
+              <Text className="text-purple-400 font-semibold">반복하는 것</Text>
+              에 가까워.
             </Body>
           </Card>
         )}

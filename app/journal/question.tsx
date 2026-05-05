@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, TextInput } from 'react-native';
+import { Pressable, View, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
@@ -59,16 +59,22 @@ export default function JournalQuestionScreen() {
         />
       </View>
 
-      <View className="px-6 pb-10 gap-4">
+      <View className="px-6 pb-10 gap-2">
         <ProgressDots total={4} current={2} />
         <PrimaryButton label="다음" onPress={handleNext} />
-        <PrimaryButton
-          label="건너뛸게"
-          variant="ghost"
+        {/* G-11: "건너뛸게"는 보조 행동이라 PrimaryButton ghost(시각 무게 동등)에서
+            텍스트 링크로 격하. 단일 primary CTA 원칙 준수. */}
+        <Pressable
           onPress={() =>
             router.push({ pathname: '/journal/response', params: { ...params, questionAnswer: '' } })
           }
-        />
+          accessibilityRole="button"
+          accessibilityLabel="건너뛸게"
+          hitSlop={8}
+          className="active:opacity-60"
+        >
+          <Caption className="text-center text-gray-500 py-3">건너뛸게 →</Caption>
+        </Pressable>
       </View>
     </ScreenWrapper>
   );

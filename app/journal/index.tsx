@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, TextInput, ScrollView, Pressable } from 'react-native';
+import { View, TextInput, ScrollView, Pressable, Text as RNText } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
@@ -251,8 +251,10 @@ export default function JournalMoodScreen() {
               <View className="flex-1">
                 <Body className="font-medium mb-1">수치심과 죄책감은 달라</Body>
                 <Caption className="text-gray-400 leading-5">
-                  *행동을 후회*하는 죄책감은 회복으로 이어져. *나라는 사람을 부정*하는 수치심은
-                  자기 처벌로 흘러. 오늘은 행동만 다뤄보자.
+                  <RNText className="text-purple-400 font-semibold">행동을 후회</RNText>
+                  하는 죄책감은 회복으로 이어져.{' '}
+                  <RNText className="text-purple-400 font-semibold">나라는 사람을 부정</RNText>
+                  하는 수치심은 자기 처벌로 흘러. 오늘은 행동만 다뤄보자.
                 </Caption>
                 <Pressable
                   onPress={dismissShameGuiltCard}

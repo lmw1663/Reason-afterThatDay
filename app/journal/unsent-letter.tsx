@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text as RNText, TextInput, View } from 'react-native';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BackHeader } from '@/components/ui/BackHeader';
@@ -65,7 +65,8 @@ export default function UnsentLetterScreen() {
         <Display className="mb-2">잠가두자</Display>
         <Body className="text-gray-400 mb-6 leading-6">
           쓰고 싶은 말을 적어두면 24시간 동안 잠가둘게. 그 시간이 지나면 다시 읽을 수 있어.{'\n'}
-          *발송 기능은 없어*. 충동을 잠재우는 데만 쓰는 곳이야.
+          <RNText className="text-purple-400 font-semibold">발송 기능은 없어</RNText>
+          . 충동을 잠재우는 데만 쓰는 곳이야.
         </Body>
 
         {/* 새 편지 작성 */}
