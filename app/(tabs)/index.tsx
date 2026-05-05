@@ -234,32 +234,29 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* G-2: "나에 대해"는 [나] 탭으로 흡수 (탭바 중복 제거).
-            "갑자기 떠올랐어"는 돌발 상황 대응이라 홈에 남기되 chip 격하는 G-5에서 처리.
-            지금은 단일 카드로만 노출. */}
+        {/* G-5: "갑자기 떠올랐어"는 돌발 상황 대응이라 *항상 접근 가능*해야 하지만,
+            평상 시엔 시각 무게가 작아야 함. 큰 카드 → inline chip으로 격하. */}
         <View className="px-6 mb-6">
           <Pressable
             onPress={() => setShowIntrusiveModal(true)}
             accessibilityRole="button"
             accessibilityLabel="갑자기 떠올랐어"
-            className="rounded-2xl py-4 px-4 flex-row items-center gap-3 active:opacity-70 border border-gray-700"
-            style={{ backgroundColor: colors.surface }}
+            hitSlop={8}
+            className="self-start rounded-full py-2 px-4 flex-row items-center gap-2 active:opacity-70"
+            style={{ backgroundColor: colors.overlayPurpleSoft }}
           >
-            <Icon name="fog" size={22} color={colors.purple[400]} />
-            <Text className="text-gray-200 font-semibold text-sm flex-1">
-              갑자기 떠올랐어
-            </Text>
-            <Icon name="chevron-right" size={18} color={colors.gray[600]} />
+            <Icon name="fog" size={14} color={colors.purple[400]} />
+            <Caption className="text-purple-400 font-semibold">갑자기 떠올랐어</Caption>
           </Pressable>
         </View>
 
-        {/* D-3 검사 권유 카드 — pickRecommendation이 결정한 1건만 노출 (D+7/14/30) */}
-        <View className="px-6 mb-3">
+        {/* G-6: 보조 카드 묶음.
+            - AssessmentRecommendationCard: 조건부(D+7/14/30) — 권유 없으면 자체 null 반환
+            - ContactUrgeChip: 매일 노출 (보고용 액션 카드)
+            두 카드의 px·간격을 통일해 *하나의 묶음*으로 시각 인식되게. 매일 같은 자리에
+            같은 종류가 있어야 학습이 됨 (Predictable layout). */}
+        <View className="px-6 mb-6 gap-2">
           <AssessmentRecommendationCard />
-        </View>
-
-        {/* D-4 연락 충동 1탭 보고 — 빠른 진입 아래 보조 칩 (작게, 무판단 톤) */}
-        <View className="px-6 mb-6">
           <ContactUrgeChip />
         </View>
 
