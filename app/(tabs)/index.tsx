@@ -27,6 +27,7 @@ export default function HomeScreen() {
   const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
   const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
   const personaPrimary = usePersonaStore(s => s.primary);
+  const personaSecondary = usePersonaStore(s => s.secondary);
   // C-2-G-3a: 회피형 페르소나면 일기 미니 모드를 primary 시각으로 강조 (매트릭스 §2 C3).
   const miniIsPrimary = isMiniJournalFirst(personaPrimary);
   const [dailyQuote, setDailyQuote] = useState<string>('');
@@ -119,6 +120,14 @@ export default function HomeScreen() {
             <Heading className="text-purple-400">D+{daysElapsed}</Heading>
             <Caption className="text-gray-500">일째</Caption>
           </View>
+          {/* DEV-ONLY: 페르소나 분류 결과 확인용 디버그 라벨. __DEV__ 가드로 production 자동 제거.
+              사용자 노출 코드 아님 (개발자 검증용). 출시 전 제거 또는 디버그 패널로 이관. */}
+          {__DEV__ && (
+            <Caption className="text-amber-400 mt-2" style={{ fontSize: 11, fontFamily: 'monospace' }}>
+              [DEV] persona: {personaPrimary ?? '—'}
+              {personaSecondary ? ` · ${personaSecondary}` : ''}
+            </Caption>
+          )}
         </View>
 
         {/* 페르소나 우선 카드 슬롯 (A-6 + C-1-3 연결) — usePersonaStore의 primary가 null이면
