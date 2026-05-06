@@ -28,6 +28,8 @@ npx expo install nativewind tailwindcss
 
 → **Expo Router 추천**: 화면이 많고(journal, compass, cooling...) 딥링크(푸시 알림 탭 시 특정 화면 이동)가 필요하기 때문.
 
+> **2026-05-04 업데이트**: iOS는 Expo prebuild로 **bare workflow** 진입. `ios/` 디렉터리(Podfile, `.xcodeproj`, AppDelegate.swift 등)가 저장소에 포함됨. EAS Build 외에 Xcode 직접 빌드도 가능.
+
 ---
 
 ## 0-2. Supabase 프로젝트 + DB 스키마

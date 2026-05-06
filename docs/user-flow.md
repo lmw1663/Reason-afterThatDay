@@ -2,7 +2,14 @@
 
 > 실제 코드(`router.push` / `router.replace` / `router.back` / `<Link>` 호출)를 근거로 정리한 화면 흐름 문서.
 > 기획안이 아니라 **현재 코드에 구현된 사실**만 적는다.
-> 마지막 검증: 2026-05-02
+> 마지막 검증: 2026-05-06 (3탭 구조·졸업 트랙 보류·온보딩 consent/persona 단계 반영)
+>
+> ⚠️ **주요 변경 (2026-05-04 이후)**:
+> - 하단 탭 4개 → **3개**로 축소 (오늘/기록/나). analysis·compass·graduation 탭은 **삭제**되어 [나] 탭에서 진입.
+> - 졸업 트랙 **보류** — `/(tabs)/graduation` 또는 `/graduation/*` 진입 시 모두 `/graduation-paused`로 리다이렉트.
+> - 온보딩에 **consent / duration / persona / intro** 단계 추가 (총 5~6단계).
+> - C-SSRS 양성 시 결정 트랙 자동 잠금 → `/safety/release`에서 24h+4문항 통과 시 해제.
+> - 신규 화면: `/about-me/*`, `/recovery-trace`, `/memory/*`, `/assessments/[instrument]`, `/safety/release`, `/resources/hotline`, `/legal/[document]`.
 
 ---
 
@@ -68,14 +75,16 @@ response (replace → /(tabs))                                                  
 
 ## C. 홈 탭 (`/(tabs)`)
 
-### C-1. 탭 구조 (`/(tabs)/_layout.tsx`)
+### C-1. 탭 구조 (`/(tabs)/_layout.tsx`) — 2026-05-04 재구성
 
 | 탭 | 경로 | 아이콘 |
 |----|------|--------|
-| 홈 | `/(tabs)/index` | Home |
-| 관계분석 | `/(tabs)/analysis` | Search |
-| 결정 나침반 | `/(tabs)/compass` | Compass |
-| 졸업 | `/(tabs)/graduation` | GraduationCap |
+| 오늘 | `/(tabs)/index` | home |
+| 기록 | `/(tabs)/records` | book |
+| 나 | `/(tabs)/me` | smile |
+
+> 이전 4탭 구조(홈/관계분석/나침반/졸업)는 폐기. analysis·compass는 [나] 탭 → `/analysis/*`·`/compass/*` 진입 가드 경유. graduation은 보류.
+> `/(tabs)/analysis.tsx`·`compass.tsx`·`graduation.tsx`는 진입 가드(redirect-only) 파일로 남아 있음.
 
 ### C-2. 홈 화면 (`/(tabs)/index.tsx`) 진출 링크
 
@@ -181,13 +190,18 @@ response (replace → /(tabs))                                                  
 | 4/5 | `/compass/needle` | SVG 바늘 -80°~+80° 회전, 5종 verdict 결정 + `addDecision()` | `push('/compass/action', { verdict })` | ❌ |
 | 5/5 | `/compass/action` | verdict별 3개 행동 제안 + 주의사항 | `push('/journal')` 또는 `replace('/(tabs)')` | ❌ |
 
-**Verdict 5종**: `strong_catch / lean_catch / undecided / lean_let_go / strong_let_go`
+**Verdict 8종** (`store/useDecisionStore.ts:CompassVerdict`):
+`strong_catch / lean_catch / undecided / undecided_with_love / undecided_with_resentment / lean_let_go / strong_let_go / DANGER_OBSESSION`
 
 ---
 
-## H. 졸업 흐름 (4단계 + 유예)
+## H. 졸업 흐름 (4단계 + 유예) — ⏸ 2026-05-04 보류
 
-### 졸업 탭 (`/(tabs)/graduation.tsx`) — 3가지 분기
+> **현재 상태**: 졸업 트랙 전체가 보류됨. `app/(tabs)/graduation.tsx`와 `app/graduation/_layout.tsx` 모두 `/graduation-paused`로 리다이렉트. 아래 명세는 **복귀 시 참조용**.
+>
+> 사용자에겐 `/graduation-paused` 화면이 안내된다 (`app/graduation-paused.tsx`).
+
+### 졸업 탭 (`/(tabs)/graduation.tsx`) — 3가지 분기 [복귀 시]
 
 | status | 화면 | CTA |
 |--------|------|-----|

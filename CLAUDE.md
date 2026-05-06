@@ -149,6 +149,8 @@ eas submit                   # 스토어 제출
 
 | 상황 | 문서 | 내용 |
 |------|------|------|
+| 신규 진입 시 | [`STUDY_GUIDE.md`](STUDY_GUIDE.md) | Phase 1~6 단계별 학습 가이드 + 사용자 플로우·E2E 트레이스 |
+| 파일 위치 찾기 | [`FILE_STRUCTURE.md`](FILE_STRUCTURE.md) | 폴더·파일별 1줄 인덱스 |
 | 설계·구조 변경 시 | [`docs/reason_project_v2.md`](docs/reason_project_v2.md) | 전체 기획 — 화면/API/DB 원문 |
 | 새 기능 추가 시 | [`docs/research.md`](docs/research.md) | 전체 시스템 리서치 — 작동 방식 상세 |
 | 태스크 시작/완료 시 | [`TODO.md`](TODO.md) | 할 일 목록 — 진행 상태 확인 및 업데이트 |

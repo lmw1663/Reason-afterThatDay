@@ -165,8 +165,8 @@ app/journal/response.tsx
 | **페르소나 P01~P20** | 사용자 임상적 유형 분류 (P13은 결번) | `utils/personaClassifier.ts` · `docs/psychology-logic/페르소나.md` |
 | **8축** | 페르소나 분류용 축 (애착·반추·자존감 등) | `supabase/migrations/022_persona_profiling.sql` |
 | **방향 (direction)** | 일기마다 사용자가 고르는 catch / let_go / not_sure | `store/useJournalStore.ts` |
-| **나침반 verdict** | 7가지 판정 (strong_catch ~ DANGER_OBSESSION) | `store/useDecisionStore.ts` · `app/compass/needle.tsx` |
-| **유예 (cooling)** | 졸업 신청 후 7일 강제 대기 | `store/useCoolingStore.ts` · `app/cooling/*` |
+| **나침반 verdict** | 8가지 판정 (`strong_catch / lean_catch / undecided / undecided_with_love / undecided_with_resentment / lean_let_go / strong_let_go / DANGER_OBSESSION`) | `store/useDecisionStore.ts:CompassVerdict` · `app/compass/needle.tsx` |
+| **유예 (cooling)** | 졸업 신청 후 7일 강제 대기 (취소 가능 / Day 7에서 7일 연장 가능) | `store/useCoolingStore.ts` · `app/cooling/*` |
 | **C-SSRS** | 자살 위험 평가 척도 (3문항 양성 시 잠금) | `api/safety.ts` · `app/onboarding/persona/index.tsx` |
 | **PHQ-9 / GAD-7 / RSE** | 우울·불안·자존감 표준 검사 | `utils/scoring.ts` · `app/assessments/[instrument].tsx` |
 | **raw mode** | P10 분노 venting + 2차 정서 강제 | `app/journal/raw-mode.tsx` |
@@ -427,11 +427,13 @@ eas build --platform android
 | 관심사 | 다음 문서 |
 |---|---|
 | 새 페르소나 추가하고 싶다 | `docs/psychology-logic/페르소나-분류체계.md` + `utils/personaClassifier.ts` 단위 테스트 |
-| 새 검사 도구 추가 | `docs/psychology-logic/심리검사.md` + `utils/scoring.ts` + `030_assessments.sql` 패턴 |
+| 페르소나별 화면 분기 | [`docs/psychology-logic/페르소나-화면-액션-매트릭스.md`](./docs/psychology-logic/페르소나-화면-액션-매트릭스.md) — 20 페르소나 × 11 화면 = 220셀 |
+| 페르소나별 유저 여정 | [`docs/psychology-logic/페르소나별-유저-플로우.md`](./docs/psychology-logic/페르소나별-유저-플로우.md) — P01~P20 개별 시나리오 |
+| 새 검사 도구 추가 | `docs/psychology-logic/심리검사.md` + [`docs/legal/scales-license.md`](./docs/legal/scales-license.md) (라이선스) + `utils/scoring.ts` + `030_assessments.sql` 패턴 |
 | 새 GPT 호출 추가 | `docs/guide/05-ai-and-prompt-policy.md` + `supabase/functions/ai-comfort/` 참고 (가장 단순) |
-| UX/UI 손보기 | `docs/ux-audit.md` + `evaluation/2026-05-03-ux-ui-audit.md` 최신 평가 |
+| UX/UI 손보기 | `docs/ux-audit.md` + `evaluation/2026-05-03-ux-ui-audit.md` + [`evaluation/2026-05-06_플로우-방향성-점검.md`](./evaluation/2026-05-06_플로우-방향성-점검.md) |
 | 위기 정책 손보기 | `docs/guide/08-quality-and-risks.md` + 임상 검증 문서 (`docs/psychology-logic/검증-임상관점.md`) — 임상가 리뷰가 거의 필수 |
-| Phase별 진행 상황 | [`TODO.md`](./TODO.md) + `docs/phases/phase-*.md` |
+| Phase별 진행 상황 | [`TODO.md`](./TODO.md) + `docs/phases/phase-*.md` + [`docs/psychology-tasks/`](./docs/psychology-tasks/) (Phase 6-7) |
 
 ---
 

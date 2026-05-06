@@ -52,4 +52,14 @@ eas submit
 - [ ] 모든 테이블 RLS 활성화 확인
 - [ ] 졸업 즉시 확정 로직 없는지 검증
 - [ ] "정답이 아니야" 문구 진단/나침반 결과 화면 포함 확인
+- [ ] `npm run lint:persona` 통과 (페르소나 라벨 비노출)
+- [ ] `__DEV__` 가드 디버그 라벨 미포함 검증 (홈 탭 페르소나 표시 등)
+
+### iOS Bare Workflow 특수 항목 (2026-05-04 적용)
+Expo prebuild로 `ios/` 디렉터리를 저장소에 포함시킴. 이로 인해 추가 체크:
+- [ ] Xcode signing certificate + provisioning profile 설정 확인
+- [ ] `ios/Podfile.lock` 커밋 상태 확인
+- [ ] `pod install` 후 Pods/ 디렉터리 gitignored 확인 (`ios/.gitignore`)
+- [ ] EAS Build 또는 Xcode 직접 빌드 — 운영 환경 기준 결정
+- [ ] AppDelegate.swift, Info.plist, entitlements 등 native 설정 변경 시 git 추적
 

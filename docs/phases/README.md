@@ -12,8 +12,20 @@
 - `docs/phases/phase-5.md` — 오프라인 / 에러 / 배포
 - `docs/phases/common-api-errors.md` — 공통 API 에러 코드 표준
 
+## Phase 0~5 이후 (심리학 V1 / V2)
+
+Phase 6~7은 본 디렉터리가 아닌 [`docs/psychology-tasks/`](../psychology-tasks/)에 세분화돼 있다:
+- `psychology-tasks/00-overview.md` — Phase 6-7 개요 + 톤 정책
+- `psychology-tasks/6-0~6-11-*.md` — 페르소나·검사·안전·졸업 의식 등
+- `psychology-tasks/7-1~7-4-*.md` — 자가보고·메타뷰·에러 재시도
+- `psychology-tasks/PRIORITY.md` — P0/P1-A/P1-B/P2/P3 우선순위
+- `psychology-tasks/_shared-components.md` — 공유 컴포넌트 단일 사양
+
+이전 `phase-N.md` 문서는 보관용. 현재 진행은 `TODO.md` (A·B·C·D·E + X-* 분류) 우선.
+
 ## 읽기 규칙
 1. `CLAUDE.md` 최소 규칙 확인
-2. 현재 작업 Phase 문서만 우선 읽기
-3. 필요한 경우에만 `TODO.md`와 `docs/reason_project_v2.md` 확장 확인
+2. 신규 진입자는 [`STUDY_GUIDE.md`](../../STUDY_GUIDE.md) 먼저
+3. 현재 작업 Phase 문서만 우선 읽기
+4. 필요한 경우에만 `TODO.md`와 `docs/reason_project_v2.md` 확장 확인
 
