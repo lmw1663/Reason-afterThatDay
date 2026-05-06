@@ -13,7 +13,7 @@ graph TB
 
   subgraph Supabase["Supabase"]
     Auth[Auth · 익명 + OAuth]
-    DB[Postgres + RLS · 30+ 테이블]
+    DB[Postgres + RLS · 약 20개 테이블]
     EF[Edge Functions · 11개]
   end
 
@@ -48,7 +48,7 @@ graph TB
 
 ## 백엔드
 - Supabase (Auth + Postgres + Edge Functions)
-- 마이그레이션: 001~031 (현재 적용된 SQL 파일 30+개)
+- 마이그레이션: 번호 001~031 (실제 SQL 29개, 004·021 결번 — 004는 `supabase/004_pg_cron_setup_manual.sql`로 root에 별도)
 - Edge Functions 11개:
   - AI 응답 6개: `ai-journal-response` · `ai-journal-response-stream` · `ai-comfort` · `ai-daily-quote` · `ai-graduation-letter` · `cooling-checkin-response` · `graduation-farewell-response`
   - 운영 4개: `account-delete` · `persona-reclassify-cron` · `push-cooling-day7` · `push-daily-reminder`

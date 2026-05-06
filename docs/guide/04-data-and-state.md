@@ -65,7 +65,7 @@ flowchart LR
 - `useCoolingStore`: 유예 id · status · 타이머 · 체크인 응답 · 푸시 카운트
 - `usePersonaStore`: 주(primary)·부(secondary) 페르소나 · 추정 시각 — **라벨 비노출 강제**
 
-## DB 핵심 테이블 (현재 30+개)
+## DB 핵심 테이블 (약 20개)
 
 ### 코어
 - `users` · `journal_entries` · `question_pool` · `question_responses`

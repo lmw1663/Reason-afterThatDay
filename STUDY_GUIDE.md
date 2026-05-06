@@ -96,7 +96,8 @@
 ┌─────────────────────── 서버 (Supabase) ────────────────────────────────────────────┐
 │                                                                                    │
 │   Auth          ─ 익명/OAuth(Google·Apple·Kakao). 익명도 데이터 영구 보존.        │
-│   Postgres      ─ 30+ 테이블 모두 RLS (user_id 기준). migrations/001~031.         │
+│   Postgres      ─ 약 20개 테이블 모두 RLS (user_id 기준). migrations 번호 001~031│
+│                   (실제 SQL 29개, 004·021 결번)                                   │
 │   Edge Functions(Deno) ─ ai-journal-response-stream, ai-comfort, ai-graduation-  │
 │                          letter, cooling-checkin-response, push-* (cron) ...      │
 │   Storage       ─ 현재 미사용                                                      │
