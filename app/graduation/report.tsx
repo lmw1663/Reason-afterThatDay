@@ -12,6 +12,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
 import { fetchRecentEntries } from '@/api/journal';
 import { analyzeMoodTrend } from '@/utils/moodAnalysis';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 const DIRECTION_LABEL: Record<Direction, string> = { catch: '잡고 싶어', let_go: '보내고 싶어', undecided: '모르겠어' };
 const DIRECTION_COLOR: Record<Direction, string> = { catch: colors.purple[400], let_go: colors.teal[400], undecided: colors.gray[400] };
@@ -20,6 +21,7 @@ const DIRECTION_DOT: Record<Direction, string> = { catch: '💜', let_go: '🩵'
 export default function GraduationReportScreen() {
   const { userId, daysElapsed } = useUserStore();
   const { entries, setEntries } = useJournalStore();
+  const { label } = useKnotPolicy();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,7 +69,7 @@ export default function GraduationReportScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">졸업 · 1 / 5</Caption>
+        <Caption className="mb-2">{label} · 1 / 5</Caption>
         <Heading className="mb-2">이별 이후의 성장 리포트</Heading>
         <Caption className="mb-8">D+{daysElapsed}일, 참 많이 걸어왔어.</Caption>
 

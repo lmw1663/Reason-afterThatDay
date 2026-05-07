@@ -32,11 +32,33 @@ export async function fetchGraduationStatus(userId: string): Promise<CoolingRow 
   return data ? toRow(data) : null;
 }
 
-// 졸업 신청 → cooling 상태 생성 (즉시 확정 금지 — 7일 유예 필수)
-export async function requestGraduation(userId: string): Promise<CoolingRow> {
+// 매듭 신청 → cooling 상태 생성 (즉시 확정 금지 — 페르소나별 N일 유예 필수)
+//
+// F-7: cooling_period_days·knot_label·persona_codes를 호출자(request.tsx)에서 주입.
+// 미주입 시 DB DEFAULT(7일·매듭·{}) 적용 — 기존 호환.
+// cooling_ends_at은 클라이언트 산정값을 함께 보냄 (DB CHECK 없음, 정합성은 호출자 책임).
+export interface RequestGraduationOpts {
+  coolingPeriodDays?: number;
+  knotLabel?: string;
+  personaCodes?: string[];
+  coolingEndsAt?: string;
+  cycleIndex?: number;
+}
+
+export async function requestGraduation(
+  userId: string,
+  opts: RequestGraduationOpts = {},
+): Promise<CoolingRow> {
   const { data, error } = await supabase
     .from('graduation_cooling')
-    .insert({ user_id: userId })
+    .insert({
+      user_id: userId,
+      ...(opts.coolingPeriodDays !== undefined && { cooling_period_days: opts.coolingPeriodDays }),
+      ...(opts.knotLabel !== undefined && { knot_label: opts.knotLabel }),
+      ...(opts.personaCodes !== undefined && { persona_codes: opts.personaCodes }),
+      ...(opts.coolingEndsAt !== undefined && { cooling_ends_at: opts.coolingEndsAt }),
+      ...(opts.cycleIndex !== undefined && { cycle_index: opts.cycleIndex }),
+    })
     .select()
     .single();
   if (error) throw error;
@@ -55,10 +77,11 @@ export async function cancelCooling(id: string): Promise<void> {
     .eq('id', id);
 }
 
-// 7일 연장 — requested_at + cooling_ends_at 재설정, notifications_sent 리셋, 체크인 보존
-export async function resetCooling(id: string): Promise<void> {
+// 페르소나별 N일 연장 — requested_at + cooling_ends_at 재설정, notifications_sent 리셋, 체크인 보존
+// 호출자가 현재 페르소나 정책의 coolingDays를 주입 (미주입 시 7일 baseline)
+export async function resetCooling(id: string, coolingDays: number = 7): Promise<void> {
   const now = new Date();
-  const endsAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const endsAt = new Date(now.getTime() + coolingDays * 24 * 60 * 60 * 1000);
   await supabase
     .from('graduation_cooling')
     .update({

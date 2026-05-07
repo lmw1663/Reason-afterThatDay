@@ -9,6 +9,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { upsertQuestionResponse } from '@/api/questions';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 const REGRET_QUESTIONS = [
   { id: 'g_regret_best',   text: '이 관계에서 제일 아쉬웠던 기억이 뭐야?' },
@@ -19,6 +20,7 @@ const READY_QUESTION = { id: 'g_ready', text: '지금 이 선택이 두려움이
 
 export default function GraduationConfirmScreen() {
   const { userId } = useUserStore();
+  const { label } = useKnotPolicy();
   const [regretAnswers, setRegretAnswers] = useState<Record<string, string>>({});
   const [readyAnswer, setReadyAnswer] = useState<'yes' | 'no' | null>(null);
 
@@ -52,7 +54,7 @@ export default function GraduationConfirmScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Caption className="mb-2">졸업 · 3 / 5</Caption>
+          <Caption className="mb-2">{label} · 3 / 5</Caption>
           <Heading className="mb-2">마지막으로 돌아볼게</Heading>
           <Body className="text-gray-400 mb-8">
             솔직하게 털어놓고 가면 더 홀가분할 거야.

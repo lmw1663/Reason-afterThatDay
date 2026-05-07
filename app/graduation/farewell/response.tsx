@@ -8,9 +8,11 @@ import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { supabase } from '@/api/supabase';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 export default function GraduationFarewellResponseScreen() {
   const { coolingPeriodId } = useLocalSearchParams<{ coolingPeriodId: string }>();
+  const { label } = useKnotPolicy();
   const [farewell, setFarewell] = useState<{ user_message: string; ai_response: string } | null>(null);
 
   useEffect(() => {
@@ -34,7 +36,7 @@ export default function GraduationFarewellResponseScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">졸업 · 4 / 5</Caption>
+        <Caption className="mb-2">{label} · 4 / 5</Caption>
         <Heading className="mb-8">너의 작별에 답할게</Heading>
 
         {/* AI 응답 메인 — 화면 전환형 UX, 채팅 패턴 회피 */}
@@ -51,7 +53,7 @@ export default function GraduationFarewellResponseScreen() {
 
         {/* 6-11 hook — 졸업 후 자기 성찰 안내 */}
         <Card className="mt-8 border border-gray-700">
-          <Body className="text-gray-300 mb-1">졸업 후에도 너에 대해</Body>
+          <Body className="text-gray-300 mb-1">{label} 후에도 너에 대해</Body>
           <Caption className="text-gray-500 mb-3">더 알아갈 수 있어.</Caption>
           <PrimaryButton
             label="나에 대해 알아가기 →"
@@ -63,7 +65,7 @@ export default function GraduationFarewellResponseScreen() {
 
       <View className="px-6 pb-10">
         <PrimaryButton
-          label="졸업 확인하기"
+          label={`${label} 확인하기`}
           onPress={() => router.push('/graduation/confirm')}
         />
       </View>

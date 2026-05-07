@@ -9,12 +9,14 @@ import { useUserStore } from '@/store/useUserStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { fetchGraduationFarewellResponse } from '@/api/ai';
 import { colors } from '@/constants/colors';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 export default function GraduationFarewellScreen() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const { userId } = useUserStore();
   const { id: coolingPeriodId } = useCoolingStore();
+  const { label } = useKnotPolicy();
 
   async function handleSubmit() {
     if (!message.trim()) return;
@@ -38,7 +40,7 @@ export default function GraduationFarewellScreen() {
     <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
-        <Caption className="mb-2">졸업 · 4 / 5</Caption>
+        <Caption className="mb-2">{label} · 4 / 5</Caption>
         <Heading className="mb-2">너의 마지막 한 줄</Heading>
         <Body className="text-gray-400 mb-8 leading-relaxed">
           상대에게, 또는 과거의 너 자신에게{'\n'}

@@ -10,14 +10,21 @@ import { ErrorToast } from '@/components/ui/ErrorToast';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
+import { useRelationshipStore } from '@/store/useRelationshipStore';
+import { usePersonaStore } from '@/store/usePersonaStore';
 import { requestGraduation } from '@/api/graduation';
 import { AppError } from '@/constants/errors';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 export default function GraduationRequestScreen() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const { userId } = useUserStore();
   const { setCooling, status } = useCoolingStore();
+  const { label, coolingDays } = useKnotPolicy();
+  const cycleIndex = useRelationshipStore((s) => s.profile.cycleCount);
+  const personaPrimary = usePersonaStore((s) => s.primary);
+  const personaSecondary = usePersonaStore((s) => s.secondary);
 
   // 이미 유예 중이면 진입 불가
   if (status === 'cooling') {
@@ -30,7 +37,18 @@ export default function GraduationRequestScreen() {
     setErrorMsg('');
     try {
       if (userId) {
-        const row = await requestGraduation(userId);
+        const now = new Date();
+        const endsAt = new Date(now.getTime() + coolingDays * 24 * 60 * 60 * 1000);
+        const personaCodes: string[] = [personaPrimary, personaSecondary].filter(
+          (p): p is NonNullable<typeof p> => p !== null,
+        );
+        const row = await requestGraduation(userId, {
+          coolingPeriodDays: coolingDays,
+          knotLabel: label,
+          personaCodes,
+          coolingEndsAt: endsAt.toISOString(),
+          cycleIndex,
+        });
         setCooling({
           id: row.id,
           status: row.status,
@@ -40,9 +58,9 @@ export default function GraduationRequestScreen() {
           notificationsSent: row.notificationsSent,
         });
       } else {
-        // 로그인 없이 로컬 상태로 유예 시작
+        // 로그인 없이 로컬 상태로 유예 시작 — 페르소나별 cooling_days 적용
         const now = new Date();
-        const endsAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const endsAt = new Date(now.getTime() + coolingDays * 24 * 60 * 60 * 1000);
         setCooling({
           id: `local-${Date.now()}`,
           status: 'cooling',
@@ -76,8 +94,8 @@ export default function GraduationRequestScreen() {
         }
       />
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">졸업 · 5 / 5</Caption>
-        <Heading className="mb-2">졸업 신청</Heading>
+        <Caption className="mb-2">{label} · 5 / 5</Caption>
+        <Heading className="mb-2">{label} 신청</Heading>
 
         <Card className="p-5 mb-6">
           <View className="flex-row items-center gap-2 mb-3">
@@ -85,17 +103,17 @@ export default function GraduationRequestScreen() {
             <Text className="text-white font-semibold text-base">유예 기간 안내</Text>
           </View>
           <View className="gap-3">
-            <InfoRow icon="hourglass" text="졸업 신청 후 7일간 유예 기간이 시작돼." />
+            <InfoRow icon="hourglass" text={`${label} 신청 후 ${coolingDays}일간 유예 기간이 시작돼.`} />
             <InfoRow icon="bell-off"  text="유예 기간 중 일반 알림은 모두 중지돼." />
-            <InfoRow icon="bell"      text="Day 7에 최종 확인 알림 1회만 발송돼." />
-            <InfoRow icon="undo"      text="마음이 바뀌면 언제든 취소할 수 있어." />
-            <InfoRow icon="save"      text="체크인 기록은 취소해도 보존돼." />
+            <InfoRow icon="bell"      text={`Day ${coolingDays}에 최종 확인 알림 1회만 발송돼.`} />
+            <InfoRow icon="undo"      text="마음이 바뀌면 언제든 풀어도 돼." />
+            <InfoRow icon="save"      text="체크인 기록은 풀어도 보존돼." />
           </View>
         </Card>
 
         <Card variant="subtle" accent="purple" className="mb-6">
           <Caption className="text-purple-400 text-center leading-relaxed">
-            졸업은 끝이 아니야.{'\n'}이 시간을 통해 성장한 너의 새로운 시작이야.
+            {label}은 끝이 아니야.{'\n'}언제든 다시 풀어서 새로 시작할 수 있어.
           </Caption>
         </Card>
 
@@ -103,7 +121,7 @@ export default function GraduationRequestScreen() {
 
       <View className="px-6 pb-10 gap-3">
         <PrimaryButton
-          label={loading ? '신청 중...' : '7일 유예 시작하기'}
+          label={loading ? '신청 중...' : `${coolingDays}일 유예 시작하기`}
           onPress={handleRequest}
           loading={loading}
         />

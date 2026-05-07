@@ -7,6 +7,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import type { IconName } from '@/components/ui/Icon';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 const RITUAL_OPTIONS: { id: string; label: string; sublabel: string; icon: IconName }[] = [
   { id: 'letter',  label: '편지를 쓸게',       sublabel: '하고 싶었던 말을 글로 남길게',        icon: 'pen'       },
@@ -24,6 +25,7 @@ const RITUAL_NEXT: Record<string, string> = {
 
 export default function GraduationRitualScreen() {
   const [selected, setSelected] = useState<string | null>(null);
+  const { label } = useKnotPolicy();
 
   function handleNext() {
     router.push('/graduation/request');
@@ -36,10 +38,10 @@ export default function GraduationRitualScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">졸업 · 4 / 5</Caption>
+        <Caption className="mb-2">{label} · 4 / 5</Caption>
         <Heading className="mb-2">이 기억을 어떻게 간직할래?</Heading>
         <Body className="text-gray-400 mb-8">
-          졸업은 끝이 아니야. 이 관계를 어떤 방식으로 기억할지 선택해줘.
+          {label}은 끝이 아니야. 이 관계를 어떤 방식으로 기억할지 선택해줘.
         </Body>
 
         <View className="gap-1 mb-8">
@@ -66,7 +68,7 @@ export default function GraduationRitualScreen() {
 
       <View className="px-6 pb-10 gap-3">
         <PrimaryButton
-          label="졸업 신청으로"
+          label={`${label} 신청으로`}
           onPress={handleNext}
           disabled={!selected}
         />

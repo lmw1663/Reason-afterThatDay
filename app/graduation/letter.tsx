@@ -10,12 +10,14 @@ import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { fetchGraduationLetter } from '@/api/ai';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 export default function GraduationLetterScreen() {
   const { daysElapsed } = useUserStore();
   const { entries, stats } = useJournalStore();
   const { profile } = useRelationshipStore();
   const { checkinResponses } = useCoolingStore();
+  const { label } = useKnotPolicy();
   const [letter, setLetter] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +55,7 @@ export default function GraduationLetterScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">졸업 · 2 / 5</Caption>
+        <Caption className="mb-2">{label} · 2 / 5</Caption>
         <Heading className="mb-8">나에게 쓰는 편지</Heading>
 
         {loading ? (
@@ -66,7 +68,7 @@ export default function GraduationLetterScreen() {
             className="bg-surface rounded-2xl p-6"
             style={{ borderLeftWidth: 3, borderLeftColor: colors.purple[400] }}
             accessibilityRole="text"
-            accessibilityLabel="졸업 편지"
+            accessibilityLabel={`${label} 편지`}
           >
             <Text className="text-white text-base leading-loose">{letter}</Text>
           </View>
