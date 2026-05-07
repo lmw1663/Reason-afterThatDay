@@ -19,6 +19,9 @@ interface RelationshipState {
   profile: RelationshipProfile;
   setProfile: (profile: RelationshipProfile) => void;
   updateField: <K extends keyof RelationshipProfile>(key: K, value: RelationshipProfile[K]) => void;
+  /** 매듭 완료 → 새 사이클 시작 (가역성 H1). cycle_count 증가 + last_knot_at 기록.
+   *  DB 동기화·knot_label 갱신은 api/knotArchive.ts의 advanceRelationshipCycle 호출자가 책임. */
+  startNewCycle: () => void;
 }
 
 const defaultProfile: RelationshipProfile = {
@@ -41,4 +44,13 @@ export const useRelationshipStore = create<RelationshipState>((set) => ({
 
   updateField: (key, value) =>
     set((state) => ({ profile: { ...state.profile, [key]: value } })),
+
+  startNewCycle: () =>
+    set((state) => ({
+      profile: {
+        ...state.profile,
+        cycleCount: state.profile.cycleCount + 1,
+        lastKnotAt: new Date().toISOString(),
+      },
+    })),
 }));

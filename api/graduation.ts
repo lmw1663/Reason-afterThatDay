@@ -106,7 +106,28 @@ export async function addCheckinResponse(id: string, response: unknown): Promise
     .eq('id', id);
 }
 
-export async function confirmGraduation(userId: string, coolingId: string): Promise<void> {
+/**
+ * 매듭 확정 — F-8 가역성 처리 통합:
+ *   1. graduation_cooling.status = 'confirmed'
+ *   2. users.graduation_confirmed_at 기록
+ *   3. archiveSummary 주입 시:
+ *      - knot_archive INSERT (이전 cycle 스냅샷 보존)
+ *      - relationship_profile.cycle_count++ + last_knot_at + last_knot_label
+ *
+ * archiveSummary 미주입 시 (1)·(2)만 처리 — 호환성 유지.
+ */
+export interface ConfirmGraduationOpts {
+  knotLabel?: string;
+  cycleIndex?: number;
+  summary?: Record<string, unknown>;
+}
+
+export async function confirmGraduation(
+  userId: string,
+  coolingId: string,
+  opts: ConfirmGraduationOpts = {},
+): Promise<void> {
+  const now = new Date().toISOString();
   await Promise.all([
     supabase
       .from('graduation_cooling')
@@ -114,7 +135,28 @@ export async function confirmGraduation(userId: string, coolingId: string): Prom
       .eq('id', coolingId),
     supabase
       .from('users')
-      .update({ graduation_confirmed_at: new Date().toISOString() })
+      .update({ graduation_confirmed_at: now })
       .eq('id', userId),
   ]);
+
+  if (opts.knotLabel && opts.cycleIndex !== undefined) {
+    // archive INSERT (UPDATE/DELETE 정책 없음 — 보존된 스냅샷)
+    await supabase.from('knot_archive').insert({
+      user_id: userId,
+      cooling_period_id: coolingId,
+      cycle_index: opts.cycleIndex,
+      knot_label: opts.knotLabel,
+      summary: opts.summary ?? {},
+    });
+
+    // relationship_profile 사이클 진행 — 다음 일기는 cycle_count+1로 자동 진입
+    await supabase
+      .from('relationship_profile')
+      .update({
+        cycle_count: opts.cycleIndex + 1,
+        last_knot_at: now,
+        last_knot_label: opts.knotLabel,
+      })
+      .eq('user_id', userId);
+  }
 }

@@ -25,6 +25,8 @@ interface KnotState {
   lastPromptAt: string | null;
   lastPromptDeclinedAt: string | null;
   lastTriggerCycle: number | null;
+  /** 가역성 사이클 prompt를 마지막으로 본 매듭의 lastKnotAt (ISO). 같은 매듭에 대해 두 번 묻지 않기 위함. */
+  lastCyclePromptShownForKnotAt: string | null;
 
   showKnotTab: () => void;
   hideKnotTab: () => void;
@@ -36,6 +38,9 @@ interface KnotState {
   /** 현재 cycle에서 권유를 발화해도 되는지 (쿨다운·중복 검사). */
   canPromptNow: (currentCycleIndex: number, now?: Date) => boolean;
 
+  /** 사이클 prompt를 본 매듭으로 표시. 같은 lastKnotAt에 대해 한 번만 prompt. */
+  markCyclePromptShown: (knotAt: string) => void;
+
   reset: () => void;
 }
 
@@ -44,6 +49,7 @@ const INITIAL_STATE = {
   lastPromptAt: null,
   lastPromptDeclinedAt: null,
   lastTriggerCycle: null,
+  lastCyclePromptShownForKnotAt: null,
 } satisfies Omit<
   KnotState,
   | 'showKnotTab'
@@ -52,6 +58,7 @@ const INITIAL_STATE = {
   | 'recordDecline'
   | 'recordAccept'
   | 'canPromptNow'
+  | 'markCyclePromptShown'
   | 'reset'
 >;
 
@@ -102,6 +109,9 @@ export const useKnotStore = create<KnotState>()(
         return true;
       },
 
+      markCyclePromptShown: (knotAt) =>
+        set({ lastCyclePromptShownForKnotAt: knotAt }),
+
       reset: () => set({ ...INITIAL_STATE }),
     }),
     {
@@ -112,6 +122,7 @@ export const useKnotStore = create<KnotState>()(
         lastPromptAt: state.lastPromptAt,
         lastPromptDeclinedAt: state.lastPromptDeclinedAt,
         lastTriggerCycle: state.lastTriggerCycle,
+        lastCyclePromptShownForKnotAt: state.lastCyclePromptShownForKnotAt,
       }),
     },
   ),

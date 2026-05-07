@@ -20,6 +20,7 @@ import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 import { useKnotTrigger } from '@/hooks/useKnotTrigger';
+import { useCyclePromptTrigger } from '@/hooks/useCyclePromptTrigger';
 import { useScreenView } from '@/hooks/useScreenView';
 import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { trackEvent } from '@/api/telemetry';
@@ -64,6 +65,15 @@ export default function HomeScreen() {
       router.push('/knot/prompt');
     }
   }, [knotTrigger.allowed]);
+
+  // F-8 사이클 prompt — 매듭 *완료 후* 처음 홈 방문 시 1회 노출.
+  // 새 매듭 권유 트리거(knotTrigger)와 *동시에 발화하지 않도록*: cycle prompt가 우선.
+  const cyclePrompt = useCyclePromptTrigger();
+  useEffect(() => {
+    if (cyclePrompt.needed) {
+      router.push('/knot/cycle-prompt');
+    }
+  }, [cyclePrompt.needed]);
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {
