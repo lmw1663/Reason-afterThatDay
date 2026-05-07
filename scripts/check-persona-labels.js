@@ -32,6 +32,7 @@ const EXEMPT_PATHS = [
   /^app\/resources\//,                  // 위기 자원 화면 (정보 전달)
   /^app\/legal\//,                      // 법무 문서 화면
   /^app\/onboarding\/consent\.tsx$/,    // 약관 동의 (페르소나 분류 동의 명시 필요)
+  /^app\/graduation-paused\.tsx$/,      // F-11: A-4 보류 안내 화면 자체에 "졸업" 어휘 명시 필요 (F-13 해제 시 삭제)
 ];
 
 // 금지 어휘 — 페르소나 코드 + 페르소나-분류체계.md의 모든 진단명-유사 어휘
@@ -74,6 +75,20 @@ const FORBIDDEN_PATTERNS = [
   { pattern: '\\bSame[\\-\\s]Circle',          label: 'P18 Same-Circle' },
   { pattern: '\\bExternally\\s*Forced',        label: 'P17 Externally Forced' },
   { pattern: '\\bLong[\\-\\s]Term\\s*Burnout', label: 'P08 Long-Term Burnout' },
+
+  // F-11 매듭 트랙 비낙인·비단정 어휘 — 가역성 H1·CLAUDE.md "방향 변화 비난 금지"
+  // "졸업"은 페르소나별 동적 라벨('매듭'/'마무리'/'단절 30일 달성')로 교체 — hooks/useKnotPolicy.
+  // graduation-paused.tsx는 A-4 보류 안내 화면이라 EXEMPT_PATHS에 명시 (F-13 해제 시 화면 자체 삭제).
+  { pattern: '졸업',                            label: 'F-11 졸업 → useKnotPolicy().label (스펙 §3-1 어휘 정책)' },
+  { pattern: '재발',                            label: 'F-11 재발 (가역성 H1 — 매듭 후 일기 재작성은 사이클의 일부)' },
+  // "실패"는 기술적 실패(인증 실패·동기화 실패)와 회복 낙인이 구분 어려워 lint에서 제외 — 코드 리뷰로 처리.
+  { pattern: '복귀\\s*(?:한|했)',               label: 'F-11 복귀한/복귀했 (사이클의 일부 — 비낙인)' },
+  { pattern: '성숙한\\s*결정',                  label: 'F-11 성숙한 결정 (P07 어른스러움 강요 — 매트릭스 §C9)' },
+  { pattern: '어른스럽게',                      label: 'F-11 어른스럽게 (P07 어른스러움 강요)' },
+  { pattern: '마음을\\s*정해',                  label: 'F-11 마음을 정해 (P11 결정 강요 — 매트릭스 §C9)' },
+  { pattern: '이제\\s*보내자',                  label: 'F-11 이제 보내자 (P03 단정 어휘 — 매트릭스 §C9)' },
+  { pattern: '빠른\\s*새출발',                  label: 'F-11 빠른 새출발 (P08 권태 — 매트릭스 §C9)' },
+  { pattern: '용서가\\s*필요',                  label: 'F-11 용서가 필요 (P10 분노 — 매트릭스 §C9)' },
 ];
 
 const re = (p) => new RegExp(p, 'g');

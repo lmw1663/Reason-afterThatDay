@@ -3,9 +3,11 @@ import { Text, View } from 'react-native';
 
 interface Props {
   coolingEndsAt: string; // ISO string
+  /** 페르소나별 라벨 ("매듭"/"마무리"/"단절 30일 달성"). 미주입 시 baseline. */
+  label?: string;
 }
 
-export function CoolingTimer({ coolingEndsAt }: Props) {
+export function CoolingTimer({ coolingEndsAt, label = '매듭' }: Props) {
   const [daysLeft, setDaysLeft] = useState(0);
   const [hoursLeft, setHoursLeft] = useState(0);
 
@@ -27,7 +29,7 @@ export function CoolingTimer({ coolingEndsAt }: Props) {
 
   return (
     <View className="items-center py-6">
-      <Text className="text-gray-400 text-sm mb-2">졸업까지</Text>
+      <Text className="text-gray-400 text-sm mb-2">{label}까지</Text>
       {isDay7 ? (
         <Text className="text-teal-400 text-4xl font-bold">오늘이야</Text>
       ) : (

@@ -23,6 +23,7 @@ import {
 } from '@/api/coolingReflections';
 import { colors } from '@/constants/colors';
 import { useScreenView } from '@/hooks/useScreenView';
+import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
 function getCoolingDay(requestedAt: string): number {
   const start = new Date(requestedAt);
@@ -35,6 +36,7 @@ export default function CoolingDashboardScreen() {
   const { userId } = useUserStore();
   const { stats } = useJournalStore();
   const { profile } = useRelationshipStore();
+  const { label } = useKnotPolicy();
 
   const [breathingVisible, setBreathingVisible] = useState(false);
   const [day2First, setDay2First] = useState<{ moodScore: number; freeText: string | null; createdAt: string } | null>(null);
@@ -59,8 +61,8 @@ export default function CoolingDashboardScreen() {
 
   async function handleCancel() {
     Alert.alert(
-      '졸업 신청 취소',
-      '취소하면 유예 기간이 종료돼. 체크인 기록은 보존돼. 계속할게?',
+      `${label} 신청 풀기`,
+      '풀면 유예 기간이 종료돼. 체크인 기록은 보존돼. 계속할게?',
       [
         { text: '아니야', style: 'cancel' },
         {
@@ -123,7 +125,7 @@ export default function CoolingDashboardScreen() {
 
         {/* D-N 카운트다운 */}
         <View className="bg-surface rounded-2xl mb-6">
-          <CoolingTimer coolingEndsAt={coolingEndsAt} />
+          <CoolingTimer coolingEndsAt={coolingEndsAt} label={label} />
         </View>
 
         {/* Day별 회복 콘텐츠 */}
@@ -268,7 +270,7 @@ export default function CoolingDashboardScreen() {
             ) : (
               <>
                 <Body className="text-gray-300 mb-4">
-                  졸업 후 첫 한 주를 어떻게 보내고 싶어?
+                  {label} 후 첫 한 주를 어떻게 보내고 싶어?
                 </Body>
                 <TextInput
                   value={reflectionText}
