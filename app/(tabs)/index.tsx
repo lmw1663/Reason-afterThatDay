@@ -21,6 +21,7 @@ import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 import { useKnotTrigger } from '@/hooks/useKnotTrigger';
 import { useCyclePromptTrigger } from '@/hooks/useCyclePromptTrigger';
+import { useRevisitTrigger } from '@/hooks/useRevisitTrigger';
 import { useScreenView } from '@/hooks/useScreenView';
 import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { trackEvent } from '@/api/telemetry';
@@ -59,22 +60,36 @@ export default function HomeScreen() {
   // 비허용 페르소나/위기 신호/낮은 mood/쿨다운 등 어느 하나라도 실패면 미발화.
   // 모달이 mount되면 useKnotStore.recordPrompt가 lastTriggerCycle을 기록 → 같은 사이클
   // 재발화 차단. 거절 시 7일 쿨다운으로 재발화 차단.
+  // F-9 회상 의식 trigger — due한 회상 의식이 있으면 가장 우선.
+  // 이미 매듭 후 시간이 지난 사용자에게 *가장 시기 정합*적인 화면.
+  const { dueRitual } = useRevisitTrigger();
+  useEffect(() => {
+    if (dueRitual) {
+      router.push({
+        pathname: '/knot/revisit',
+        params: { id: dueRitual.id, ritualType: dueRitual.ritualType },
+      });
+    }
+  }, [dueRitual?.id]);
+
   // F-8 사이클 prompt — 매듭 *완료 후* 처음 홈 방문 시 1회 노출. 새 매듭 권유보다 우선.
   const cyclePrompt = useCyclePromptTrigger();
   useEffect(() => {
+    if (dueRitual) return; // 회상 의식 우선
     if (cyclePrompt.needed) {
       router.push('/knot/cycle-prompt');
     }
-  }, [cyclePrompt.needed]);
+  }, [cyclePrompt.needed, dueRitual?.id]);
 
-  // F-6 매듭 권유 트리거 — cycle prompt가 *우선*이라 같이 발화하지 않도록 가드.
+  // F-6 매듭 권유 트리거 — 회상·cycle prompt 둘 다 우선. 그 후에만 매듭 권유 가능.
   const knotTrigger = useKnotTrigger();
   useEffect(() => {
-    if (cyclePrompt.needed) return; // cycle prompt 진행 중 또는 발화 예정
+    if (dueRitual) return;
+    if (cyclePrompt.needed) return;
     if (knotTrigger.allowed) {
       router.push('/knot/prompt');
     }
-  }, [knotTrigger.allowed, cyclePrompt.needed]);
+  }, [knotTrigger.allowed, cyclePrompt.needed, dueRitual?.id]);
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {

@@ -50,9 +50,16 @@ export function usePushNotifications() {
 
     // 알림 탭 시 화면 이동
     const sub = Notifications.addNotificationResponseReceivedListener((res) => {
-      const screen = res.notification.request.content.data?.screen as string | undefined;
+      const data = res.notification.request.content.data;
+      const screen = data?.screen as string | undefined;
       if (screen === 'cooling') router.push('/cooling');
       else if (screen === 'journal') router.push('/journal');
+      else if (screen === 'knot/revisit') {
+        // F-9 회상 의식 푸시 — id·ritualType 함께 전달
+        const id = data?.id as string | undefined;
+        const ritualType = data?.ritualType as string | undefined;
+        router.push({ pathname: '/knot/revisit', params: { id, ritualType } });
+      }
     });
 
     return () => sub.remove();

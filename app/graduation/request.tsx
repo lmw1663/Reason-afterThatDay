@@ -13,8 +13,11 @@ import { useCoolingStore } from '@/store/useCoolingStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { requestGraduation } from '@/api/graduation';
+import { scheduleRevisits } from '@/api/knotRevisit';
 import { AppError } from '@/constants/errors';
 import { useKnotPolicy } from '@/hooks/useKnotPolicy';
+import { calculateScheduledAt, getRitualsForPersonas } from '@/utils/knotRevisit';
+import type { PersonaCode } from '@/utils/personaClassifier';
 
 export default function GraduationRequestScreen() {
   const [loading, setLoading] = useState(false);
@@ -57,6 +60,22 @@ export default function GraduationRequestScreen() {
           checkinResponses: row.checkinResponses,
           notificationsSent: row.notificationsSent,
         });
+        // F-9 회상 의식 스케줄 — 매듭 *완료* 시점 기준 D+N 발화. P05·P14·P06 한정.
+        const rituals = getRitualsForPersonas(personaCodes as PersonaCode[]);
+        if (rituals.length > 0) {
+          try {
+            await scheduleRevisits({
+              userId,
+              coolingPeriodId: row.id,
+              schedules: rituals.map((r) => ({
+                ritualType: r.ritualType,
+                scheduledAt: calculateScheduledAt(row.coolingEndsAt, r.daysAfterKnot),
+              })),
+            });
+          } catch (e) {
+            console.warn('[knot-revisit] scheduleRevisits failed:', e);
+          }
+        }
       } else {
         // 로그인 없이 로컬 상태로 유예 시작 — 페르소나별 cooling_days 적용
         const now = new Date();
