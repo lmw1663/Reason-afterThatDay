@@ -16,9 +16,11 @@ import { isMiniJournalFirst } from '@/constants/personaBranches';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
+import { useCoolingStore } from '@/store/useCoolingStore';
 import { fetchDailyQuote } from '@/api/ai';
 import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
 import { fetchRelationshipProfile } from '@/api/relationship';
+import { fetchGraduationStatus } from '@/api/graduation';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 import { useKnotTrigger } from '@/hooks/useKnotTrigger';
@@ -123,6 +125,31 @@ export default function HomeScreen() {
         if (p) useRelationshipStore.getState().setProfile(p);
       })
       .catch((e) => console.warn('[home] fetchRelationshipProfile failed:', e));
+  }, [userId]);
+
+  // F-12 P1-D — graduation_cooling hydrate. cooling 활성 row가 store에 있어야
+  // useKnotPolicy의 DB 스냅샷 분기·useRevisitTrigger의 cooling 차단·cooling 화면의
+  // 페르소나 일수 표기가 모두 일관되게 작동한다.
+  useEffect(() => {
+    if (!userId) return;
+    fetchGraduationStatus(userId)
+      .then((row) => {
+        if (row && row.status === 'cooling') {
+          useCoolingStore.getState().setCooling({
+            id: row.id,
+            status: row.status,
+            requestedAt: row.requestedAt,
+            coolingEndsAt: row.coolingEndsAt,
+            checkinResponses: row.checkinResponses,
+            notificationsSent: row.notificationsSent,
+            knotLabel: row.knotLabel,
+            coolingPeriodDays: row.coolingPeriodDays,
+            personaCodes: row.personaCodes,
+            cycleIndex: row.cycleIndex,
+          });
+        }
+      })
+      .catch((e) => console.warn('[home] fetchGraduationStatus failed:', e));
   }, [userId]);
 
   // 일기 동기화 — 홈 진입 시 오늘 엔트리/최근 30개를 서버에서 끌어와 store에 반영.

@@ -8,6 +8,11 @@ export interface CoolingRow {
   coolingEndsAt: string;
   checkinResponses: unknown[];
   notificationsSent: number;
+  // F-12 P1-D: 매듭 신청 시점 페르소나 정책 스냅샷 (마이그레이션 032)
+  knotLabel: string | null;
+  coolingPeriodDays: number | null;
+  personaCodes: string[];
+  cycleIndex: number | null;
 }
 
 function toRow(row: Record<string, unknown>): CoolingRow {
@@ -18,6 +23,10 @@ function toRow(row: Record<string, unknown>): CoolingRow {
     coolingEndsAt: row.cooling_ends_at as string,
     checkinResponses: (row.checkin_responses as unknown[]) ?? [],
     notificationsSent: (row.notifications_sent as number) ?? 0,
+    knotLabel: (row.knot_label as string) ?? null,
+    coolingPeriodDays: (row.cooling_period_days as number) ?? null,
+    personaCodes: (row.persona_codes as string[]) ?? [],
+    cycleIndex: (row.cycle_index as number) ?? null,
   };
 }
 

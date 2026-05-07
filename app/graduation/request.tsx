@@ -59,6 +59,10 @@ export default function GraduationRequestScreen() {
           coolingEndsAt: row.coolingEndsAt,
           checkinResponses: row.checkinResponses,
           notificationsSent: row.notificationsSent,
+          knotLabel: row.knotLabel,
+          coolingPeriodDays: row.coolingPeriodDays,
+          personaCodes: row.personaCodes,
+          cycleIndex: row.cycleIndex,
         });
         // F-9 회상 의식 스케줄 — 매듭 *완료* 시점 기준 D+N 발화. P05·P14·P06 한정.
         const rituals = getRitualsForPersonas(personaCodes as PersonaCode[]);
@@ -80,6 +84,9 @@ export default function GraduationRequestScreen() {
         // 로그인 없이 로컬 상태로 유예 시작 — 페르소나별 cooling_days 적용
         const now = new Date();
         const endsAt = new Date(now.getTime() + coolingDays * 24 * 60 * 60 * 1000);
+        const personaCodes: string[] = [personaPrimary, personaSecondary].filter(
+          (p): p is NonNullable<typeof p> => p !== null,
+        );
         setCooling({
           id: `local-${Date.now()}`,
           status: 'cooling',
@@ -87,6 +94,10 @@ export default function GraduationRequestScreen() {
           coolingEndsAt: endsAt.toISOString(),
           checkinResponses: [],
           notificationsSent: 0,
+          knotLabel: label,
+          coolingPeriodDays: coolingDays,
+          personaCodes,
+          cycleIndex,
         });
       }
       router.replace('/cooling');
