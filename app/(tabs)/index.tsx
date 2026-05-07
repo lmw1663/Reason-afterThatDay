@@ -59,21 +59,22 @@ export default function HomeScreen() {
   // 비허용 페르소나/위기 신호/낮은 mood/쿨다운 등 어느 하나라도 실패면 미발화.
   // 모달이 mount되면 useKnotStore.recordPrompt가 lastTriggerCycle을 기록 → 같은 사이클
   // 재발화 차단. 거절 시 7일 쿨다운으로 재발화 차단.
-  const knotTrigger = useKnotTrigger();
-  useEffect(() => {
-    if (knotTrigger.allowed) {
-      router.push('/knot/prompt');
-    }
-  }, [knotTrigger.allowed]);
-
-  // F-8 사이클 prompt — 매듭 *완료 후* 처음 홈 방문 시 1회 노출.
-  // 새 매듭 권유 트리거(knotTrigger)와 *동시에 발화하지 않도록*: cycle prompt가 우선.
+  // F-8 사이클 prompt — 매듭 *완료 후* 처음 홈 방문 시 1회 노출. 새 매듭 권유보다 우선.
   const cyclePrompt = useCyclePromptTrigger();
   useEffect(() => {
     if (cyclePrompt.needed) {
       router.push('/knot/cycle-prompt');
     }
   }, [cyclePrompt.needed]);
+
+  // F-6 매듭 권유 트리거 — cycle prompt가 *우선*이라 같이 발화하지 않도록 가드.
+  const knotTrigger = useKnotTrigger();
+  useEffect(() => {
+    if (cyclePrompt.needed) return; // cycle prompt 진행 중 또는 발화 예정
+    if (knotTrigger.allowed) {
+      router.push('/knot/prompt');
+    }
+  }, [knotTrigger.allowed, cyclePrompt.needed]);
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {
