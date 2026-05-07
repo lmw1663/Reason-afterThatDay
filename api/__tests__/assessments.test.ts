@@ -53,9 +53,31 @@ describe('recordAssessment', () => {
     expect(result.band).toBe('avg');
   });
 
-  it('미지원 instrument(PHQ2) → raw_score·band null로 저장', async () => {
+  it('PHQ2 → 자동 채점 (Phase H-6)', async () => {
+    applyChain(supabase.from as Mock, chainInsert());
+    // 1+1 = 2 (양성 임계 ≥3 미달 → minimal)
+    const minimal = await recordAssessment('user-1', 'PHQ2', { item1: 1, item2: 1 }, 'onboarding');
+    expect(minimal).toEqual({ rawScore: 2, band: 'minimal' });
+
+    applyChain(supabase.from as Mock, chainInsert());
+    // 2+2 = 4 (양성 ≥3 → positive)
+    const positive = await recordAssessment('user-1', 'PHQ2', { item1: 2, item2: 2 }, 'onboarding');
+    expect(positive).toEqual({ rawScore: 4, band: 'positive' });
+  });
+
+  it('GAD2 → 자동 채점 (Phase H-6)', async () => {
+    applyChain(supabase.from as Mock, chainInsert());
+    const minimal = await recordAssessment('user-1', 'GAD2', { item1: 0, item2: 1 }, 'onboarding');
+    expect(minimal).toEqual({ rawScore: 1, band: 'minimal' });
+
+    applyChain(supabase.from as Mock, chainInsert());
+    const positive = await recordAssessment('user-1', 'GAD2', { item1: 3, item2: 2 }, 'onboarding');
+    expect(positive).toEqual({ rawScore: 5, band: 'positive' });
+  });
+
+  it('미지원 instrument(RRS10) → raw_score·band null로 저장', async () => {
     const chain = applyChain(supabase.from as Mock, chainInsert());
-    const result = await recordAssessment('user-1', 'PHQ2', { item1: 1, item2: 1 }, 'manual');
+    const result = await recordAssessment('user-1', 'RRS10', { item1: 1 }, 'manual');
     expect(result).toEqual({ rawScore: null, band: null });
     const row = chain.insert.mock.calls[0][0] as Record<string, unknown>;
     expect(row.raw_score).toBeNull();

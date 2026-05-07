@@ -3,6 +3,8 @@ import {
   scorePHQ9,
   scoreGAD7,
   scoreRSE,
+  scorePHQ2,
+  scoreGAD2,
   type Instrument,
   type Source,
 } from '@/utils/scoring';
@@ -47,6 +49,14 @@ export async function recordAssessment(
     band = r.band;
   } else if (instrument === 'RSE') {
     const r = scoreRSE(responses);
+    rawScore = r.rawScore;
+    band = r.band;
+  } else if (instrument === 'PHQ2') {
+    const r = scorePHQ2(responses);
+    rawScore = r.rawScore;
+    band = r.band;
+  } else if (instrument === 'GAD2') {
+    const r = scoreGAD2(responses);
     rawScore = r.rawScore;
     band = r.band;
   }

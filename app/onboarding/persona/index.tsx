@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { classifyAndSavePersona } from '@/api/persona';
+import { recordAssessment } from '@/api/assessments';
 import { recordCrisisAssessment, type CrisisResponses } from '@/api/safety';
 import type { OnboardingResponses, PsychAxes } from '@/utils/personaClassifier';
 import type { DurationRange } from '@/constants/duration';
@@ -160,12 +161,16 @@ export default function PersonaOnboardingScreen() {
     if (!userId) return;
     setSubmitting(true);
     try {
-      // 정밀 검사 옵트인 응답을 axes에 통합 (Phase H). DB 저장은 H-6에서 처리.
+      // 정밀 검사 옵트인 응답을 axes에 통합 (a9/a10) + psych_assessments에 raw 저장 (Phase H).
+      // raw 저장은 fire-and-forget — 실패해도 분류 진행 (시계열 추적·D+7 권유 트리거용 보조 데이터).
       // PHQ/GAD 점수는 민감 정보 — production 번들에 누출되지 않도록 __DEV__ 가드 필수.
-      if (includeAssessment && __DEV__) {
-        const phqScore = scoreFreq(currentAssessment.phq2_q1) + scoreFreq(currentAssessment.phq2_q2);
-        const gadScore = scoreFreq(currentAssessment.gad2_q1) + scoreFreq(currentAssessment.gad2_q2);
-        console.log('[onboarding] assessment scores — PHQ-2:', phqScore, 'GAD-2:', gadScore);
+      if (includeAssessment) {
+        if (__DEV__) {
+          const phqScore = scoreFreq(currentAssessment.phq2_q1) + scoreFreq(currentAssessment.phq2_q2);
+          const gadScore = scoreFreq(currentAssessment.gad2_q1) + scoreFreq(currentAssessment.gad2_q2);
+          console.log('[onboarding] assessment scores — PHQ-2:', phqScore, 'GAD-2:', gadScore);
+        }
+        void persistShortFormAssessments(userId, currentAssessment);
       }
 
       // C-SSRS 응답 기록 — severity가 high/urgent면 잠금 자동 생성 (B-1)
@@ -437,6 +442,30 @@ function nextStep(
 
 function scoreFreq(v: FreqLevel | undefined): number {
   return v ? Number(v) : 0;
+}
+
+/**
+ * Phase H-6 — PHQ-2/GAD-2 raw 응답을 psych_assessments에 저장.
+ * fire-and-forget: 실패해도 분류 진행. 시계열 추적·D+7 PHQ-9/GAD-7 권유 트리거용 보조 데이터.
+ * 두 문항 모두 응답한 검사만 저장 — 부분 응답은 임상 신뢰도 낮음.
+ */
+async function persistShortFormAssessments(userId: string, a: AssessmentResponses): Promise<void> {
+  try {
+    if (a.phq2_q1 !== undefined && a.phq2_q2 !== undefined) {
+      await recordAssessment(userId, 'PHQ2', {
+        item1: Number(a.phq2_q1),
+        item2: Number(a.phq2_q2),
+      }, 'onboarding');
+    }
+    if (a.gad2_q1 !== undefined && a.gad2_q2 !== undefined) {
+      await recordAssessment(userId, 'GAD2', {
+        item1: Number(a.gad2_q1),
+        item2: Number(a.gad2_q2),
+      }, 'onboarding');
+    }
+  } catch (e) {
+    console.warn('[onboarding] PHQ-2/GAD-2 raw 저장 실패 — 분류는 계속:', e);
+  }
 }
 
 /**
