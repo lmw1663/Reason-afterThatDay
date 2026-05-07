@@ -480,7 +480,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 8. **F-followup-6** — graduation 6화면 진행도 매핑 정리 (현재 farewell·ritual 둘 다 4/5, 안내 카드 5단계와 mismatch — opus PASS-WITH-CAVEATS 후속)
 5. **F-9 후속 — 서버 cron 푸시** — Edge Function으로 회상 의식·매듭 권유를 사용자가 앱 안 열어도 발화 (현재는 in-app catch-up만)
 6. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
-7. **F-followup-5** — useRevisitTrigger의 dueRitual clear 흐름 (markRevisitTriggered 후 setState로 비우기, opus PASS-WITH-CAVEATS 후속)
+7. ~~**F-followup-5** useRevisitTrigger dueRitual clear~~ ✅ (이번 커밋) (useEffect → useFocusEffect, rows.length===0 시 setDueRitual(null), 유예 중 잔존 차단)
 
 ---
 

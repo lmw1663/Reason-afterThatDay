@@ -11,7 +11,8 @@
  *   }, [dueRitual?.id]);
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { useUserStore } from '@/store/useUserStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import {
@@ -29,32 +30,47 @@ import {
  *   2. fetch 시점에 markRevisitTriggered 호출 — 라우팅 도중 앱 종료 시 무한 라우팅 차단.
  *      트레이드오프: 사용자가 화면을 *못 보고* 앱을 종료하면 그 회상은 손실. 다음 회상
  *      의식(D+60 등)이 또 오므로 수용 가능.
+ *
+ * F-followup-5 — useEffect → useFocusEffect:
+ *   기존엔 [userId, coolingStatus] deps라 revisit 화면 닫고 홈 복귀해도 refetch 안 함 →
+ *   dueRitual state가 그대로 살아 있어 routeKey가 'revisit:이전id'에 고정되고, 다음 due
+ *   ritual(D+60 등)이 도래해도 즉시 반영 안 됨. useFocusEffect로 *홈 focus*마다 refetch
+ *   하여 처리된 ritual은 비우고 다음 due 즉시 반영.
  */
 export function useRevisitTrigger() {
   const userId = useUserStore((s) => s.userId);
   const coolingStatus = useCoolingStore((s) => s.status);
   const [dueRitual, setDueRitual] = useState<RevisitScheduleRow | null>(null);
 
-  useEffect(() => {
-    if (!userId) return;
-    if (coolingStatus === 'cooling') return; // P1-A 유예 중 차단
-    let cancelled = false;
-    fetchDueRevisits(userId)
-      .then(async (rows) => {
-        if (cancelled || rows.length === 0) return;
-        const next = rows[0];
-        try {
-          await markRevisitTriggered(next.id); // 무한 라우팅 차단 (P1-A)
-        } catch (e) {
-          console.warn('[revisit] markRevisitTriggered failed:', e);
-        }
-        if (!cancelled) setDueRitual(next);
-      })
-      .catch((e) => console.warn('[revisit] fetchDueRevisits failed:', e));
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, coolingStatus]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      if (coolingStatus === 'cooling') {
+        setDueRitual(null); // 유예 진입 시 이전 ritual 잔존 차단
+        return;
+      }
+      let cancelled = false;
+      fetchDueRevisits(userId)
+        .then(async (rows) => {
+          if (cancelled) return;
+          if (rows.length === 0) {
+            setDueRitual(null); // due 없음 → 명시적으로 비움 (이전 처리된 ritual의 잔존 차단)
+            return;
+          }
+          const next = rows[0];
+          try {
+            await markRevisitTriggered(next.id); // 무한 라우팅 차단 (P1-A)
+          } catch (e) {
+            console.warn('[revisit] markRevisitTriggered failed:', e);
+          }
+          if (!cancelled) setDueRitual(next);
+        })
+        .catch((e) => console.warn('[revisit] fetchDueRevisits failed:', e));
+      return () => {
+        cancelled = true;
+      };
+    }, [userId, coolingStatus]),
+  );
 
   return { dueRitual };
 }
