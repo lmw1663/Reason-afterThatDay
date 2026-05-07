@@ -19,6 +19,7 @@ import { fetchDailyQuote } from '@/api/ai';
 import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
+import { useKnotTrigger } from '@/hooks/useKnotTrigger';
 import { useScreenView } from '@/hooks/useScreenView';
 import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { trackEvent } from '@/api/telemetry';
@@ -52,6 +53,17 @@ export default function HomeScreen() {
       if (result.triggered) setSafetyAlert('late_night');
     });
   }, []);
+
+  // F-6 매듭 권유 트리거 — 6조건 AND 충족 시 풀스크린 모달 진입.
+  // 비허용 페르소나/위기 신호/낮은 mood/쿨다운 등 어느 하나라도 실패면 미발화.
+  // 모달이 mount되면 useKnotStore.recordPrompt가 lastTriggerCycle을 기록 → 같은 사이클
+  // 재발화 차단. 거절 시 7일 쿨다운으로 재발화 차단.
+  const knotTrigger = useKnotTrigger();
+  useEffect(() => {
+    if (knotTrigger.allowed) {
+      router.push('/knot/prompt');
+    }
+  }, [knotTrigger.allowed]);
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {

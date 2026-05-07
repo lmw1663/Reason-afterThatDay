@@ -38,8 +38,10 @@ export function useEmotionalSafety() {
   const checkLateNightAccess = async (): Promise<SafetyCheckResult> => {
     if (await isInSilenceWindow()) return { triggered: false };
 
+    // CLAUDE.md 절대 규칙: 새벽 진입 정의는 0~4시 inclusive (0~5 exclusive).
+    // utils/knotTrigger.ts의 LATE_NIGHT_END=5와 동일 정의 — 모순 시 EmotionalCheckModal과 매듭 트리거 불일치.
     const hour = new Date().getHours();
-    if (hour < 4) {
+    if (hour < 5) {
       await recordTrigger();
       return { triggered: true, type: 'late_night_access' };
     }
