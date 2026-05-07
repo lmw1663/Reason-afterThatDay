@@ -142,6 +142,22 @@ function matchedRuleKeys(r: OnboardingResponses): RuleKey[] {
   return keys;
 }
 
+/**
+ * Phase H — 옵트인 PHQ-2/GAD-2 응답을 분류 RuleKey로 변환.
+ * undefined/NULL = 미옵트인 → 빈 배열 반환 → 기존 분류 결과와 동일성 보장.
+ * 양성 임계는 axis ≥2 (PHQ-2/GAD-2 raw score ≥3에 해당, shortFormScoreToAxis 매핑).
+ */
+function matchedAxisRuleKeys(axes: PsychAxes): RuleKey[] {
+  const keys: RuleKey[] = [];
+  if (axes.a9_depression !== undefined && axes.a9_depression >= 2) {
+    keys.push('a9.depression_positive');
+  }
+  if (axes.a10_anxiety !== undefined && axes.a10_anxiety >= 2) {
+    keys.push('a10.anxiety_positive');
+  }
+  return keys;
+}
+
 function makeEmptyScores(): Record<PersonaCode, number> {
   return PERSONAS.reduce((acc, p) => ({ ...acc, [p]: 0 }), {} as Record<PersonaCode, number>);
 }
@@ -167,9 +183,9 @@ export function classifyPersona(input: ClassifyInput): PersonaResult {
     return { mode: 'crisis_lockout', primary: null, secondary: null, scores: makeEmptyScores(), axes };
   }
 
-  // 2. 점수 합산
+  // 2. 점수 합산 — 응답 기반 RuleKey + 옵트인 axes 기반 RuleKey 병합
   const scores = makeEmptyScores();
-  const keys = matchedRuleKeys(responses);
+  const keys = [...matchedRuleKeys(responses), ...matchedAxisRuleKeys(axes)];
   for (const key of keys) {
     const deltas = SCORING_RULES[key];
     if (!deltas) continue;
