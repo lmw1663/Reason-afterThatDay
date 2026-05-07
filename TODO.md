@@ -51,6 +51,7 @@ D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░
 E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ ECR-R/RRS 라이선스 + 베타 50명 의존
 F. 매듭 트랙 부활 (졸업 재설계): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  99%  🔄 (F-1~F-12·F-13 코드측·P1 전체·followup-1 완료 16커밋, F-13 공식 A-4 해제만 외부 임상 재검증 의존)
 횡단 (X-1·X-2·X-3·X-4·X-5): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░   95%  🔄 (X-3-잔여-4 임상 감수만 외부 의존)
+H. PHQ-2/GAD-2 옵트인 (10축):  ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ 정밀 검사 옵트인 → a9·a10 분류 반영
 ```
 
 ---
@@ -427,6 +428,39 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 **연계 보류 항목**: G-9·G-8·Phase4-1·X-2-B-3은 본 Phase F 진행 중 단계별로 흡수·해제. 자세한 매핑은 § 보류 표 참조.
 
 **임상 재검증 (외부, 병렬 진행)**: 스펙 §9 5개 항목 — P02·P11·P19·P16 비허용 정책 / P20 단절 30일 안전성 / P05 D+30·60 회상 재트라우마화 / "매듭" 어휘 사용자 테스트(n≥10) / C-SSRS 양성 매듭 잠금.
+
+---
+
+# Phase H — PHQ-2/GAD-2 옵트인 분류 반영 (10축 확장) 🟡
+
+> **이유**: 온보딩 Q1 정밀 검사 옵트인 토글로 받은 PHQ-2/GAD-2 4문항 응답을 페르소나 분류에 정식 반영. 옵트인 사용자에게 더 정확한 분류, 비옵트인은 영향 0(NULL).
+> **결정 (2026-05-08)**: 옵션 C 채택 — 별도 축(a9 우울·a10 불안) 추가. 8축 → 10축 확장.
+> **선행 커밋**: `8f1e7aa` 온보딩 Q1 토글 + 4문항 분기 (UI만, 분류 미반영)
+
+| ID | 작업 | 상태 | 의존 |
+|---|---|---|---|
+| H-1 | 마이그레이션 036 — `psych_profile_axes`에 `a9_depression`·`a10_anxiety` smallint nullable 컬럼 추가 (기존 행 NULL = 미측정) | ⬜ | — |
+| H-2 | `PsychAxes` 타입 확장 (a9·a10 옵셔널) + PHQ-2/GAD-2 점수→축 매핑 함수 `phq2ToAxis()`·`gad2ToAxis()` (`utils/scoring.ts`) | ⬜ | H-1 |
+| H-3 | `SCORING_RULES`에 a9/a10 RuleKey 추가 — 보수적 가중치(+1~+2)로 P03·P09·P11·P19·P10 보강 | ⬜ | H-2 |
+| H-4 | `classifyPersona` `matchedRuleKeys` 확장 — a9/a10 RuleKey 매칭 (NULL 시 영향 0) | ⬜ | H-3 |
+| H-5 | `saveProfileAxes`에 a9/a10 컬럼 저장 + `onboarding/persona/index.tsx` `advance`/`runClassification`에 assessment stale-safe 전달 | ⬜ | H-4 |
+| H-6 | `psych_assessments`에 PHQ-2/GAD-2 응답 저장 (`recordPhq2Gad2Assessment` API 신규) | ⬜ | H-5 |
+| H-7 | 양성 시 D+7 정식 PHQ-9/GAD-7 검사 권유 강화 + 자원 부드러운 안내 (홈 권유 카드 분기) | ⬜ | H-6 |
+| H-8 | 단위 테스트 — `phq2ToAxis`/`gad2ToAxis` 매핑, `classifyPersona`의 a9/a10 RuleKey 분기 (NULL/0/3 케이스 + 비옵트인 사용자 분류 동일성) | ⬜ | H-4 이후 병행 |
+
+**a9/a10 가중치 매핑 안** (보수적, 외부 임상 검증 후 미세조정 가능):
+- a9 우울 ≥ 2 (PHQ-2 ≥ 4점): P09 +2 / P03·P11·P19 +1
+- a10 불안 ≥ 2 (GAD-2 ≥ 4점): P03·P11 +2 / P19·P10 +1
+- 옵트인 안 한 사용자: a9·a10 = `undefined` → matchedRuleKeys에서 push 안 함 → 분류 결과 기존과 동일
+
+**워크플로우** (H-1~H-8 모든 서브태스크 공통):
+1. 구현 (코드)
+2. 검증 — `npx tsc --noEmit` + `npm test` + (UI 변경 시) `npm run lint:persona`
+3. opus agent 검증 — `general-purpose` + `model: opus`로 임상·구조 정합성 점검 (PASS / PASS-WITH-CAVEATS / FAIL)
+4. 커밋 — `[H-N]` 접두 + 한국어 "왜" 메시지
+5. 푸시 + TODO.md 갱신
+
+**큰 묶음 검증**: H-8 완료 후 통합 시나리오 검증 1회 — (a) 비옵트인 사용자 분류 결과가 8축 시절과 동일한지, (b) 옵트인 사용자 양성/음성 케이스가 의도된 페르소나로 가는지, (c) C-SSRS 양성 시 a9/a10 무관하게 crisis_lockout 우선.
 
 ---
 
