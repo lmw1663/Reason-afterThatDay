@@ -453,13 +453,15 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 3. **C-2 dogfood 20명** — 베타 사용자 모집
 
 ### 내부 진행 가능 (라이선스 무관)
-> Phase F 완료 (16커밋, F-13 공식 해제만 외부 임상 의존). 매듭 트랙 후속·정리 작업:
+> Phase F 완료 (18커밋, F-13 공식 해제만 외부 임상 의존). 매듭 트랙 후속·정리 작업:
 
-1. **F-followup-2** — 홈 trigger race 단일 priority resolver (revisit > cycle prompt > knot prompt 일관성, dueRitual 비동기 도착 race window 회피)
-2. **F-followup-3** — `(tabs)/knot.tsx` placeholder를 본 진입 화면으로 교체 (graduation/report로 즉시 redirect 대신 페르소나별 라벨·진행 상태 안내 후 진입)
-3. **F-followup-4** — `app/knot/_layout.tsx` 정의 (Stack 가드·헤더 정책)
-4. **F-9 후속 — 서버 cron 푸시** — Edge Function으로 회상 의식·매듭 권유를 사용자가 앱 안 열어도 발화 (현재는 in-app catch-up만)
-5. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
+1. ~~**F-followup-1** cooling Day 7+ fallback~~ ✅ `75dfa97` (14·30일 페르소나 안전 보강)
+2. ~~**F-followup-2** 홈 trigger race resolver~~ ✅ `cec6c2b` (단일 priority hook + useFocusEffect)
+3. **F-followup-3** — `(tabs)/knot.tsx` placeholder를 본 진입 화면으로 교체 (graduation/report로 즉시 redirect 대신 페르소나별 라벨·진행 상태 안내 후 진입)
+4. **F-followup-4** — `app/knot/_layout.tsx` 정의 (Stack 가드·헤더 정책)
+5. **F-9 후속 — 서버 cron 푸시** — Edge Function으로 회상 의식·매듭 권유를 사용자가 앱 안 열어도 발화 (현재는 in-app catch-up만)
+6. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
+7. **F-followup-5** — useRevisitTrigger의 dueRitual clear 흐름 (markRevisitTriggered 후 setState로 비우기, opus PASS-WITH-CAVEATS 후속)
 
 ---
 
