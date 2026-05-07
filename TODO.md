@@ -457,8 +457,9 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 
 1. ~~**F-followup-1** cooling Day 7+ fallback~~ ✅ `75dfa97` (14·30일 페르소나 안전 보강)
 2. ~~**F-followup-2** 홈 trigger race resolver~~ ✅ `cec6c2b` (단일 priority hook + useFocusEffect)
-3. **F-followup-3** — `(tabs)/knot.tsx` placeholder를 본 진입 화면으로 교체 (graduation/report로 즉시 redirect 대신 페르소나별 라벨·진행 상태 안내 후 진입)
+3. ~~**F-followup-3** knot.tsx 본 진입 화면~~ ✅ `1cefe94` (cooling redirect + 5단계 미리보기 안내)
 4. **F-followup-4** — `app/knot/_layout.tsx` 정의 (Stack 가드·헤더 정책)
+8. **F-followup-6** — graduation 6화면 진행도 매핑 정리 (현재 farewell·ritual 둘 다 4/5, 안내 카드 5단계와 mismatch — opus PASS-WITH-CAVEATS 후속)
 5. **F-9 후속 — 서버 cron 푸시** — Edge Function으로 회상 의식·매듭 권유를 사용자가 앱 안 열어도 발화 (현재는 in-app catch-up만)
 6. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
 7. **F-followup-5** — useRevisitTrigger의 dueRitual clear 흐름 (markRevisitTriggered 후 setState로 비우기, opus PASS-WITH-CAVEATS 후속)
