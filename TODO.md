@@ -51,7 +51,7 @@ D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░
 E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ ECR-R/RRS 라이선스 + 베타 50명 의존
 F. 매듭 트랙 부활 (졸업 재설계): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  99%  🔄 (F-1~F-12·F-13 코드측·P1 전체·followup-1 완료 16커밋, F-13 공식 A-4 해제만 외부 임상 재검증 의존)
 횡단 (X-1·X-2·X-3·X-4·X-5): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░   95%  🔄 (X-3-잔여-4 임상 감수만 외부 의존)
-H. PHQ-2/GAD-2 옵트인 (10축):  ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ 정밀 검사 옵트인 → a9·a10 분류 반영
+H. PHQ-2/GAD-2 옵트인 (10축):  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100% ✅ 완료 (H-1~H-8, 8커밋, 407 PASS, opus 통합 검증 PASS)
 ```
 
 ---
@@ -437,16 +437,16 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 > **결정 (2026-05-08)**: 옵션 C 채택 — 별도 축(a9 우울·a10 불안) 추가. 8축 → 10축 확장.
 > **선행 커밋**: `8f1e7aa` 온보딩 Q1 토글 + 4문항 분기 (UI만, 분류 미반영)
 
-| ID | 작업 | 상태 | 의존 |
+| ID | 작업 | 상태 | 커밋 |
 |---|---|---|---|
-| H-1 | 마이그레이션 036 — `psych_profile_axes`에 `a9_depression`·`a10_anxiety` smallint nullable 컬럼 추가 (기존 행 NULL = 미측정) | ⬜ | — |
-| H-2 | `PsychAxes` 타입 확장 (a9·a10 옵셔널) + PHQ-2/GAD-2 점수→축 매핑 함수 `phq2ToAxis()`·`gad2ToAxis()` (`utils/scoring.ts`) | ⬜ | H-1 |
-| H-3 | `SCORING_RULES`에 a9/a10 RuleKey 추가 — 보수적 가중치(+1~+2)로 P03·P09·P11·P19·P10 보강 | ⬜ | H-2 |
-| H-4 | `classifyPersona` `matchedRuleKeys` 확장 — a9/a10 RuleKey 매칭 (NULL 시 영향 0) | ⬜ | H-3 |
-| H-5 | `saveProfileAxes`에 a9/a10 컬럼 저장 + `onboarding/persona/index.tsx` `advance`/`runClassification`에 assessment stale-safe 전달 | ⬜ | H-4 |
-| H-6 | `psych_assessments`에 PHQ-2/GAD-2 응답 저장 (`recordPhq2Gad2Assessment` API 신규) | ⬜ | H-5 |
-| H-7 | 양성 시 D+7 정식 PHQ-9/GAD-7 검사 권유 강화 + 자원 부드러운 안내 (홈 권유 카드 분기) | ⬜ | H-6 |
-| H-8 | 단위 테스트 — `phq2ToAxis`/`gad2ToAxis` 매핑, `classifyPersona`의 a9/a10 RuleKey 분기 (NULL/0/3 케이스 + 비옵트인 사용자 분류 동일성) | ⬜ | H-4 이후 병행 |
+| H-1 | 마이그레이션 036 — `psych_profile_axes`에 `a9_depression`·`a10_anxiety` smallint nullable | ✅ | `71fdd8b` |
+| H-2 | `PsychAxes` 10축 + `scorePHQ2`/`scoreGAD2`/`shortFormScoreToAxis` (`utils/scoring.ts`) | ✅ | `1eb6ca6` |
+| H-3 | `SCORING_RULES`에 `a9.depression_positive`/`a10.anxiety_positive` 추가 (P09·P03·P11·P19·P10 보강) | ✅ | `da3205b` |
+| H-4 | `classifyPersona` `matchedAxisRuleKeys` — undefined 가드로 비옵트인 동일성 보장 | ✅ | `f8edc47` |
+| H-5 | `saveProfileAxes` a9/a10 저장 + 온보딩 inferAxes/runClassification stale-safe 전달 | ✅ | `90a3772` |
+| H-6 | `recordAssessment`에 PHQ2/GAD2 자동 채점 + 온보딩 fire-and-forget 저장 | ✅ | `1db6fdd` |
+| H-7 | `assessmentTrigger` 양성 강화 카피 + `getLatestProfileAxes` API + Card axes 조회 | ✅ | `a762bf6` |
+| H-8 | 단위 테스트 (scoring +14, classifier +8) + opus 통합 검증 PASS + SSOT 문서 동기화 | ✅ | (본 커밋) |
 
 **a9/a10 가중치 매핑 안** (보수적, 외부 임상 검증 후 미세조정 가능):
 - a9 우울 ≥ 2 (PHQ-2 ≥ 4점): P09 +2 / P03·P11·P19 +1

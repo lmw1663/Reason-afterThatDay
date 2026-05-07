@@ -3,6 +3,9 @@ import {
   scorePHQ9,
   scoreGAD7,
   scoreRSE,
+  scorePHQ2,
+  scoreGAD2,
+  shortFormScoreToAxis,
   reverseRSE,
   bandMetaphor,
 } from '@/utils/scoring';
@@ -113,6 +116,80 @@ describe('scoreRSE — band 경계 + 역코딩', () => {
     // 빠른 검증: 30점 → high
     expect(r.rawScore).toBe(30);
     expect(r.band).toBe('high');
+  });
+});
+
+describe('scorePHQ2 — 양성 임계 ≥3', () => {
+  it('0점 → minimal', () => {
+    const r = scorePHQ2({ item1: 0, item2: 0 });
+    expect(r.rawScore).toBe(0);
+    expect(r.band).toBe('minimal');
+  });
+
+  it('2점 → minimal (경계 음성)', () => {
+    expect(scorePHQ2({ item1: 1, item2: 1 }).band).toBe('minimal');
+    expect(scorePHQ2({ item1: 2, item2: 0 }).band).toBe('minimal');
+  });
+
+  it('3점 → positive (양성 임계)', () => {
+    const r = scorePHQ2({ item1: 2, item2: 1 });
+    expect(r.rawScore).toBe(3);
+    expect(r.band).toBe('positive');
+  });
+
+  it('6점 → positive (최댓값)', () => {
+    const r = scorePHQ2({ item1: 3, item2: 3 });
+    expect(r.rawScore).toBe(6);
+    expect(r.band).toBe('positive');
+  });
+
+  it('누락 항목은 0으로 처리', () => {
+    expect(scorePHQ2({ item1: 3 }).rawScore).toBe(3);
+  });
+});
+
+describe('scoreGAD2 — 양성 임계 ≥3', () => {
+  it('2점 → minimal', () => {
+    expect(scoreGAD2({ item1: 1, item2: 1 }).band).toBe('minimal');
+  });
+
+  it('3점 → positive', () => {
+    expect(scoreGAD2({ item1: 2, item2: 1 }).band).toBe('positive');
+  });
+
+  it('6점 → positive', () => {
+    const r = scoreGAD2({ item1: 3, item2: 3 });
+    expect(r.rawScore).toBe(6);
+    expect(r.band).toBe('positive');
+  });
+});
+
+describe('shortFormScoreToAxis — PHQ-2/GAD-2 → 0~3 축 매핑', () => {
+  it('0~1점 → 축 0 (음성)', () => {
+    expect(shortFormScoreToAxis(0)).toBe(0);
+    expect(shortFormScoreToAxis(1)).toBe(0);
+  });
+
+  it('2점 → 축 1 (경계)', () => {
+    expect(shortFormScoreToAxis(2)).toBe(1);
+  });
+
+  it('3~4점 → 축 2 (양성, 임상 임계 정렬)', () => {
+    expect(shortFormScoreToAxis(3)).toBe(2);
+    expect(shortFormScoreToAxis(4)).toBe(2);
+  });
+
+  it('5~6점 → 축 3 (강한 양성)', () => {
+    expect(shortFormScoreToAxis(5)).toBe(3);
+    expect(shortFormScoreToAxis(6)).toBe(3);
+  });
+
+  it('임계 정렬: rawScore ≥3 양성 ↔ axis ≥2', () => {
+    for (let s = 0; s <= 6; s++) {
+      const axis = shortFormScoreToAxis(s);
+      if (s >= 3) expect(axis).toBeGreaterThanOrEqual(2);
+      else expect(axis).toBeLessThan(2);
+    }
   });
 });
 
