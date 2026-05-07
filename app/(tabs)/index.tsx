@@ -15,8 +15,10 @@ import { usePersonaStore } from '@/store/usePersonaStore';
 import { isMiniJournalFirst } from '@/constants/personaBranches';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
+import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { fetchDailyQuote } from '@/api/ai';
 import { fetchRecentEntries, fetchTodayEntry } from '@/api/journal';
+import { fetchRelationshipProfile } from '@/api/relationship';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 import { useKnotTrigger } from '@/hooks/useKnotTrigger';
@@ -107,6 +109,17 @@ export default function HomeScreen() {
       .then(setDailyQuote)
       .catch(() => setDailyQuote('오늘도 한 걸음씩. 네 속도가 맞는 속도야.'));
   }, [userId, daysElapsed]);
+
+  // F-12 P0 — relationship_profile hydrate. lastKnotAt·cycleCount가 DB에 있어야
+  // cycle-prompt 발화·archive 카드 노출·이중 매듭 prompt 차단이 작동한다.
+  useEffect(() => {
+    if (!userId) return;
+    fetchRelationshipProfile(userId)
+      .then((p) => {
+        if (p) useRelationshipStore.getState().setProfile(p);
+      })
+      .catch((e) => console.warn('[home] fetchRelationshipProfile failed:', e));
+  }, [userId]);
 
   // 일기 동기화 — 홈 진입 시 오늘 엔트리/최근 30개를 서버에서 끌어와 store에 반영.
   // 앱 재시작이나 다른 기기에서 작성한 경우에도 history/홈 카드가 비지 않도록.

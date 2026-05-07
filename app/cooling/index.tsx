@@ -25,10 +25,10 @@ import { colors } from '@/constants/colors';
 import { useScreenView } from '@/hooks/useScreenView';
 import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 
-function getCoolingDay(requestedAt: string): number {
+function getCoolingDay(requestedAt: string, coolingDays: number): number {
   const start = new Date(requestedAt);
   const diff = Math.floor((Date.now() - start.getTime()) / (24 * 60 * 60 * 1000));
-  return Math.min(7, diff + 1);
+  return Math.min(coolingDays, diff + 1);
 }
 
 export default function CoolingDashboardScreen() {
@@ -36,7 +36,7 @@ export default function CoolingDashboardScreen() {
   const { userId } = useUserStore();
   const { stats } = useJournalStore();
   const { profile } = useRelationshipStore();
-  const { label } = useKnotPolicy();
+  const { label, coolingDays } = useKnotPolicy();
 
   const [breathingVisible, setBreathingVisible] = useState(false);
   const [day2First, setDay2First] = useState<{ moodScore: number; freeText: string | null; createdAt: string } | null>(null);
@@ -45,11 +45,12 @@ export default function CoolingDashboardScreen() {
   const [reflectionSaved, setReflectionSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const coolingDay = requestedAt ? getCoolingDay(requestedAt) : 1;
+  const coolingDay = requestedAt ? getCoolingDay(requestedAt, coolingDays) : 1;
 
   useScreenView('cooling_home', { day: coolingDay });
 
-  const isDay7 = coolingEndsAt
+  // 마지막 날(D-N) 진입 — 페르소나별 coolingDays에 따라 7/14/30이 될 수 있음
+  const isLastDay = coolingEndsAt
     ? new Date(coolingEndsAt).getTime() - Date.now() < 24 * 60 * 60 * 1000
     : false;
 
@@ -120,7 +121,7 @@ export default function CoolingDashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <BackHeader label="홈" onPress={() => router.replace('/(tabs)')} />
-        <Caption className="mb-2">유예 기간 · Day {coolingDay} / 7</Caption>
+        <Caption className="mb-2">유예 기간 · Day {coolingDay} / {coolingDays}</Caption>
         <Heading className="mb-6">마음을 다시 들여다봐</Heading>
 
         {/* D-N 카운트다운 */}
@@ -295,7 +296,7 @@ export default function CoolingDashboardScreen() {
         {/* 안내 */}
         <InsightCard
           tag="유예 기간 중"
-          body="일반 알림은 모두 중지돼 있어. 오롯이 마음을 정리하는 시간이야. Day 7에 최종 확인 알림이 올 거야."
+          body={`일반 알림은 모두 중지돼 있어. 오롯이 마음을 정리하는 시간이야. Day ${coolingDays}에 최종 확인 알림이 올 거야.`}
           accent="teal"
         />
 
@@ -314,10 +315,10 @@ export default function CoolingDashboardScreen() {
           </View>
         )}
 
-        {isDay7 && (
+        {isLastDay && (
           <Card variant="subtle" accent="teal" className="mb-4">
             <Text className="text-teal-400 text-sm text-center font-semibold">
-              오늘이 Day 7이야. 최종 확인을 할 수 있어.
+              오늘이 Day {coolingDays}이야. 최종 확인을 할 수 있어.
             </Text>
           </Card>
         )}
@@ -326,7 +327,7 @@ export default function CoolingDashboardScreen() {
       <View className="px-6 pb-10 gap-3">
         <PrimaryButton label="자율 체크인 하기" onPress={() => router.push('/cooling/checkin')} />
         {/* A-4: 졸업 트랙 보류 — Day 7에 마무리 안내로 직행 + cooling을 자동 cancel하여 무한 루프 차단 */}
-        {isDay7 && (
+        {isLastDay && (
           <PrimaryButton
             leftIcon="graduation"
             label="마무리 안내 보기"

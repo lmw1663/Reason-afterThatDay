@@ -17,6 +17,7 @@ import { usePersonaStore } from '@/store/usePersonaStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useKnotStore } from '@/store/useKnotStore';
 import { useDecisionLockGuard } from './useDecisionLockGuard';
+import { useGraduationLockGuard } from './useGraduationLockGuard';
 import { resolvePersona } from '@/utils/personaResolver';
 import { evaluateKnotTrigger, type KnotTriggerResult } from '@/utils/knotTrigger';
 
@@ -28,8 +29,13 @@ export function useKnotTrigger(): KnotTriggerResult {
   const cycleCount = useRelationshipStore((s) => s.profile.cycleCount);
   const canPromptNow = useKnotStore((s) => s.canPromptNow);
   const decisionLock = useDecisionLockGuard();
+  const graduationLock = useGraduationLockGuard();
 
-  const resolved = resolvePersona(primary, secondary);
+  // F-12 P0-3: C-SSRS 양성 시 매듭 트랙 잠금 — graduationLocked가 true면 페르소나 기반 평가에
+  // 진입하기 전에 즉시 차단 (crisisLockout=true로 R0 처리).
+  const resolved = resolvePersona(primary, secondary, {
+    crisisLockout: graduationLock === 'locked',
+  });
   const recent3 = moodTrend.slice(-3);
   const knotCanPrompt = canPromptNow(cycleCount);
   const hour = new Date().getHours();
