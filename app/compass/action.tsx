@@ -112,14 +112,9 @@ export default function CompassActionScreen() {
         <ProgressDots total={5} current={4} />
       </ScrollView>
 
-      <View className="px-6 pb-10 gap-3">
-        <PrimaryButton
-          label="일기 쓰러 가기"
-          onPress={() => router.push('/journal')}
-        />
+      <View className="px-6 pb-10">
         <PrimaryButton
           label="홈으로"
-          variant="ghost"
           onPress={() => router.replace('/(tabs)')}
         />
       </View>

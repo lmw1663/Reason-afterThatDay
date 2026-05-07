@@ -1,6 +1,7 @@
 import { View, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
@@ -29,6 +30,7 @@ export default function CompassSummaryScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
+        <BackHeader />
         <Caption className="mb-2">결정 나침반</Caption>
         <Heading className="mb-2">지금까지의 여정을 먼저 볼게</Heading>
         <Body className="text-gray-400 mb-8">
