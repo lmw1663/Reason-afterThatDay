@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { colors } from '@/constants/colors';
 import { Text, View, Pressable, ScrollView, AppState } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Caption, Heading } from '@/components/ui/Typography';
@@ -23,10 +23,8 @@ import { fetchRelationshipProfile } from '@/api/relationship';
 import { fetchGraduationStatus } from '@/api/graduation';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
-import { useKnotTrigger } from '@/hooks/useKnotTrigger';
 import { useKnotCooldownReset } from '@/hooks/useKnotCooldownReset';
-import { useCyclePromptTrigger } from '@/hooks/useCyclePromptTrigger';
-import { useRevisitTrigger } from '@/hooks/useRevisitTrigger';
+import { useKnotHomeRouter, knotHomeRouteKey } from '@/hooks/useKnotHomeRouter';
 import { useScreenView } from '@/hooks/useScreenView';
 import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { trackEvent } from '@/api/telemetry';
@@ -68,36 +66,37 @@ export default function HomeScreen() {
   // F-12 P1-E 페르소나 비허용→허용 이행 시 매듭 쿨다운 리셋
   useKnotCooldownReset();
 
-  // F-9 회상 의식 trigger — due한 회상 의식이 있으면 가장 우선.
-  // 이미 매듭 후 시간이 지난 사용자에게 *가장 시기 정합*적인 화면.
-  const { dueRitual } = useRevisitTrigger();
-  useEffect(() => {
-    if (dueRitual) {
-      router.push({
-        pathname: '/knot/revisit',
-        params: { id: dueRitual.id, ritualType: dueRitual.ritualType },
-      });
-    }
-  }, [dueRitual?.id]);
+  // F-followup-2 매듭 트랙 단일 priority resolver — revisit > cycle-prompt > knot-prompt
+  // useFocusEffect로 *홈 focused* 상태에서만 평가·push (다른 화면에서 비동기 fetch 도착해도
+  // 그 위에 모달 쌓이는 race 차단). lastPushedKeyRef로 같은 routeKey 재push 방지.
+  const knotRoute = useKnotHomeRouter();
+  const routeKey = knotHomeRouteKey(knotRoute);
+  const lastPushedKeyRef = useRef<string | null>(null);
 
-  // F-8 사이클 prompt — 매듭 *완료 후* 처음 홈 방문 시 1회 노출. 새 매듭 권유보다 우선.
-  const cyclePrompt = useCyclePromptTrigger();
-  useEffect(() => {
-    if (dueRitual) return; // 회상 의식 우선
-    if (cyclePrompt.needed) {
-      router.push('/knot/cycle-prompt');
-    }
-  }, [cyclePrompt.needed, dueRitual?.id]);
-
-  // F-6 매듭 권유 트리거 — 회상·cycle prompt 둘 다 우선. 그 후에만 매듭 권유 가능.
-  const knotTrigger = useKnotTrigger();
-  useEffect(() => {
-    if (dueRitual) return;
-    if (cyclePrompt.needed) return;
-    if (knotTrigger.allowed) {
-      router.push('/knot/prompt');
-    }
-  }, [knotTrigger.allowed, cyclePrompt.needed, dueRitual?.id]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!knotRoute || !routeKey) {
+        lastPushedKeyRef.current = null;
+        return;
+      }
+      if (lastPushedKeyRef.current === routeKey) return;
+      lastPushedKeyRef.current = routeKey;
+      switch (knotRoute.type) {
+        case 'revisit':
+          router.push({
+            pathname: '/knot/revisit',
+            params: { id: knotRoute.id, ritualType: knotRoute.ritualType },
+          });
+          break;
+        case 'cycle-prompt':
+          router.push('/knot/cycle-prompt');
+          break;
+        case 'knot-prompt':
+          router.push('/knot/prompt');
+          break;
+      }
+    }, [knotRoute, routeKey]),
+  );
 
   // 앱 포그라운드 진입 시마다 D+N 갱신
   useEffect(() => {
