@@ -13,6 +13,7 @@ import type { OnboardingResponses, PsychAxes } from '@/utils/personaClassifier';
 import type { DurationRange } from '@/constants/duration';
 import { PERSONA_INTRO_CARDS } from '@/constants/personaIntroCards';
 import { useScreenView } from '@/hooks/useScreenView';
+import { shortFormScoreToAxis } from '@/utils/scoring';
 
 /**
  * 페르소나 온보딩 — C-1-3
@@ -122,39 +123,48 @@ export default function PersonaOnboardingScreen() {
   function pick<K extends keyof OnboardingResponses>(key: K, value: OnboardingResponses[K]) {
     const updatedR = { ...r, [key]: value };
     setR(updatedR);
-    advance(updatedR, crisis);
+    advance(updatedR, crisis, assessment);
   }
 
   function pickCrisis<K extends keyof CrisisResponses>(key: K, value: boolean) {
     const updatedCrisis = { ...crisis, [key]: value };
     setCrisis(updatedCrisis);
-    advance(r, updatedCrisis);
+    advance(r, updatedCrisis, assessment);
   }
 
   function pickAssessment(key: AssessmentKey, value: FreqLevel) {
     const updated = { ...assessment, [key]: value };
     setAssessment(updated);
-    advance(r, crisis);
+    advance(r, crisis, updated);
   }
 
-  // setR/setCrisis가 비동기라 closure가 stale한 값을 잡지 않도록 *최신 응답을 명시 전달*.
+  // setR/setCrisis/setAssessment가 비동기라 closure가 stale한 값을 잡지 않도록 *최신 응답을 명시 전달*.
   // 특히 C-SSRS는 마지막 응답이 누락되면 위험도 평가가 틀어져 안전 잠금까지 영향받음.
+  // assessment도 마지막 GAD-2 응답이 axes 계산에 포함돼야 분류 정확 — Phase H.
   // includeAssessment는 q1 단계에서만 변경되므로 stale 문제 없음.
-  function advance(currentR: Partial<OnboardingResponses>, currentCrisis: CrisisResponses) {
+  function advance(
+    currentR: Partial<OnboardingResponses>,
+    currentCrisis: CrisisResponses,
+    currentAssessment: AssessmentResponses,
+  ) {
     const next = nextStep(step, currentR, currentCrisis, includeAssessment);
     setStep(next);
-    if (next === 'classifying') void runClassification(currentR, currentCrisis);
+    if (next === 'classifying') void runClassification(currentR, currentCrisis, currentAssessment);
   }
 
-  async function runClassification(currentR: Partial<OnboardingResponses>, currentCrisis: CrisisResponses) {
+  async function runClassification(
+    currentR: Partial<OnboardingResponses>,
+    currentCrisis: CrisisResponses,
+    currentAssessment: AssessmentResponses,
+  ) {
     if (!userId) return;
     setSubmitting(true);
     try {
-      // 정밀 검사 옵트인 응답은 일단 메모리 보관 + dev 로그. DB 저장 및 양성 시 자원 안내는 후속 태스크.
+      // 정밀 검사 옵트인 응답을 axes에 통합 (Phase H). DB 저장은 H-6에서 처리.
       // PHQ/GAD 점수는 민감 정보 — production 번들에 누출되지 않도록 __DEV__ 가드 필수.
       if (includeAssessment && __DEV__) {
-        const phqScore = scoreFreq(assessment.phq2_q1) + scoreFreq(assessment.phq2_q2);
-        const gadScore = scoreFreq(assessment.gad2_q1) + scoreFreq(assessment.gad2_q2);
+        const phqScore = scoreFreq(currentAssessment.phq2_q1) + scoreFreq(currentAssessment.phq2_q2);
+        const gadScore = scoreFreq(currentAssessment.gad2_q1) + scoreFreq(currentAssessment.gad2_q2);
         console.log('[onboarding] assessment scores — PHQ-2:', phqScore, 'GAD-2:', gadScore);
       }
 
@@ -162,7 +172,7 @@ export default function PersonaOnboardingScreen() {
       const crisisResult = await recordCrisisAssessment(userId, { source: 'onboarding', responses: currentCrisis });
 
       const responses = buildResponses(currentR, relationshipDuration);
-      const axes = inferAxes(responses, currentCrisis);
+      const axes = inferAxes(responses, currentCrisis, includeAssessment ? currentAssessment : undefined);
 
       const result = await classifyAndSavePersona(userId, { responses, axes }, 'onboarding');
       if (result.mode === 'standard') {
@@ -471,11 +481,33 @@ function buildResponses(
 }
 
 /**
- * 8축 추정 (응답 기반). ECR-R/RRS 라이선스 미확인 상태라 a1_attachment는 q5/q2에서 휴리스틱 추정.
+ * 10축 추정 (응답 기반). ECR-R/RRS 라이선스 미확인 상태라 a1_attachment는 q5/q2에서 휴리스틱 추정.
  * 라이선스 회신 후 본 함수에서 ECR-R 점수로 a1 정확화.
+ *
+ * a9/a10은 PHQ-2/GAD-2 옵트인 사용자만 계산 — assessment 미전달 시 undefined로 두어
+ * 기존 분류 결과 동일성 보장 (Phase H).
  */
-function inferAxes(r: OnboardingResponses, crisis: CrisisResponses): PsychAxes {
+function inferAxes(
+  r: OnboardingResponses,
+  crisis: CrisisResponses,
+  assessment?: AssessmentResponses,
+): PsychAxes {
   const a8 = (crisis.q4 || crisis.q5 || crisis.q6) ? 3 : (crisis.q2 || crisis.q3) ? 2 : crisis.q1 ? 1 : 0;
+
+  // a9/a10: 옵트인 + 두 문항 모두 응답 완료 시에만 계산. 부분 응답은 미측정 처리.
+  let a9_depression: 0 | 1 | 2 | 3 | undefined;
+  let a10_anxiety: 0 | 1 | 2 | 3 | undefined;
+  if (assessment) {
+    const phq1 = assessment.phq2_q1, phq2 = assessment.phq2_q2;
+    const gad1 = assessment.gad2_q1, gad2 = assessment.gad2_q2;
+    if (phq1 !== undefined && phq2 !== undefined) {
+      a9_depression = shortFormScoreToAxis(Number(phq1) + Number(phq2));
+    }
+    if (gad1 !== undefined && gad2 !== undefined) {
+      a10_anxiety = shortFormScoreToAxis(Number(gad1) + Number(gad2));
+    }
+  }
+
   return {
     a1_attachment: r.q2_thought === 'cant_live_without' ? 1 : r.q2_thought === 'alone_better' ? 2 : 0,
     a2_initiator: r.q1_initiator === 'mutual' ? 0 : r.q1_initiator === 'self' ? 1 : r.q1_initiator === 'partner' ? 2 : 3,
@@ -485,5 +517,7 @@ function inferAxes(r: OnboardingResponses, crisis: CrisisResponses): PsychAxes {
     a6_complexity: r.q_complexity === 'marriage' || r.q4_married ? 3 : r.q_complexity === 'cohabitation' ? 2 : r.q_complexity === 'shared_circle' ? 1 : 0,
     a7_dominant_emotion: r.q5_emotion === 'anger' ? 1 : r.q5_emotion === 'guilt' ? 2 : r.q5_emotion === 'empty' ? 3 : r.q5_emotion === 'unsure' ? 4 : 0,
     a8_crisis: a8 as 0 | 1 | 2 | 3,
+    a9_depression,
+    a10_anxiety,
   };
 }

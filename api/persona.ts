@@ -26,7 +26,7 @@ export interface ActivePersona {
 }
 
 /**
- * 8축 값을 psych_profile_axes에 저장.
+ * 10축 값을 psych_profile_axes에 저장. a9/a10은 옵셔널(미옵트인 사용자는 NULL).
  */
 export async function saveProfileAxes(
   userId: string,
@@ -46,6 +46,8 @@ export async function saveProfileAxes(
       a6_complexity:       axes.a6_complexity,
       a7_dominant_emotion: axes.a7_dominant_emotion,
       a8_crisis:           axes.a8_crisis,
+      a9_depression:       axes.a9_depression ?? null,
+      a10_anxiety:         axes.a10_anxiety ?? null,
     });
   if (error) throw error;
 }
