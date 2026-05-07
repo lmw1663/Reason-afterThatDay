@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/api/supabase';
+import { usePersonaStore } from '@/store/usePersonaStore';
 import type { JournalContext } from '@/api/ai';
 import { fetchJournalResponse } from '@/api/ai';
 
@@ -23,6 +24,8 @@ export function useStreamingJournalResponse() {
       const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
       const fnUrl = `${supabaseUrl}/functions/v1/ai-journal-response-stream`;
 
+      // X-2-B-3: 페르소나 자동 첨부 — withPersona 패턴과 동일
+      const persona = usePersonaStore.getState().primary;
       const res = await fetch(fnUrl, {
         method: 'POST',
         headers: {
@@ -30,7 +33,7 @@ export function useStreamingJournalResponse() {
           'Authorization': `Bearer ${token}`,
           'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
         },
-        body: JSON.stringify(ctx),
+        body: JSON.stringify({ ...ctx, persona }),
       });
 
       if (!res.ok) throw new Error('stream_failed');

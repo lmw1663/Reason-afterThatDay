@@ -1,6 +1,9 @@
 // @ts-nocheck — Deno runtime
 // 일기 AI 응답 스트리밍 버전 — 일기 작성 완료 직후 진입감 개선
+// X-2-B-3: 페르소나별 시스템 프롬프트 분기. stream 특성상 chunk별 lint는 불가하므로
+// system prompt에 forbiddenKeywords를 주입하여 GPT가 스스로 회피.
 import OpenAI from 'npm:openai';
+import { buildSystemPrompt } from '../_shared/personaPrompts.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,7 +12,7 @@ const corsHeaders = {
 
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY')! });
 
-const SYSTEM_PROMPT = `
+const BASE_SYSTEM_PROMPT = `
 너는 이별을 정리 중인 사람의 감정 파트너야.
 규칙:
 - 단정 금지: "~해야 해", "~게 맞아" 같은 표현 금지
@@ -31,7 +34,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { moodScore, direction, freeText, recentMoods, daysElapsed } = await req.json();
+    const { moodScore, direction, freeText, recentMoods, daysElapsed, persona } = await req.json();
 
     const moodStr = Array.isArray(recentMoods) ? recentMoods.join(', ') : '없음';
     const dirLabel = direction === 'catch' ? '잡고싶어' : direction === 'let_go' ? '보내고싶어' : '모르겠어';
@@ -39,7 +42,7 @@ Deno.serve(async (req: Request) => {
     const stream = await openai.chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSystemPrompt(BASE_SYSTEM_PROMPT, persona ?? null) },
         {
           role: 'user',
           content: `D+${daysElapsed}. 감정온도: ${moodScore}. 최근 감정 흐름: ${moodStr}. 방향: ${dirLabel}. 오늘 한 줄: ${freeText ?? '없음'}`,

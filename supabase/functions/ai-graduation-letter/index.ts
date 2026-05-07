@@ -1,6 +1,8 @@
 // @ts-nocheck — Deno runtime
-// gpt-4o 사용 — 졸업 편지는 긴 생성이 필요하기 때문
+// gpt-4o 사용 — 매듭 편지는 긴 생성이 필요하기 때문
+// X-2-B-3: 페르소나별 톤·금기 키워드 적용
 import OpenAI from 'npm:openai';
+import { buildSystemPrompt, lintResponse } from '../_shared/personaPrompts.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,8 +11,8 @@ const corsHeaders = {
 
 const openai = new OpenAI({ apiKey: Deno.env.get('OPENAI_API_KEY')! });
 
-const SYSTEM_PROMPT = `
-너는 사용자가 이별을 통해 성장하고 졸업하는 순간을 함께하는 존재야.
+const BASE_SYSTEM_PROMPT = `
+너는 사용자가 이별을 통해 성장하고 매듭을 짓는 순간을 함께하는 존재야.
 사용자를 대신해서 "나에게 쓰는 편지"를 써줘.
 규칙:
 - 1인칭 (나는, 나에게)으로 작성
@@ -39,7 +41,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const { daysElapsed, moodAvg, reasons, pros, cons, journalCount, checkinMoods, checkinNotes } = await req.json();
+    const { daysElapsed, moodAvg, reasons, pros, cons, journalCount, checkinMoods, checkinNotes, persona } = await req.json();
 
     const coolingSection = checkinMoods?.length
       ? `\n- 7일 유예 중 감정 변화: ${checkinMoods.join(' → ')}점${checkinNotes?.length ? `\n- 유예 중 메모: ${checkinNotes.slice(0, 2).join(' / ')}` : ''}`
@@ -60,15 +62,25 @@ Deno.serve(async (req: Request) => {
     const res = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: buildSystemPrompt(BASE_SYSTEM_PROMPT, persona ?? null) },
         { role: 'user',   content: userPrompt },
       ],
       max_tokens: 600,
       temperature: 0.85,
     });
 
+    const raw = res.choices[0].message.content ?? '';
+    const lint = lintResponse(raw, persona ?? null);
+    if (!lint.ok) {
+      console.warn('[ai-graduation-letter] persona lint violation:', persona, lint.violations);
+      return new Response(
+        JSON.stringify({ response: FALLBACK_LETTER }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
     return new Response(
-      JSON.stringify({ response: res.choices[0].message.content }),
+      JSON.stringify({ response: raw }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch {

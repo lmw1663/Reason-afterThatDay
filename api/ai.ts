@@ -212,8 +212,7 @@ export async function fetchCoolingCheckinGPTResponse(params: {
 
 // ── 졸업 작별 문장 AI 응답 ──────────────────────────────────────────
 const FAREWELL_FALLBACK =
-  '그 마음으로 이별을 맺는 너의 모습이 가장 성숙한 마무리야. ' +
-  '그렇게 정직한 마음으로 보내는 사람이 다시 행복해질 거야.';
+  '여기까지 와줘서 고마워. 정직하게 마음을 적은 너의 한 줄이 매듭의 의미를 더 짙게 만들어.';
 
 export async function fetchGraduationFarewellResponse(params: {
   userId: string;
@@ -227,7 +226,7 @@ export async function fetchGraduationFarewellResponse(params: {
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'graduation-farewell-response',
-      params,
+      withPersona(params as unknown as Record<string, unknown>),
       6000,
     );
     trackEvent('ai_response_success', { fn: 'graduation_farewell' });
@@ -257,7 +256,7 @@ export async function fetchGraduationLetter(params: {
   try {
     const data = await invokeWithTimeout<{ response: string }>(
       'ai-graduation-letter',
-      params,
+      withPersona(params as unknown as Record<string, unknown>),
       10000,
     );
     trackEvent('ai_response_success', { fn: 'graduation_letter' });

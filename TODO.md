@@ -46,7 +46,7 @@ C-1 페르소나 인프라:     ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 C-2 화면별 분기:        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100% ✅ 완료 (단위 테스트 245 PASS, dogfood 별도)
 C-2-Ref 참고용 적용:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (d614c74~1908c43)
 C-3 다중 페르소나 충돌:   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (5 화면 + 59/59 단위 테스트 PASS)
-X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░   85%  ⏸️ (4 ai-* 통합, 졸업·스트림 deferred — A-4 의존)
+X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ (X-2-B-3 매듭·스트림 통합 완료)
 D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ B-0 라이선스 회신 의존
 E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ ECR-R/RRS 라이선스 + 베타 50명 의존
 F. 매듭 트랙 부활 (졸업 재설계): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  99%  🔄 (F-1~F-12·F-13 코드측·P1 전체·followup-1 완료 16커밋, F-13 공식 A-4 해제만 외부 임상 재검증 의존)
@@ -479,7 +479,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 4. ~~**F-followup-4** /knot/_layout.tsx~~ ✅ (이번 커밋) (graduationLockGuard 일차 게이트 + Stack 공통 헤더)
 8. ~~**F-followup-6** graduation 6화면 진행도 매핑 정리~~ ✅ (이번 커밋) (1/6~6/6 정규화 + farewell·ritual 4/5 충돌 해소 + knot.tsx 6단계 안내 정합)
 5. ~~**F-9 후속 서버 cron 푸시**~~ ✅ (이번 커밋) (knot-revisit-cron Edge Function + 035 마이그레이션 + 유예 중 cooling 가드)
-6. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
+6. ~~**X-2-B-3** 매듭·스트림 GPT 페르소나 통합~~ ✅ (이번 커밋) (ai-graduation-letter·graduation-farewell-response·ai-journal-response-stream + 클라이언트 fallback 어휘 통일)
 7. ~~**F-followup-5** useRevisitTrigger dueRitual clear~~ ✅ (이번 커밋) (useEffect → useFocusEffect, rows.length===0 시 setDueRitual(null), 유예 중 잔존 차단)
 
 ---
