@@ -265,6 +265,22 @@ export default function CoolingDashboardScreen() {
           </Card>
         )}
 
+        {/* F-followup-1 — Day 7+ 페르소나 (P03·P11·P06 14일 / P20 30일) fallback.
+            마지막 날(isLastDay) 카드는 별도이므로 그 외 중간 일자만 노출. */}
+        {coolingDay > 6 && !isLastDay && (
+          <Card className="mb-6">
+            <Caption className="text-purple-400 mb-2">Day {coolingDay} — 너의 시간</Caption>
+            <Body className="text-gray-300 mb-3 leading-relaxed">
+              이번 유예 기간은 {coolingDays}일이야.{'\n'}
+              지금부터는 그 자리에서 *천천히 머무는* 시간이야.{'\n'}
+              서두르지 않아도 돼. 하루하루 일기를 쓰는 것만으로도 충분해.
+            </Body>
+            <Caption className="text-teal-400">
+              네 속도가 맞는 속도야.
+            </Caption>
+          </Card>
+        )}
+
         {coolingDay === 6 && (
           <Card className="mb-6">
             <Caption className="text-purple-400 mb-3">Day 6 — 미래를 그려보기</Caption>
