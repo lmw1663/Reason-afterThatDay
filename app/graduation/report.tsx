@@ -69,7 +69,7 @@ export default function GraduationReportScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">{label} · 1 / 5</Caption>
+        <Caption className="mb-2">{label} · 1 / 6</Caption>
         <Heading className="mb-2">이별 이후의 성장 리포트</Heading>
         <Caption className="mb-8">D+{daysElapsed}일, 참 많이 걸어왔어.</Caption>
 

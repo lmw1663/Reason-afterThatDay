@@ -477,7 +477,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 2. ~~**F-followup-2** 홈 trigger race resolver~~ ✅ `cec6c2b` (단일 priority hook + useFocusEffect)
 3. ~~**F-followup-3** knot.tsx 본 진입 화면~~ ✅ `1cefe94` (cooling redirect + 5단계 미리보기 안내)
 4. ~~**F-followup-4** /knot/_layout.tsx~~ ✅ (이번 커밋) (graduationLockGuard 일차 게이트 + Stack 공통 헤더)
-8. **F-followup-6** — graduation 6화면 진행도 매핑 정리 (현재 farewell·ritual 둘 다 4/5, 안내 카드 5단계와 mismatch — opus PASS-WITH-CAVEATS 후속)
+8. ~~**F-followup-6** graduation 6화면 진행도 매핑 정리~~ ✅ (이번 커밋) (1/6~6/6 정규화 + farewell·ritual 4/5 충돌 해소 + knot.tsx 6단계 안내 정합)
 5. **F-9 후속 — 서버 cron 푸시** — Edge Function으로 회상 의식·매듭 권유를 사용자가 앱 안 열어도 발화 (현재는 in-app catch-up만)
 6. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
 7. ~~**F-followup-5** useRevisitTrigger dueRitual clear~~ ✅ (이번 커밋) (useEffect → useFocusEffect, rows.length===0 시 setDueRitual(null), 유예 중 잔존 차단)

@@ -40,7 +40,7 @@ export default function GraduationFarewellScreen() {
     <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
-        <Caption className="mb-2">{label} · 4 / 5</Caption>
+        <Caption className="mb-2">{label} · 3 / 6</Caption>
         <Heading className="mb-2">너의 마지막 한 줄</Heading>
         <Body className="text-gray-400 mb-8 leading-relaxed">
           상대에게, 또는 과거의 너 자신에게{'\n'}

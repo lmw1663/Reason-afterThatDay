@@ -55,7 +55,7 @@ export default function GraduationLetterScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">{label} · 2 / 5</Caption>
+        <Caption className="mb-2">{label} · 2 / 6</Caption>
         <Heading className="mb-8">나에게 쓰는 편지</Heading>
 
         {loading ? (

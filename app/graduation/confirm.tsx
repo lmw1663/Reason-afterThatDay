@@ -54,7 +54,7 @@ export default function GraduationConfirmScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Caption className="mb-2">{label} · 3 / 5</Caption>
+          <Caption className="mb-2">{label} · 4 / 6</Caption>
           <Heading className="mb-2">마지막으로 돌아볼게</Heading>
           <Body className="text-gray-400 mb-8">
             솔직하게 털어놓고 가면 더 홀가분할 거야.

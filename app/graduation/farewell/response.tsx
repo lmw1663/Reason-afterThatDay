@@ -36,7 +36,7 @@ export default function GraduationFarewellResponseScreen() {
   return (
     <ScreenWrapper>
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">{label} · 4 / 5</Caption>
+        <Caption className="mb-2">{label} · 3 / 6</Caption>
         <Heading className="mb-8">너의 작별에 답할게</Heading>
 
         {/* AI 응답 메인 — 화면 전환형 UX, 채팅 패턴 회피 */}

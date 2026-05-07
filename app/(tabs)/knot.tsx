@@ -17,11 +17,11 @@ import { useKnotPolicy } from '@/hooks/useKnotPolicy';
  *
  * 분기:
  *   - cooling status === 'cooling' → /cooling 진행 중인 유예로 redirect
- *   - 그 외 → 시작 안내 카드 + 5단계 흐름 미리보기 + "시작할게" 버튼
+ *   - 그 외 → 시작 안내 카드 + 6단계 흐름 미리보기 + "시작할게" 버튼
  *
- * 5단계 흐름은 graduation/report → letter → confirm → ritual → farewell → request 순서
- * (실제로는 6 화면이지만 사용자 인지상 *5단계*로 안내). F-7 어휘 교체로 각 화면이
- * 페르소나 라벨·일수를 동적으로 표시한다.
+ * 6단계 흐름 (F-followup-6에서 진행도 매핑 정리):
+ *   report(1/6) → letter(2/6) → farewell(3/6) → confirm(4/6) → ritual(5/6) → request(6/6)
+ *   F-7 어휘 교체로 각 화면이 페르소나 라벨·일수를 동적으로 표시.
  */
 export default function KnotEntry() {
   const { daysElapsed } = useUserStore();
@@ -48,13 +48,14 @@ export default function KnotEntry() {
         </Body>
 
         <Card variant="subtle" accent="purple" className="mb-6">
-          <Caption className="text-purple-400 mb-3">{label} 흐름 — 5단계</Caption>
+          <Caption className="text-purple-400 mb-3">{label} 흐름 — 6단계</Caption>
           <View className="gap-2.5">
             <StepRow num={1} text="그동안의 회복 리포트 보기" />
             <StepRow num={2} text="나에게 쓰는 편지 받기" />
-            <StepRow num={3} text="마지막으로 한 번 돌아보기" />
-            <StepRow num={4} text="마지막 한 줄 남기기" />
-            <StepRow num={5} text={`${label} 신청 → ${coolingDays}일 유예 시작`} />
+            <StepRow num={3} text="마지막 한 줄 남기기" />
+            <StepRow num={4} text="마지막으로 한 번 돌아보기" />
+            <StepRow num={5} text="이 기억을 어떻게 간직할지 선택" />
+            <StepRow num={6} text={`${label} 신청 → ${coolingDays}일 유예 시작`} />
           </View>
           <Caption className="text-gray-500 mt-3">총 5~10분 정도 걸려.</Caption>
         </Card>

@@ -38,7 +38,7 @@ export default function GraduationRitualScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">{label} · 4 / 5</Caption>
+        <Caption className="mb-2">{label} · 5 / 6</Caption>
         <Heading className="mb-2">이 기억을 어떻게 간직할래?</Heading>
         <Body className="text-gray-400 mb-8">
           {label}은 끝이 아니야. 이 관계를 어떤 방식으로 기억할지 선택해줘.

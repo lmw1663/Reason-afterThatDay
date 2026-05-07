@@ -124,7 +124,7 @@ export default function GraduationRequestScreen() {
         }
       />
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">{label} · 5 / 5</Caption>
+        <Caption className="mb-2">{label} · 6 / 6</Caption>
         <Heading className="mb-2">{label} 신청</Heading>
 
         <Card className="p-5 mb-6">
