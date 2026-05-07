@@ -16,6 +16,8 @@ export interface AssessmentRecommendation {
   source: 'd7' | 'd14' | 'd30';
   cardTitle: string;
   cardSubtitle: string;
+  /** PHQ-2/GAD-2 양성 옵트인 사용자에게 강화 카피가 적용됐는지. UI 강조 분기에 사용 가능. */
+  isShortFormPositive?: boolean;
 }
 
 const WINDOWS: Array<{
@@ -25,6 +27,9 @@ const WINDOWS: Array<{
   toleranceDays: number;
   cardTitle: string;
   cardSubtitle: string;
+  /** Phase H — 단축형(PHQ-2/GAD-2) 양성 사용자에게 표시할 강화 톤. */
+  positiveCardTitle?: string;
+  positiveCardSubtitle?: string;
 }> = [
   {
     instrument: 'PHQ9',
@@ -33,6 +38,8 @@ const WINDOWS: Array<{
     toleranceDays: 1,
     cardTitle: '오늘 마음 점검 같이 해볼래?',
     cardSubtitle: '9문항, 2분이면 끝나는 결 보기',
+    positiveCardTitle: '지난번 결을 좀 더 자세히 봐도 좋을 시기야',
+    positiveCardSubtitle: '9문항으로 마음의 결을 더 깊게 잡아볼래',
   },
   {
     instrument: 'GAD7',
@@ -41,6 +48,8 @@ const WINDOWS: Array<{
     toleranceDays: 1,
     cardTitle: '요즘 마음의 결 한 번 더 봐볼래?',
     cardSubtitle: '7문항, 1~2분이면 충분해',
+    positiveCardTitle: '조마조마함의 결을 더 들여다봐도 좋아',
+    positiveCardSubtitle: '7문항으로 흔들림의 모양을 잡아볼래',
   },
   {
     instrument: 'RSE',
@@ -62,10 +71,20 @@ const WINDOWS: Array<{
  *    → 즉 *이 윈도우 권유 시점에 새로 측정한 적 없음*
  *  · 우선순위: 윈도우 도달이 빠른 instrument부터 (PHQ9 > GAD7 > RSE)
  */
+/**
+ * Phase H — PHQ-2/GAD-2 옵트인 양성 여부. PHQ9 권유 시 phq2가 true면 강화 카피,
+ * GAD7 권유 시 gad2가 true면 강화 카피. RSE는 단축형과 무관.
+ */
+export interface ShortFormPositive {
+  phq2?: boolean;
+  gad2?: boolean;
+}
+
 export function pickRecommendation(
   daysElapsed: number,
   breakupISO: string | null,
   lastAssessmentByInstrument: Partial<Record<Instrument, string | null>>,
+  shortFormPositive?: ShortFormPositive,
 ): AssessmentRecommendation | null {
   if (!breakupISO) return null;
   const breakupTime = Date.parse(breakupISO);
@@ -79,24 +98,20 @@ export function pickRecommendation(
 
     const last = lastAssessmentByInstrument[w.instrument];
     // 마지막 응답이 없거나, 마지막 응답이 *현재 권유 윈도우보다 한참 전*이면 권유
-    if (!last) {
-      return {
-        instrument: w.instrument,
-        source: w.source,
-        cardTitle: w.cardTitle,
-        cardSubtitle: w.cardSubtitle,
-      };
-    }
-    // 마지막 응답 시각이 breakupTime + (centerDay - tolerance) 일 미만 → 권유 (D+0 응답으로 간주)
     const cutoffMs = breakupTime + (w.centerDay - w.toleranceDays) * 24 * 3600 * 1000;
-    if (Date.parse(last) < cutoffMs) {
-      return {
-        instrument: w.instrument,
-        source: w.source,
-        cardTitle: w.cardTitle,
-        cardSubtitle: w.cardSubtitle,
-      };
-    }
+    const shouldRecommend = !last || Date.parse(last) < cutoffMs;
+    if (!shouldRecommend) continue;
+
+    const isPositive =
+      (w.instrument === 'PHQ9' && shortFormPositive?.phq2 === true) ||
+      (w.instrument === 'GAD7' && shortFormPositive?.gad2 === true);
+    return {
+      instrument: w.instrument,
+      source: w.source,
+      cardTitle: isPositive && w.positiveCardTitle ? w.positiveCardTitle : w.cardTitle,
+      cardSubtitle: isPositive && w.positiveCardSubtitle ? w.positiveCardSubtitle : w.cardSubtitle,
+      isShortFormPositive: isPositive || undefined,
+    };
   }
   return null;
 }

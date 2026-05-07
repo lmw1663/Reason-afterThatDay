@@ -7,6 +7,7 @@ import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { getLastAssessmentDate } from '@/api/assessments';
+import { getLatestProfileAxes } from '@/api/persona';
 import {
   pickRecommendation,
   type AssessmentRecommendation,
@@ -34,12 +35,22 @@ export function AssessmentRecommendationCard() {
       getLastAssessmentDate(userId, 'PHQ9'),
       getLastAssessmentDate(userId, 'GAD7'),
       getLastAssessmentDate(userId, 'RSE'),
+      getLatestProfileAxes(userId),
     ])
-      .then(async ([phq9, gad7, rse]) => {
+      .then(async ([phq9, gad7, rse, axes]) => {
+        // Phase H — 단축형(PHQ-2/GAD-2) 옵트인 양성 사용자에게 강화 카피 적용.
+        // axes 조회 실패하면 undefined → 기존 표준 카피로 정상 진행.
+        const shortFormPositive = axes
+          ? {
+              phq2: (axes.a9_depression ?? 0) >= 2,
+              gad2: (axes.a10_anxiety ?? 0) >= 2,
+            }
+          : undefined;
         const candidate = pickRecommendation(
           daysElapsed,
           breakupDate ? new Date(breakupDate).toISOString() : null,
           { PHQ9: phq9, GAD7: gad7, RSE: rse },
+          shortFormPositive,
         );
         if (!candidate) return;
         const dismissed = await readDismiss();

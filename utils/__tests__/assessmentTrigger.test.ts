@@ -85,3 +85,46 @@ describe('pickRecommendation — 엣지', () => {
     ).toBeNull();
   });
 });
+
+describe('pickRecommendation — Phase H 단축형 양성 강화', () => {
+  it('D+7 PHQ9 + PHQ-2 양성 → 강화 카피', () => {
+    const r = pickRecommendation(7, BREAKUP, {}, { phq2: true });
+    expect(r?.instrument).toBe('PHQ9');
+    expect(r?.isShortFormPositive).toBe(true);
+    expect(r?.cardTitle).toBe('지난번 결을 좀 더 자세히 봐도 좋을 시기야');
+    expect(r?.cardSubtitle).toBe('9문항으로 마음의 결을 더 깊게 잡아볼래');
+  });
+
+  it('D+7 PHQ9 + PHQ-2 음성 → 표준 카피', () => {
+    const r = pickRecommendation(7, BREAKUP, {}, { phq2: false });
+    expect(r?.cardTitle).toBe('오늘 마음 점검 같이 해볼래?');
+    expect(r?.isShortFormPositive).toBeUndefined();
+  });
+
+  it('D+14 GAD7 + GAD-2 양성 → 강화 카피', () => {
+    const r = pickRecommendation(14, BREAKUP, {}, { gad2: true });
+    expect(r?.instrument).toBe('GAD7');
+    expect(r?.isShortFormPositive).toBe(true);
+    expect(r?.cardTitle).toBe('조마조마함의 결을 더 들여다봐도 좋아');
+  });
+
+  it('D+7 PHQ9 + GAD-2 양성만 → PHQ9 표준 카피 (instrument-축 매칭 필요)', () => {
+    const r = pickRecommendation(7, BREAKUP, {}, { phq2: false, gad2: true });
+    expect(r?.instrument).toBe('PHQ9');
+    expect(r?.cardTitle).toBe('오늘 마음 점검 같이 해볼래?');
+    expect(r?.isShortFormPositive).toBeUndefined();
+  });
+
+  it('D+30 RSE + 어떤 양성이든 → RSE 표준 카피 (단축형과 무관)', () => {
+    const r = pickRecommendation(30, BREAKUP, {}, { phq2: true, gad2: true });
+    expect(r?.instrument).toBe('RSE');
+    expect(r?.cardTitle).toBe('나에 대한 빛, 지금은 어때?');
+    expect(r?.isShortFormPositive).toBeUndefined();
+  });
+
+  it('shortFormPositive 미전달 → 기존 시그니처 호환', () => {
+    const r = pickRecommendation(7, BREAKUP, {});
+    expect(r?.instrument).toBe('PHQ9');
+    expect(r?.cardTitle).toBe('오늘 마음 점검 같이 해볼래?');
+  });
+});

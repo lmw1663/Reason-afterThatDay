@@ -95,6 +95,37 @@ export async function classifyAndSavePersona(
 }
 
 /**
+ * 가장 최근 10축 측정값 조회 — Phase H 단축형 양성 여부 게이트에 활용.
+ * a9_depression·a10_anxiety는 NULL 가능 (옵트인 안 한 사용자). undefined로 정규화.
+ */
+export async function getLatestProfileAxes(userId: string): Promise<PsychAxes | null> {
+  const { data, error } = await supabase
+    .from('psych_profile_axes')
+    .select('a1_attachment, a2_initiator, a3_breakup_mode, a4_duration, a5_health, a6_complexity, a7_dominant_emotion, a8_crisis, a9_depression, a10_anxiety')
+    .eq('user_id', userId)
+    .order('measured_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
+    console.warn('[persona] getLatestProfileAxes failed:', error.message);
+    return null;
+  }
+  if (!data) return null;
+  return {
+    a1_attachment:        data.a1_attachment        as 0 | 1 | 2 | 3,
+    a2_initiator:         data.a2_initiator         as 0 | 1 | 2 | 3,
+    a3_breakup_mode:      data.a3_breakup_mode      as 0 | 1 | 2 | 3,
+    a4_duration:          data.a4_duration          as 0 | 1 | 2 | 3,
+    a5_health:            data.a5_health            as 0 | 1 | 2 | 3,
+    a6_complexity:        data.a6_complexity        as 0 | 1 | 2 | 3,
+    a7_dominant_emotion:  data.a7_dominant_emotion  as 0 | 1 | 2 | 3 | 4,
+    a8_crisis:            data.a8_crisis            as 0 | 1 | 2 | 3,
+    a9_depression:  (data.a9_depression as number | null) === null ? undefined : data.a9_depression as 0 | 1 | 2 | 3,
+    a10_anxiety:    (data.a10_anxiety   as number | null) === null ? undefined : data.a10_anxiety   as 0 | 1 | 2 | 3,
+  };
+}
+
+/**
  * 현재 활성 페르소나 조회. 분류 안 된 사용자(신규/사별 응답자)는 null.
  */
 export async function getActivePersona(userId: string): Promise<ActivePersona | null> {
