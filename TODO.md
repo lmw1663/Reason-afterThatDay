@@ -16,6 +16,24 @@
 
 ---
 
+## 작업 워크플로우 (필수 — 위반 불가)
+
+매 태스크(서브태스크 단위 포함)는 *별도 요청 없이* 다음 5단계를 한 묶음으로 자동 수행:
+
+1. **구현** — 코드 작성·문서 갱신
+2. **로컬 검증** — `npx tsc --noEmit` + `npm test` + `npm run lint:persona` (모두 PASS 필수)
+3. **opus agent 검증** — `general-purpose` agent + `model: opus`로 임상·법적·구조 정합성·임상 안전·CLAUDE.md 절대 규칙 위반 점검. 결론은 PASS / PASS-WITH-CAVEATS / FAIL 셋 중 하나로 단정.
+   - PASS-WITH-CAVEATS면 캐비엇 처리 후 진행 (큰 캐비엇은 후속으로 분리)
+   - FAIL이면 수정 후 재검증
+4. **커밋** — 한국어 메시지 (서브태스크 번호 + "왜"에 초점), `Co-Authored-By` 포함, 파일 개별 명시 (`git add -A` 금지)
+5. **TODO.md 갱신 + 푸시** — 해당 항목 ✅ + 진행도 갱신 → `git push origin main`
+
+**큰 묶음 작업 후**: 시나리오 통합 검증을 opus agent로 1회 추가 수행 (예: F-12 통합 검증 → P0 4건 발견·즉시 fix). 단위 PASS여도 모듈 간 race·미연결·plumbing 누수가 있을 수 있음.
+
+**상태 보고**: 최종 결과 한 번만 — 중간 검증 단계마다 사용자에게 묻지 않음.
+
+---
+
 ## 진행도
 
 ```
@@ -458,7 +476,7 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 1. ~~**F-followup-1** cooling Day 7+ fallback~~ ✅ `75dfa97` (14·30일 페르소나 안전 보강)
 2. ~~**F-followup-2** 홈 trigger race resolver~~ ✅ `cec6c2b` (단일 priority hook + useFocusEffect)
 3. ~~**F-followup-3** knot.tsx 본 진입 화면~~ ✅ `1cefe94` (cooling redirect + 5단계 미리보기 안내)
-4. **F-followup-4** — `app/knot/_layout.tsx` 정의 (Stack 가드·헤더 정책)
+4. ~~**F-followup-4** /knot/_layout.tsx~~ ✅ (이번 커밋) (graduationLockGuard 일차 게이트 + Stack 공통 헤더)
 8. **F-followup-6** — graduation 6화면 진행도 매핑 정리 (현재 farewell·ritual 둘 다 4/5, 안내 카드 5단계와 mismatch — opus PASS-WITH-CAVEATS 후속)
 5. **F-9 후속 — 서버 cron 푸시** — Edge Function으로 회상 의식·매듭 권유를 사용자가 앱 안 열어도 발화 (현재는 in-app catch-up만)
 6. **X-2-B-3** — 매듭·스트림 ai-* 함수 페르소나 통합 (A-4 코드측 해제로 진행 가능)
