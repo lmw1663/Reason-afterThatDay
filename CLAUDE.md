@@ -8,9 +8,12 @@
 | API 보안 | GPT API는 Edge Function에서만 호출, 클라이언트 직접 호출 금지 |
 | 키 관리 | `OPENAI_API_KEY`는 Edge Function 환경변수에만 저장 |
 | DB 보안 | 모든 테이블 RLS 필수 (`user_id` 기준), 미적용 테이블 사용 금지 |
-| 졸업 | 졸업 즉시 확정 금지 — 7일 유예 필수 |
-| 유예 알림 | Day 1~6 알림 없음 / Day 7 최종 푸시 1회만 허용 |
-| 유예 중 알림 | 유예기간 중 일반 알림(리마인더/감정변화) 전면 중지. **예외**: ① C-SSRS 양성 사용자에 대한 24시간 안부 재확인 푸시 (B-1) |
+| 매듭 (구 졸업) | 매듭 즉시 확정 금지 — 페르소나별 cooling 기간 필수 (P12=7일, P03·P11·P06=14일, P20=30일, P01=3일 옵션). 사용자 노출 어휘는 페르소나별 라벨 — P16·P17="마무리", P20="단절 30일 달성", 그 외="매듭". "졸업" 어휘 사용자 노출 금지(`lint:persona`로 강제). 정책 SSOT: `docs/psychology-logic/redesign-graduation.md` |
+| 매듭 권유 비허용 | P03(불안형)·P11(두려움형)·P16(결혼·이혼)·P19(ROCD)는 시스템 권유·자발 진입 모두 차단 (페르소나 재추정으로 허용 페르소나로 이행 시에만 가능). 임상 안전 정책 — 결정 강요·종결 압박이 해로운 페르소나 |
+| 매듭 가역성 | 매듭은 *끝*이 아닌 *사이클의 한 챕터*. 사용자는 매듭 후 언제든 새 사이클 시작 가능 (`relationship_profile.cycle_count` 증가, 이전 사이클은 `knot_archive`에 보존). "재발/실패/복귀" 어휘 금지 (`lint:persona` 강제) |
+| 유예 알림 | Day 1~(N-1) 일반 알림 없음 / Day N 최종 푸시 1회만 허용 (N = 페르소나별 cooling 기간) |
+| 유예 중 알림 | 유예기간 중 일반 알림(리마인더/감정변화·회상 의식) 전면 중지. **예외**: ① C-SSRS 양성 사용자에 대한 24시간 안부 재확인 푸시 (B-1) |
+| 매듭 위기 게이트 | C-SSRS 양성 시 매듭 트랙도 자동 잠금 (`safety_lockouts.graduation_locked`). 권유 트리거·cycle prompt 모두 차단. 해제 = `/safety/release` 24시간 + 안전 4문항 |
 | 판단 문구 | 진단/나침반 결과 화면에 "정답이 아니야" 문구 필수 포함 |
 | 방향 변화 | 방향 변화에 대한 비난/판단 문구 금지 |
 | D+N | D+N(이별 경과일) 전역 표시 항상 유지 |
@@ -136,7 +139,8 @@ eas submit                   # 스토어 제출
 |-----------|------|
 | UX 원칙 / 화면 전환 | [`docs/guide/01-product-principles.md`](docs/guide/01-product-principles.md) |
 | 기술 스택 / 아키텍처 | [`docs/guide/02-tech-and-architecture.md`](docs/guide/02-tech-and-architecture.md) |
-| 이별 일기 / 졸업 유예 | [`docs/guide/03-journal-and-cooling-policy.md`](docs/guide/03-journal-and-cooling-policy.md) |
+| 이별 일기 / 매듭 유예 | [`docs/guide/03-journal-and-cooling-policy.md`](docs/guide/03-journal-and-cooling-policy.md) |
+| 매듭 트랙 재설계 (Phase F) | [`docs/psychology-logic/redesign-graduation.md`](docs/psychology-logic/redesign-graduation.md) |
 | DB / 상태관리 | [`docs/guide/04-data-and-state.md`](docs/guide/04-data-and-state.md) |
 | GPT 호출 / 프롬프트 | [`docs/guide/05-ai-and-prompt-policy.md`](docs/guide/05-ai-and-prompt-policy.md) |
 | 알림 정책 | [`docs/guide/06-notification-policy.md`](docs/guide/06-notification-policy.md) |
