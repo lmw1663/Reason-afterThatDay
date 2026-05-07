@@ -67,9 +67,24 @@ const REASON_CHOICES: Choice<OnboardingResponses['q_breakup_reason']>[] = [
   { value: 'forced', label: '가족 반대·이주 등 외부 요인' },
 ];
 
+// PHQ-2 / GAD-2 단축형 — 표준 4단계 빈도 응답.
+// 임상 1차 스크리닝 도구로 공중 도메인. 정식 PHQ-9/GAD-7는 D+7 이후 옵트인 검사로 제공.
+type FreqLevel = '0' | '1' | '2' | '3';
+
+const FREQ_CHOICES: Choice<FreqLevel>[] = [
+  { value: '0', label: '거의 없었어' },
+  { value: '1', label: '며칠 그랬어' },
+  { value: '2', label: '일주일 넘게 그랬어' },
+  { value: '3', label: '거의 매일 그랬어' },
+];
+
+type AssessmentKey = 'phq2_q1' | 'phq2_q2' | 'gad2_q1' | 'gad2_q2';
+type AssessmentResponses = Partial<Record<AssessmentKey, FreqLevel>>;
+
 type Step =
   | 'q1' | 'q2' | 'q3' | 'q5'
   | 'q6' | 'q_self_infidelity' | 'q_complexity' | 'q_breakup_reason'
+  | 'phq2_q1' | 'phq2_q2' | 'gad2_q1' | 'gad2_q2'
   | 'crisis_q1' | 'crisis_q2' | 'crisis_q3'
   | 'classifying';
 
@@ -86,9 +101,18 @@ export default function PersonaOnboardingScreen() {
   const [crisis, setCrisis] = useState<CrisisResponses>({
     q1: false, q2: false, q3: false, q4: false, q5: false, q6: false,
   });
+  const [includeAssessment, setIncludeAssessment] = useState(false);
+  const [assessment, setAssessment] = useState<AssessmentResponses>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const stepIndex = useMemo(() => STEP_ORDER.indexOf(step), [step]);
+  // 정밀 검사 토글에 따라 step 순서가 달라짐 — q_breakup_reason 후 PHQ-2/GAD-2 4문항 끼워넣음.
+  const stepOrder = useMemo<Step[]>(() => (
+    includeAssessment
+      ? [...STEP_ORDER_BASE, ...STEP_ORDER_ASSESSMENT, ...STEP_ORDER_CRISIS]
+      : [...STEP_ORDER_BASE, ...STEP_ORDER_CRISIS]
+  ), [includeAssessment]);
+
+  const stepIndex = useMemo(() => stepOrder.indexOf(step), [stepOrder, step]);
   // C-SSRS·classifying 단계에선 fatigue option 비노출 — 안전 평가 우회 차단.
   const showFatigueOption =
     stepIndex >= FATIGUE_OPTION_FROM_INDEX &&
@@ -107,10 +131,17 @@ export default function PersonaOnboardingScreen() {
     advance(r, updatedCrisis);
   }
 
+  function pickAssessment(key: AssessmentKey, value: FreqLevel) {
+    const updated = { ...assessment, [key]: value };
+    setAssessment(updated);
+    advance(r, crisis);
+  }
+
   // setR/setCrisis가 비동기라 closure가 stale한 값을 잡지 않도록 *최신 응답을 명시 전달*.
   // 특히 C-SSRS는 마지막 응답이 누락되면 위험도 평가가 틀어져 안전 잠금까지 영향받음.
+  // includeAssessment는 q1 단계에서만 변경되므로 stale 문제 없음.
   function advance(currentR: Partial<OnboardingResponses>, currentCrisis: CrisisResponses) {
-    const next = nextStep(step, currentR, currentCrisis);
+    const next = nextStep(step, currentR, currentCrisis, includeAssessment);
     setStep(next);
     if (next === 'classifying') void runClassification(currentR, currentCrisis);
   }
@@ -119,6 +150,14 @@ export default function PersonaOnboardingScreen() {
     if (!userId) return;
     setSubmitting(true);
     try {
+      // 정밀 검사 옵트인 응답은 일단 메모리 보관 + dev 로그. DB 저장 및 양성 시 자원 안내는 후속 태스크.
+      // PHQ/GAD 점수는 민감 정보 — production 번들에 누출되지 않도록 __DEV__ 가드 필수.
+      if (includeAssessment && __DEV__) {
+        const phqScore = scoreFreq(assessment.phq2_q1) + scoreFreq(assessment.phq2_q2);
+        const gadScore = scoreFreq(assessment.gad2_q1) + scoreFreq(assessment.gad2_q2);
+        console.log('[onboarding] assessment scores — PHQ-2:', phqScore, 'GAD-2:', gadScore);
+      }
+
       // C-SSRS 응답 기록 — severity가 high/urgent면 잠금 자동 생성 (B-1)
       const crisisResult = await recordCrisisAssessment(userId, { source: 'onboarding', responses: currentCrisis });
 
@@ -176,9 +215,24 @@ export default function PersonaOnboardingScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 24 }}
       >
-        <Caption className="mb-2">너에 대해 — {stepIndex + 1} / {STEP_ORDER.length}</Caption>
+        <Caption className="mb-2">너에 대해 — {stepIndex + 1} / {stepOrder.length}</Caption>
         {step === 'q1' && (
-          <SingleChoice title="이번 이별은 누가 결정했어?" choices={Q1_CHOICES} onPick={v => pick('q1_initiator', v)} />
+          <>
+            <SingleChoice title="이번 이별은 누가 결정했어?" choices={Q1_CHOICES} onPick={v => pick('q1_initiator', v)} />
+            <Pressable
+              onPress={() => setIncludeAssessment(v => !v)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: includeAssessment }}
+              accessibilityLabel="정밀 검사 함께 받기"
+              className="mt-6 py-3"
+            >
+              <Caption className={includeAssessment ? 'text-center text-purple-400' : 'text-center text-gray-500'}>
+                {includeAssessment
+                  ? '정밀 검사 4문항 추가됨 — 다시 누르면 해제'
+                  : '정밀 검사도 함께 받을래 (4문항 추가)'}
+              </Caption>
+            </Pressable>
+          </>
         )}
         {step === 'q2' && (
           <SingleChoice title="사귀는 도중에 자주 들었거나 떠올랐던 말은?" choices={Q2_CHOICES} onPick={v => pick('q2_thought', v)} />
@@ -214,6 +268,35 @@ export default function PersonaOnboardingScreen() {
         )}
         {step === 'q_breakup_reason' && (
           <SingleChoice title="이별의 결은 어땠어?" choices={REASON_CHOICES} onPick={v => pick('q_breakup_reason', v)} />
+        )}
+
+        {step === 'phq2_q1' && (
+          <SingleChoice
+            title="지난 2주 동안, 일이나 활동에 대한 흥미나 재미를 거의 느끼지 못했어?"
+            choices={FREQ_CHOICES}
+            onPick={v => pickAssessment('phq2_q1', v)}
+          />
+        )}
+        {step === 'phq2_q2' && (
+          <SingleChoice
+            title="지난 2주 동안, 가라앉거나 우울하거나 희망이 없다고 느꼈어?"
+            choices={FREQ_CHOICES}
+            onPick={v => pickAssessment('phq2_q2', v)}
+          />
+        )}
+        {step === 'gad2_q1' && (
+          <SingleChoice
+            title="지난 2주 동안, 초조하거나 불안하거나 조마조마하게 느꼈어?"
+            choices={FREQ_CHOICES}
+            onPick={v => pickAssessment('gad2_q1', v)}
+          />
+        )}
+        {step === 'gad2_q2' && (
+          <SingleChoice
+            title="지난 2주 동안, 걱정을 멈추거나 조절하기 어려웠어?"
+            choices={FREQ_CHOICES}
+            onPick={v => pickAssessment('gad2_q2', v)}
+          />
         )}
 
         {step === 'crisis_q1' && (
@@ -303,13 +386,21 @@ function SingleChoice<V extends string>({ title, choices, onPick }: SingleChoice
 
 /* ──────────── 흐름 제어 ──────────── */
 
-const STEP_ORDER: Step[] = [
+// STEP_ORDER를 셋으로 쪼갠 이유: q1 토글에 따라 ASSESSMENT 4문항을 BASE와 CRISIS *사이에* 끼워넣기 위함.
+// classifying은 항상 마지막 — CRISIS 묶음 끝에 둠.
+const STEP_ORDER_BASE: Step[] = [
   'q1', 'q2', 'q3', 'q5',
   'q6', 'q_self_infidelity', 'q_complexity', 'q_breakup_reason',
-  'crisis_q1', 'crisis_q2', 'crisis_q3', 'classifying',
 ];
+const STEP_ORDER_ASSESSMENT: Step[] = ['phq2_q1', 'phq2_q2', 'gad2_q1', 'gad2_q2'];
+const STEP_ORDER_CRISIS: Step[] = ['crisis_q1', 'crisis_q2', 'crisis_q3', 'classifying'];
 
-function nextStep(current: Step, r: Partial<OnboardingResponses>, crisis: CrisisResponses): Step {
+function nextStep(
+  current: Step,
+  r: Partial<OnboardingResponses>,
+  crisis: CrisisResponses,
+  includeAssessment: boolean,
+): Step {
   switch (current) {
     case 'q1': return 'q2';
     case 'q2': return 'q3';
@@ -320,13 +411,22 @@ function nextStep(current: Step, r: Partial<OnboardingResponses>, crisis: Crisis
     case 'q6': return 'q_self_infidelity';
     case 'q_self_infidelity': return 'q_complexity';
     case 'q_complexity': return 'q_breakup_reason';
-    case 'q_breakup_reason': return 'crisis_q1';
+    // 정밀 검사 옵트인 시 PHQ-2/GAD-2 4문항 후 C-SSRS — 안전 평가는 항상 마지막에 위치.
+    case 'q_breakup_reason': return includeAssessment ? 'phq2_q1' : 'crisis_q1';
+    case 'phq2_q1': return 'phq2_q2';
+    case 'phq2_q2': return 'gad2_q1';
+    case 'gad2_q1': return 'gad2_q2';
+    case 'gad2_q2': return 'crisis_q1';
     case 'crisis_q1': return 'crisis_q2';
     // C-SSRS 표준: 적극적 자살 사고가 음성이면 구체적 방법 질문은 skip — 사용자 부담 완화 + 의미 없는 질문 회피.
     case 'crisis_q2': return crisis.q2 ? 'crisis_q3' : 'classifying';
     case 'crisis_q3': return 'classifying';
     default: return current;
   }
+}
+
+function scoreFreq(v: FreqLevel | undefined): number {
+  return v ? Number(v) : 0;
 }
 
 /**
