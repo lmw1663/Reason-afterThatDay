@@ -9,6 +9,10 @@ export interface RelationshipProfile {
   role: number;   // 0~10
   prosByDate: Record<string, string[]>;  // { "D+5": [...] }
   consByDate: Record<string, string[]>;  // { "D+15": [...] }
+  /** 매듭 사이클 누적 (마이그레이션 033). 1부터 시작. F-8 가역성 — 매듭 후 새 cycle 시작 시 증가. */
+  cycleCount: number;
+  /** 가장 최근 매듭 완료 시각 (ISO). null이면 아직 매듭 경험 없음. */
+  lastKnotAt: string | null;
 }
 
 interface RelationshipState {
@@ -26,6 +30,8 @@ const defaultProfile: RelationshipProfile = {
   role: 0,
   prosByDate: {},
   consByDate: {},
+  cycleCount: 1,
+  lastKnotAt: null,
 };
 
 export const useRelationshipStore = create<RelationshipState>((set) => ({

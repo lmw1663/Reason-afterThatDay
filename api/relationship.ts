@@ -11,6 +11,8 @@ function toProfile(row: Record<string, unknown>): RelationshipProfile {
     role:       (row.role as number)      ?? 0,
     prosByDate: (row.pros_by_date as Record<string, string[]>) ?? {},
     consByDate: (row.cons_by_date as Record<string, string[]>) ?? {},
+    cycleCount: (row.cycle_count as number) ?? 1,
+    lastKnotAt: (row.last_knot_at as string) ?? null,
   };
 }
 
