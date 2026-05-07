@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
+import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { shouldShowIntrusiveTrend } from '@/constants/personaBranches';
 import { getIntrusiveMemoryTrend } from '@/api/intrusiveMemory';
 import { useScreenView } from '@/hooks/useScreenView';
@@ -27,6 +28,9 @@ export default function RecordsScreen() {
   const { userId } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
   const showIntrusiveTrend = shouldShowIntrusiveTrend(personaPrimary);
+  // F-10 매듭 사이클 카드 — 매듭 경험 있을 때만 노출
+  const lastKnotAt = useRelationshipStore((s) => s.profile.lastKnotAt);
+  const hasKnotHistory = lastKnotAt !== null;
 
   useScreenView('records', { persona_category: anonymizePersona(personaPrimary) });
   useEffect(() => {
@@ -100,6 +104,14 @@ export default function RecordsScreen() {
             subtitle="처음과 지금의 마음 결을 비교해봐"
             onPress={() => router.push('/recovery-trace' as never)}
           />
+          {hasKnotHistory && (
+            <RecordCard
+              icon="link"
+              title="매듭의 흔적"
+              subtitle="지나온 사이클들을 시간 순으로"
+              onPress={() => router.push('/knot/archive' as never)}
+            />
+          )}
         </View>
       </ScrollView>
     </ScreenWrapper>

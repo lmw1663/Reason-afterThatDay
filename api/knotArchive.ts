@@ -27,6 +27,34 @@ export async function saveKnotArchive(args: {
   }
 }
 
+export interface KnotArchiveRow {
+  id: string;
+  cycleIndex: number;
+  archivedAt: string;
+  knotLabel: '매듭' | '마무리' | '단절 30일 달성';
+  summary: Record<string, unknown>;
+}
+
+/**
+ * 사용자의 모든 매듭 archive를 cycle_index 내림차순으로 조회.
+ * [기록] 탭에 사이클 타임라인 노출용 (F-10).
+ */
+export async function fetchKnotArchives(userId: string): Promise<KnotArchiveRow[]> {
+  const { data, error } = await supabase
+    .from('knot_archive')
+    .select('id, cycle_index, archived_at, knot_label, summary')
+    .eq('user_id', userId)
+    .order('cycle_index', { ascending: false });
+  if (error) throw new Error(`fetchKnotArchives failed: ${error.message}`);
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    cycleIndex: row.cycle_index as number,
+    archivedAt: row.archived_at as string,
+    knotLabel: row.knot_label as KnotArchiveRow['knotLabel'],
+    summary: (row.summary as Record<string, unknown>) ?? {},
+  }));
+}
+
 /**
  * relationship_profile.cycle_count 증가 + last_knot_at·last_knot_label 갱신.
  * 새 사이클 시작 시 호출.
