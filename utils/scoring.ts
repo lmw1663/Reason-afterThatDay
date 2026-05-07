@@ -15,6 +15,8 @@ export type Source = 'onboarding' | 'd7' | 'd14' | 'd30' | 'graduation' | 'manua
 export type Phq9Band = 'minimal' | 'mild' | 'moderate' | 'modSevere' | 'severe';
 export type Gad7Band = 'minimal' | 'mild' | 'moderate' | 'severe';
 export type RseBand = 'low' | 'avg' | 'high';
+export type Phq2Band = 'minimal' | 'positive';
+export type Gad2Band = 'minimal' | 'positive';
 
 export interface Score<B extends string> {
   rawScore: number;
@@ -82,6 +84,48 @@ export function scoreRSE(responses: Record<string, number>): Score<RseBand> {
   else if (rawScore <= 25) band = 'avg';
   else band = 'high';
   return { rawScore, band };
+}
+
+/**
+ * PHQ-2 — 2문항 × 4점 리커트(0~3). 합 0~6.
+ * Kroenke et al. (2003), 한국어판 안제용 외 (2013).
+ *
+ * 임상 1차 스크리닝 도구 — 양성(≥3)이면 PHQ-9 정식 검사 권유.
+ * Phase H 페르소나 분류 a9_depression 축 입력으로도 사용.
+ */
+export function scorePHQ2(responses: Record<string, number>): Score<Phq2Band> {
+  const rawScore = sumN(responses, 2);
+  return { rawScore, band: rawScore >= 3 ? 'positive' : 'minimal' };
+}
+
+/**
+ * GAD-2 — 2문항 × 4점 리커트(0~3). 합 0~6.
+ * Kroenke et al. (2007), 한국어판 Seo & Park (2015) — J Headache Pain "GAD-7 and GAD-2" 검증 논문.
+ *
+ * 임상 1차 스크리닝 도구 — 양성(≥3)이면 GAD-7 정식 검사 권유.
+ * Phase H 페르소나 분류 a10_anxiety 축 입력으로도 사용.
+ */
+export function scoreGAD2(responses: Record<string, number>): Score<Gad2Band> {
+  const rawScore = sumN(responses, 2);
+  return { rawScore, band: rawScore >= 3 ? 'positive' : 'minimal' };
+}
+
+/**
+ * PHQ-2/GAD-2 raw score (0~6) → 페르소나 분류 축 값 (0~3).
+ *
+ * 임상 임계(≥3 양성)이 축 값 ≥2와 정렬되도록 매핑:
+ *  · 0~1 → 0 (음성)
+ *  · 2   → 1 (경계)
+ *  · 3~4 → 2 (양성, 임상 임계)
+ *  · 5~6 → 3 (강한 양성)
+ *
+ * NULL/undefined raw score는 "미측정" — 호출자가 가드. 본 함수는 0~6만 받음.
+ */
+export function shortFormScoreToAxis(rawScore: number): 0 | 1 | 2 | 3 {
+  if (rawScore <= 1) return 0;
+  if (rawScore <= 2) return 1;
+  if (rawScore <= 4) return 2;
+  return 3;
 }
 
 /**

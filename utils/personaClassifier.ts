@@ -37,7 +37,10 @@ export const COMPLEXITY_PERSONAS: PersonaCode[] = ['P15', 'P16', 'P18'];
 export const HARMFUL_RELATIONSHIP: PersonaCode[] = ['P01', 'P14', 'P20'];
 
 /**
- * 8축 (페르소나-분류체계.md §2)
+ * 10축 (페르소나-분류체계.md §2 + Phase H 확장)
+ *
+ * a9·a10은 *옵셔널* — PHQ-2/GAD-2 정밀 검사 옵트인 사용자만 측정.
+ * 비옵트인 사용자는 undefined → matchedRuleKeys()에서 RuleKey 미발동 → 기존 분류 결과 동일.
  */
 export interface PsychAxes {
   a1_attachment: 0 | 1 | 2 | 3;          // 안정/불안/회피/두려움
@@ -48,6 +51,8 @@ export interface PsychAxes {
   a6_complexity: 0 | 1 | 2 | 3;          // 없음/공동지인/동거·재정/결혼·자녀
   a7_dominant_emotion: 0 | 1 | 2 | 3 | 4; // 슬픔/분노/죄책감/공허/혼란
   a8_crisis: 0 | 1 | 2 | 3;              // 안전/주의/고위험/즉시개입
+  a9_depression?: 0 | 1 | 2 | 3;         // PHQ-2 기반 (옵트인). ≥2 양성
+  a10_anxiety?: 0 | 1 | 2 | 3;           // GAD-2 기반 (옵트인). ≥2 양성
 }
 
 /**
