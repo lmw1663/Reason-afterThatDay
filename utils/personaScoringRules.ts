@@ -26,7 +26,9 @@ export type RuleKey =
   | 'q6.diverged'
   | 'q_self_infidelity'
   | 'q_complexity.cohabitation' | 'q_complexity.shared_circle' | 'q_complexity.marriage'
-  | 'q_reason.forced';
+  | 'q_reason.forced'
+  // Phase H — PHQ-2/GAD-2 옵트인 응답 (a9·a10 ≥2 양성 시만 push, 비옵트인은 미발동)
+  | 'a9.depression_positive' | 'a10.anxiety_positive';
   // ECR-R 라이선스 회신 후 활성화 예정 키:
   // 'ecrr.avoidance_high' | 'ecrr.anxiety_high' | 'ecrr.both_high'
 
@@ -69,4 +71,10 @@ export const SCORING_RULES: Record<RuleKey, Partial<Record<PersonaCode, number>>
 
   // 이별 사유 (사별 제외)
   'q_reason.forced':            { P17: 3 },
+
+  // Phase H — PHQ-2/GAD-2 옵트인 응답 (a9·a10 ≥2 양성 시 발동, 보수적 가중치)
+  // 임상 근거: 우울/불안은 P09(회피·우울)·P03(불안형)·P11(두려움형)·P19(ROCD)와 흔히 동반.
+  // 옵트인 사용자에게만 적용 — matchedRuleKeys()에서 NULL/undefined 가드.
+  'a9.depression_positive':     { P09: 2, P03: 1, P11: 1, P19: 1 },
+  'a10.anxiety_positive':       { P03: 2, P11: 2, P19: 1, P10: 1 },
 };
