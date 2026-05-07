@@ -12,6 +12,7 @@ import { useCoolingStore } from '@/store/useCoolingStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { useKnotPolicy } from '@/hooks/useKnotPolicy';
+import { useGraduationLockGuard } from '@/hooks/useGraduationLockGuard';
 import { advanceRelationshipCycle, saveKnotArchive } from '@/api/knotArchive';
 import { buildArchiveSnapshot } from '@/utils/knotCycle';
 
@@ -30,6 +31,10 @@ import { buildArchiveSnapshot } from '@/utils/knotCycle';
  * 이미 매듭을 경험한 사용자가 일기를 다시 쓰는 것은 가역성 H1의 본질 — P19(ROCD)·P03·P11
  * 등 비허용 페르소나라도 *일기 작성 자체*는 막을 수 없다. 권유 모달(prompt.tsx)과 다른
  * 책임 영역. 따라서 본 화면은 페르소나 권유 게이트를 의도적으로 건너뛴다.
+ *
+ * **F-12 P1-C 위기 lockout 가드**: 가역성 H1은 *비낙인* 의미이지 *위기 무시*가 아니다.
+ * C-SSRS 양성 사용자가 새 사이클을 시작하면 자해 충동·폭발성 위험 — graduationLocked 시
+ * 즉시 / 로 reroute하여 위기 자원 화면이 우선되도록 한다. (페르소나 게이트는 미적용 유지)
  */
 export default function KnotCyclePromptScreen() {
   const { daysElapsed } = useUserStore();
@@ -44,6 +49,14 @@ export default function KnotCyclePromptScreen() {
   const entries = useJournalStore((s) => s.entries);
   const personaPrimary = usePersonaStore((s) => s.primary);
   const personaSecondary = usePersonaStore((s) => s.secondary);
+  const graduationLock = useGraduationLockGuard();
+
+  // F-12 P1-C: 위기 lockout 시 즉시 차단 — 가역성 H1보다 안전 우선
+  useEffect(() => {
+    if (graduationLock === 'locked') {
+      router.replace('/');
+    }
+  }, [graduationLock]);
 
   const handleNewCycle = useCallback(async () => {
     if (lastKnotAt) markCyclePromptShown(lastKnotAt);

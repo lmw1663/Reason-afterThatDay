@@ -41,6 +41,9 @@ interface KnotState {
   /** 사이클 prompt를 본 매듭으로 표시. 같은 lastKnotAt에 대해 한 번만 prompt. */
   markCyclePromptShown: (knotAt: string) => void;
 
+  /** F-12 P1-E 쿨다운만 리셋 — 페르소나 비허용→허용 이행 시 호출. knotTabVisible은 보존. */
+  clearCooldown: () => void;
+
   reset: () => void;
 }
 
@@ -59,6 +62,7 @@ const INITIAL_STATE = {
   | 'recordAccept'
   | 'canPromptNow'
   | 'markCyclePromptShown'
+  | 'clearCooldown'
   | 'reset'
 >;
 
@@ -111,6 +115,13 @@ export const useKnotStore = create<KnotState>()(
 
       markCyclePromptShown: (knotAt) =>
         set({ lastCyclePromptShownForKnotAt: knotAt }),
+
+      clearCooldown: () =>
+        set({
+          lastPromptDeclinedAt: null,
+          // lastTriggerCycle도 초기화하여 같은 cycle 재발화 차단도 해제
+          lastTriggerCycle: null,
+        }),
 
       reset: () => set({ ...INITIAL_STATE }),
     }),

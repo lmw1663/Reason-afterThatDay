@@ -89,6 +89,22 @@ export async function markRevisitTriggered(id: string): Promise<void> {
 }
 
 /**
+ * F-12 P1-B — cooling 취소(또는 매듭 풀기) 시 해당 cooling_period의 미발화 schedule을
+ * 모두 강제 마킹하여 추후 fetchDueRevisits에 잡히지 않도록 한다.
+ *
+ * RLS UPDATE 정책으로 처리 (DELETE 정책 부재 — knot_revisit_schedule은 발화 이력 보존이라
+ * row 삭제 대신 triggered_at=now()로 *논리적 마킹*).
+ */
+export async function cancelRevisitsForCooling(coolingPeriodId: string): Promise<void> {
+  const { error } = await supabase
+    .from('knot_revisit_schedule')
+    .update({ triggered_at: new Date().toISOString() })
+    .eq('cooling_period_id', coolingPeriodId)
+    .is('triggered_at', null);
+  if (error) throw new Error(`cancelRevisitsForCooling failed: ${error.message}`);
+}
+
+/**
  * 사용자가 회상 의식 화면을 *완료*한 시점 표시.
  */
 export async function markRevisitCompleted(id: string): Promise<void> {

@@ -22,6 +22,7 @@ import { fetchRelationshipProfile } from '@/api/relationship';
 import { withRetry } from '@/utils/retry';
 import { useEmotionalSafety } from '@/hooks/useEmotionalSafety';
 import { useKnotTrigger } from '@/hooks/useKnotTrigger';
+import { useKnotCooldownReset } from '@/hooks/useKnotCooldownReset';
 import { useCyclePromptTrigger } from '@/hooks/useCyclePromptTrigger';
 import { useRevisitTrigger } from '@/hooks/useRevisitTrigger';
 import { useScreenView } from '@/hooks/useScreenView';
@@ -62,6 +63,9 @@ export default function HomeScreen() {
   // 비허용 페르소나/위기 신호/낮은 mood/쿨다운 등 어느 하나라도 실패면 미발화.
   // 모달이 mount되면 useKnotStore.recordPrompt가 lastTriggerCycle을 기록 → 같은 사이클
   // 재발화 차단. 거절 시 7일 쿨다운으로 재발화 차단.
+  // F-12 P1-E 페르소나 비허용→허용 이행 시 매듭 쿨다운 리셋
+  useKnotCooldownReset();
+
   // F-9 회상 의식 trigger — due한 회상 의식이 있으면 가장 우선.
   // 이미 매듭 후 시간이 지난 사용자에게 *가장 시기 정합*적인 화면.
   const { dueRitual } = useRevisitTrigger();

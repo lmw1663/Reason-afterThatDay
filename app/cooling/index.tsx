@@ -16,6 +16,7 @@ import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { cancelCooling } from '@/api/graduation';
+import { cancelRevisitsForCooling } from '@/api/knotRevisit';
 import {
   saveCoolingReflection,
   fetchEarliestJournalEntry,
@@ -72,6 +73,12 @@ export default function CoolingDashboardScreen() {
           onPress: async () => {
             if (!id || !userId) return;
             await cancelCooling(id);
+            // F-12 P1-B 회상 의식 schedule도 함께 cancel — 취소된 cooling의 회상이 추후 발화 차단
+            try {
+              await cancelRevisitsForCooling(id);
+            } catch (e) {
+              console.warn('[cooling] cancelRevisitsForCooling failed:', e);
+            }
             updateStatus('cancelled');
             router.replace('/(tabs)');
           },
@@ -335,6 +342,7 @@ export default function CoolingDashboardScreen() {
               if (id && userId) {
                 try {
                   await cancelCooling(id);
+                  await cancelRevisitsForCooling(id);
                   updateStatus('cancelled');
                 } catch (e) {
                   console.warn('[cooling] auto-cancel before paused failed:', e);
