@@ -1,16 +1,14 @@
 import { useState } from 'react';
-import { ScrollView, View, Pressable, Text } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { DirectionPicker } from '@/components/ui/DirectionPicker';
+import { AffectionSlider } from '@/components/ui/AffectionSlider';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
-import { colors } from '@/constants/colors';
-
-const AFFECTION_STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export default function JournalDirectionScreen() {
   const params = useLocalSearchParams<{
@@ -53,90 +51,9 @@ export default function JournalDirectionScreen() {
           prevDirection={lastDirection}
         />
 
-        {/* 애정↔원망 수평축 슬라이더 */}
         <View className="mt-10">
-          <Body className="text-gray-300 mb-1">지금 상대를 어떻게 느껴?</Body>
-          <Caption className="text-gray-500 mb-4">선택사항이야</Caption>
-
-          <View className="flex-row justify-between mb-2">
-            <Caption className="text-coral-400">완전히 미워</Caption>
-            <Caption className="text-purple-400">여전히 좋아</Caption>
-          </View>
-
-          <View className="flex-row justify-between items-end">
-            {AFFECTION_STEPS.map((step) => (
-              <Pressable
-                key={step}
-                onPress={() => setAffectionLevel(step)}
-                accessibilityRole="adjustable"
-                accessibilityLabel={`애정 수준 ${step}점`}
-                accessibilityState={{ selected: step === affectionLevel }}
-                style={{ alignItems: 'center' }}
-              >
-                <View
-                  style={{
-                    width: 20,
-                    height: step === affectionLevel ? 48 : 28,
-                    borderRadius: 4,
-                    backgroundColor:
-                      step <= affectionLevel
-                        ? step <= 3
-                          ? colors.coral[400]
-                          : step >= 7
-                          ? colors.purple[400]
-                          : colors.gray[600]
-                        : colors.border,
-                  }}
-                />
-                <Text className="text-gray-600 text-xs mt-1">{step}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {/* G-14: 4가지 임상 상태 분류 (psychology-analysis.md §3) — *임상 어휘 노출 제거*.
-              "미해결 애착·상호의존 신호·건강한 수용 진입·분노 단계 통과 중" 같은 진단명-유사
-              어휘는 사용자가 자기 진단·분류하게 만들어 CLAUDE.md "페르소나 라벨 비노출"
-              정신과 충돌. label(상태 묘사)은 유지하고 meaning은 부드러운 안내로 교체.
-              "지금 너의 마음:" 단정 표현도 가능성 톤("지금 이 마음은")으로 완화. */}
-          {(() => {
-            if (!direction) return null;
-            let label: string | null = null;
-            let meaning: string | null = null;
-            if (direction === 'catch' && affectionLevel >= 7) {
-              label = '잡고 싶고 좋아하는 마음';
-              meaning = '천천히 들여다봐도 돼';
-            } else if (direction === 'catch' && affectionLevel <= 3) {
-              label = '잡고 싶지만 미운 마음';
-              meaning = '가장 흔들리기 쉬운 시점이야';
-            } else if (direction === 'let_go' && affectionLevel >= 7) {
-              label = '보내지만 여전히 좋아하는 마음';
-              meaning = '천천히 가는 결이야';
-            } else if (direction === 'let_go' && affectionLevel <= 3) {
-              label = '보내고 미움도 큰 마음';
-              meaning = '지금은 자연스러운 흐름이야';
-            }
-            if (!label) {
-              return (
-                <Caption className="mt-3 text-gray-400 text-center">
-                  지금 이 마음도 자연스러운 거야.
-                </Caption>
-              );
-            }
-            return (
-              <View
-                className="mt-4 rounded-2xl p-4"
-                style={{
-                  backgroundColor: colors.surface,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                }}
-              >
-                <Caption className="text-gray-500 mb-1">지금 이 마음은</Caption>
-                <Body className="text-white font-medium mb-1">{label}</Body>
-                <Caption className="text-gray-400">{meaning}</Caption>
-              </View>
-            );
-          })()}
+          <Body className="text-gray-300 mb-4">지금 상대를 어떻게 느껴?</Body>
+          <AffectionSlider value={affectionLevel} onChange={setAffectionLevel} />
         </View>
       </ScrollView>
 

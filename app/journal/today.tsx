@@ -5,6 +5,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
+import { AffectionSlider } from '@/components/ui/AffectionSlider';
 import { DirectionPicker } from '@/components/ui/DirectionPicker';
 import { Pill } from '@/components/ui/Pill';
 import { InsightCard } from '@/components/ui/InsightCard';
@@ -21,8 +22,6 @@ import {
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
 import { fetchTodayEntry, upsertJournalEntry } from '@/api/journal';
-
-const AFFECTION_STEPS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 export default function TodayJournalEditScreen() {
   const { userId } = useUserStore();
@@ -190,43 +189,10 @@ export default function TodayJournalEditScreen() {
           <DirectionPicker value={direction} onChange={setDirection} />
         </View>
 
-        {/* 애정 수준 (방향 선택 시) */}
         {direction !== 'undecided' && (
           <View className="mb-8">
-            <Body className="text-gray-300 mb-1">지금 상대를 어떻게 느껴?</Body>
-            <Caption className="text-gray-500 mb-4">선택사항이야</Caption>
-            <View className="flex-row justify-between mb-2">
-              <Caption className="text-coral-400">완전히 미워</Caption>
-              <Caption className="text-purple-400">여전히 좋아</Caption>
-            </View>
-            <View className="flex-row justify-between items-end">
-              {AFFECTION_STEPS.map((step) => (
-                <Pressable
-                  key={step}
-                  onPress={() => setAffectionLevel(step)}
-                  accessibilityRole="adjustable"
-                  accessibilityLabel={`애정 수준 ${step}점`}
-                  accessibilityState={{ selected: step === affectionLevel }}
-                  style={{ alignItems: 'center' }}
-                >
-                  <View
-                    style={{
-                      width: 18,
-                      height: step === affectionLevel ? 44 : 24,
-                      borderRadius: 4,
-                      backgroundColor:
-                        step <= affectionLevel
-                          ? step <= 3
-                            ? colors.coral[400]
-                            : step >= 7
-                              ? colors.purple[400]
-                              : colors.gray[600]
-                          : colors.border,
-                    }}
-                  />
-                </Pressable>
-              ))}
-            </View>
+            <Body className="text-gray-300 mb-4">지금 상대를 어떻게 느껴?</Body>
+            <AffectionSlider value={affectionLevel} onChange={setAffectionLevel} />
           </View>
         )}
 
