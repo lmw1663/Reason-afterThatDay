@@ -48,6 +48,7 @@ C-2-Ref 참고용 적용:    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
 C-3 다중 페르소나 충돌:   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (5 화면 + 59/59 단위 테스트 PASS)
 X-2-B GPT 페르소나 통합: ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ (X-2-B-3 매듭·스트림 통합 완료)
 D. 검사 통합 (구현계획 3부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ B-0 라이선스 회신 의존
+Q. 일기 통합 큐:           ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  100%  ✅ 완료 (Q-1~Q-5 + opus P0/P1 5건 fix)
 E. 베타·프레임 (구현계획 4부): ░░░░░░░░░░░░░░░░░░░░    0%  ⬜ ECR-R/RRS 라이선스 + 베타 50명 의존
 F. 매듭 트랙 부활 (졸업 재설계): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓  99%  🔄 (F-1~F-12·F-13 코드측·P1 전체·followup-1 완료 16커밋, F-13 공식 A-4 해제만 외부 임상 재검증 의존)
 횡단 (X-1·X-2·X-3·X-4·X-5): ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░   95%  🔄 (X-3-잔여-4 임상 감수만 외부 의존)
@@ -461,6 +462,47 @@ create unique index users_provider_id on public.users(provider, provider_user_id
 5. 푸시 + TODO.md 갱신
 
 **큰 묶음 검증**: H-8 완료 후 통합 시나리오 검증 1회 — (a) 비옵트인 사용자 분류 결과가 8축 시절과 동일한지, (b) 옵트인 사용자 양성/음성 케이스가 의도된 페르소나로 가는지, (c) C-SSRS 양성 시 a9/a10 무관하게 crisis_lockout 우선.
+
+---
+
+# Phase Q — 일기 통합 큐 (Journal Unified Queue) ✅
+
+> **이유**: 분석/about-me/추억 트랙으로 흩어진 질문 응답을 일기 흐름 안 통합 큐(1번에 1개씩)로 받아 사용자 결정 피로 제거. 페르소나·D+N·잠금 가드 모두 라우터에서 통합 처리.
+> **정책 SSOT**: [`docs/journal-unified-queue.md`](docs/journal-unified-queue.md)
+
+| ID | 작업 | 상태 | 커밋 |
+|---|---|---|---|
+| Q-1 | 정책 SSOT — `isJournalProsConsBlocked` / `getJournalProsConsRatio` / `getJournalQueueMaxLength` + 단위 테스트 46 | ✅ | `3725569` |
+| Q-2 | 큐 라우터 `buildQueueSequence` — 페르소나·D+N·잠금 가드 통합 시퀀스 + 단위 테스트 28 | ✅ | `4f3d80a` |
+| Q-3 | `useJournalQueue` 훅 + AsyncStorage 기반 다음날 우선노출 (TTL 1일) | ✅ | `aa3154b` |
+| Q-4 | `app/journal/question.tsx` 큐 셸 리팩터 — 항목 종류별 입력 + "다음에" 스킵 | ✅ | `53fd00a` |
+| Q-5 | 도메인 라우팅(`routeQueueAnswers`) + AI freeText 합치기(`composeAugmentedFreeText`) + opus 리뷰 P0/P1 5건 fix | ✅ | `4e9ee5d` |
+| Q-6 | 정책 SSOT 문서 + TODO 갱신 | ✅ | (본 커밋) |
+
+**페르소나별 단점:장점 비중 곡선**:
+- default(P02·P04·P06·P08): 0.7 / 0.6 / 0.5 (D+0~7 / 8~30 / 30+)
+- 분노(P10): 0.8 / 0.7 / 0.6
+- 균형(P03·P11·P18): 항상 0.5 (결정 트라우마 자극 회피)
+- 장점 우세(P05·P07·P09·P12·P15): 0.6 / 0.5 / 0.4
+- 장점 보존(P17): 항상 0.3 (Continuing Bonds)
+- **차단**(P01·P14·P16·P19·P20): 장단점 풀 자체 제거 → about-me 우회
+
+**큐 길이 상한**: D+0~7 = 3개 / D+8+ = 5개
+
+**Opus 리뷰 P0/P1 fix 반영** (Q-5):
+- P0-2: `recentlyServedAboutMe` 7일 윈도우 + `prosConsAnsweredToday` 실제 fetch (임상 안전 우회 차단)
+- P0-3+P1-1+P1-2: submittingRef + skipQueueRef Promise chain 직렬화 + currentIndex 클램프
+- P1-3: navigatedRef + useEffect deps에서 params 객체 제거
+- P1-4: 빈 큐 즉시 done 처리 — 위기 페르소나 사용자 화면 멈춤 차단
+- P1-6: skip TTL 1일 — 며칠 전 record 만료
+
+**알려진 한계 (후속 권장)**:
+- P0-1: `routeQueueAnswers` 동시성 race — 멀티 라이터 시 prosByDate 일부 손실 가능. SQL RPC 원자 갱신 별도 PR 필요.
+- P2-1: seed 분산 — 같은 D+N 사용자 동일 prosCons 분배. userId hash 추가로 분산 향상 권장.
+- P2-2: `QueueItem` discriminated union 미적용 — 별도 타입 리팩터.
+- `recentlyServedMemory` 미추적 — 추억 카테고리 도메인 테이블 없음. 별도 `journal_memory_responses` 테이블 또는 freeText 파싱.
+
+**총 테스트 커버리지**: 96 케이스 (전체 652 PASS 중 신규 96)
 
 ---
 
