@@ -7,6 +7,7 @@ import { Pill } from '@/components/ui/Pill';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { PreviousAnswerHint } from '@/components/ui/PreviousAnswerHint';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useSmartQuestion } from '@/hooks/useSmartQuestion';
 import { useUserStore } from '@/store/useUserStore';
@@ -84,6 +85,16 @@ export default function AnalysisReasonScreen() {
         {poolQuestion && selected.length > 0 && (
           <View className="mt-8">
             <Body className="text-white font-medium mb-3">{poolQuestion.text}</Body>
+            <PreviousAnswerHint
+              questionId={poolQuestion.id}
+              // 이미 타이핑 중인 답을 덮어쓰지 않음 — 빈 상태일 때만 이전 답으로 채움
+              onUseAgain={(v) => {
+                if (answer.trim().length > 0) return;
+                setAnswer(typeof v === 'string' ? v : String(v ?? ''));
+              }}
+              format="card"
+              className="mb-3"
+            />
             <TextInput
               value={answer}
               onChangeText={setAnswer}

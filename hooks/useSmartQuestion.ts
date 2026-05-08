@@ -7,7 +7,10 @@ import {
 } from '@/constants/personaQuestionWeights';
 import type { PersonaCode } from '@/utils/personaClassifier';
 
-const DIRECTION_CHANGE_QUESTION: Question = {
+// 풀 미로드 시 안전 폴백. 풀이 로드된 정상 흐름에서는 pickFromPool 이 v2 메타까지
+// 포함된 row를 우선 반환 — Phase A 의 category/displayType/allowCooldownBypass 필드가
+// downstream(PreviousAnswerHint, Phase D 후속 트리거)에 정확히 전달된다.
+const DIRECTION_CHANGE_FALLBACK: Question = {
   id: 'j_direction_change',
   text: '뭐가 마음을 바꿨어?',
   context: ['journal'],
@@ -15,13 +18,17 @@ const DIRECTION_CHANGE_QUESTION: Question = {
   weight: 10,
 };
 
-const DIRECTION_STEADY_QUESTION: Question = {
+const DIRECTION_STEADY_FALLBACK: Question = {
   id: 'j_direction_steady',
   text: '이 마음이 꽤 단단해 보여. 어디서 온 걸까?',
   context: ['journal'],
   isActive: true,
   weight: 8,
 };
+
+function pickFromPool(pool: Question[], id: string, fallback: Question): Question {
+  return pool.find((q) => q.id === id) ?? fallback;
+}
 
 function isInCooldown(answered: { updatedAt: string } | undefined): boolean {
   if (!answered) return false;
@@ -53,13 +60,13 @@ export function useSmartQuestion(context: QuestionContext, currentDirection: Dir
 
   // 방향 바뀐 경우 → 변화 질문 우선
   if (prevDirection && prevDirection !== currentDirection) {
-    return DIRECTION_CHANGE_QUESTION;
+    return pickFromPool(pool, 'j_direction_change', DIRECTION_CHANGE_FALLBACK);
   }
 
   // 3일 연속 같은 방향 → 단단한 마음 질문
   const last3 = entries.slice(0, 3).map((e) => e.direction);
   if (last3.length === 3 && last3.every((d) => d === currentDirection)) {
-    return DIRECTION_STEADY_QUESTION;
+    return pickFromPool(pool, 'j_direction_steady', DIRECTION_STEADY_FALLBACK);
   }
 
   // 풀에서 맥락 맞는 질문 선택 + 페르소나별 차단·부스터 적용 (C-2-G-3b)

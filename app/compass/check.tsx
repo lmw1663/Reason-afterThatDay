@@ -7,6 +7,7 @@ import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { PreviousAnswerHint } from '@/components/ui/PreviousAnswerHint';
 import { useUserStore } from '@/store/useUserStore';
 import { upsertQuestionResponse } from '@/api/questions';
 
@@ -80,6 +81,7 @@ export default function CompassCheckScreen() {
         {CHECK_QUESTIONS.map((q) => (
           <View key={q.id} className="mb-6">
             <Text className="text-white text-base font-medium mb-3">{q.text}</Text>
+            <PreviousAnswerHint questionId={q.id} />
             <View style={{ flexDirection: 'row', gap: 12 }}>
               {(['yes', 'no'] as const).map((val) => (
                 <View key={val} style={{ flex: 1 }}>
