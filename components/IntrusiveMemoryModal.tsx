@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, Text, TextInput, View } from 'react-native';
-import { router } from 'expo-router';
 import { Body, Caption, Heading } from './ui/Typography';
 import { PrimaryButton } from './ui/PrimaryButton';
 import { MoodSlider } from './ui/MoodSlider';
@@ -55,11 +54,6 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
       setSaving(false);
       setStep(4);
     }
-  }
-
-  function handleGoJournal() {
-    onClose();
-    router.push('/journal');
   }
 
   return (
@@ -147,18 +141,7 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
             <View className="py-4">
               <Heading className="mb-2 text-center">기록됐어.</Heading>
               <Caption className="text-gray-400 text-center mb-6">고마워.</Caption>
-              {/* G-16: PrimaryButton 2개 → primary 1 + 텍스트 링크. 모달 dismiss는
-                  본래 백드롭 탭/X 버튼으로 충분한데 별도 CTA로 시각 노이즈였음. */}
-              <PrimaryButton label="일기 쓰러 가기" onPress={handleGoJournal} />
-              <Pressable
-                onPress={onClose}
-                accessibilityRole="button"
-                accessibilityLabel="뒤로 가기"
-                hitSlop={8}
-                className="active:opacity-60"
-              >
-                <Caption className="text-center text-gray-500 py-3">뒤로 가기</Caption>
-              </Pressable>
+              <PrimaryButton label="홈으로" onPress={onClose} />
             </View>
           )}
         </Pressable>
