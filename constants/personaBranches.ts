@@ -362,6 +362,89 @@ export function isEncounterPlanRecommended(p: PersonaCode | null): boolean {
   return p !== null && ENCOUNTER_PLAN_RECOMMENDED.includes(p);
 }
 
+// ───────── Ref-7 일기 통합 큐 (Q-1~Q-6) ─────────
+
+/**
+ * 일기 통합 큐 — 일기 3/N 단계에 [장단점 / 스마트Q / about-me / memory] 풀에서
+ * 페르소나·D+N·최근 응답 가중치로 다음 항목을 1개씩 라우팅. SSOT는 본 섹션.
+ *
+ * 정책 문서: docs/journal-unified-queue.md
+ *
+ * 핵심 룰:
+ *  1. 큐 길이 상한: D+0~7 = 3, D+8+ = 5
+ *  2. "다음에" skip 시 다음날 우선 노출 (AsyncStorage TTL 1일)
+ *  3. 장단점 차단 페르소나(HARMFUL 등 5종)는 큐에서 장단점 풀 자체 제거 → about-me로 우회
+ *  4. 단점:장점 비중은 페르소나·D+N별 곡선 (아래 표)
+ */
+
+/** 큐 길이 상한 — D+0~7은 회복 초기로 부담 최소화 (3개), 이후 5개. */
+export function getJournalQueueMaxLength(daysElapsed: number): number {
+  if (daysElapsed <= 7) return 3;
+  return 5;
+}
+
+/**
+ * 일기 통합 큐의 *장단점 풀* 노출 차단 페르소나.
+ *
+ * 차단 근거:
+ *  - P01·P14·P20: HARMFUL_RELATIONSHIP — 매트릭스 분석 트랙 자체 차단 (자기 판단 손상·
+ *    외도 가해 자기 정당화·트라우마 본딩 미화). about-me로 우회.
+ *  - P16: 매듭 권유 비허용 + 외부 복잡도 (자녀 양육·법적). 장단점 평가 부적합.
+ *  - P19: ROCD 강박 도구화 위험 — 무한 단점/장점 추가가 강박 자극.
+ *
+ * 그 외 페르소나는 풀 통과. R5 appliesGuard 패턴으로 effective·overlay 양쪽 검사.
+ */
+const JOURNAL_PROS_CONS_BLOCKED: PersonaCode[] = ['P01', 'P14', 'P16', 'P19', 'P20'];
+
+export function isJournalProsConsBlocked(p: PersonaCode | null): boolean {
+  return p !== null && JOURNAL_PROS_CONS_BLOCKED.includes(p);
+}
+
+/**
+ * 페르소나·D+N별 단점 질문 비율 (0~1). 1 - ratio = 장점 비율.
+ *
+ * 곡선 설계 — docs/journal-unified-queue.md 정책표:
+ *  - default (P02·P04·P06·P08): 0~7=0.7 / 8~30=0.6 / 30+=0.5 (초기 단점 ↑, 후기 균형)
+ *  - 분노 강(P10): 0~7=0.8 / 8~30=0.7 / 30+=0.6 (분노 표출 통로)
+ *  - 죄책감·헌신·정상화(P05·P07·P09·P12·P15): 0~7=0.6 / 8~30=0.5 / 30+=0.4 (균형 ~ 장점 우세)
+ *  - 균형 곡선(P03·P11·P18): 항상 0.5 (결정 트라우마 자극 회피)
+ *  - Continuing Bonds(P17): 항상 0.3 (장점 보존 — 본인 결정 아닌 이별)
+ *  - 차단(P01·P14·P16·P19·P20): 호출하지 말 것 (isJournalProsConsBlocked 선검사)
+ */
+export function getJournalProsConsRatio(
+  p: PersonaCode | null,
+  daysElapsed: number,
+): number {
+  // 차단 페르소나는 라우터 단계에서 풀 제거 — 본 함수에서 호출되면 안 됨.
+  // 그래도 호출되면 default 균형으로 fallback.
+  if (p !== null && JOURNAL_PROS_CONS_BLOCKED.includes(p)) return 0.5;
+
+  // 균형 곡선 — 결정 트라우마·강박 위험 페르소나
+  if (p === 'P03' || p === 'P11' || p === 'P18') return 0.5;
+
+  // Continuing Bonds — 본인 결정 아닌 이별, 장점 보존
+  if (p === 'P17') return 0.3;
+
+  // 분노 표출 — 단점 강화
+  if (p === 'P10') {
+    if (daysElapsed <= 7) return 0.8;
+    if (daysElapsed <= 30) return 0.7;
+    return 0.6;
+  }
+
+  // 죄책감·정상화 — 장점 우세 곡선
+  if (p === 'P05' || p === 'P07' || p === 'P09' || p === 'P12' || p === 'P15') {
+    if (daysElapsed <= 7) return 0.6;
+    if (daysElapsed <= 30) return 0.5;
+    return 0.4;
+  }
+
+  // default (P02·P04·P06·P08 + 기타 미분류)
+  if (daysElapsed <= 7) return 0.7;
+  if (daysElapsed <= 30) return 0.6;
+  return 0.5;
+}
+
 // ───────── Ref-6 연락 충동 보고 칩 노출 차단 (G-6 보조 카드) ─────────
 
 /**

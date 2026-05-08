@@ -7,6 +7,9 @@ import {
   isContinuingBondsRecommended,
   isEncounterPlanRecommended,
   isContactUrgeChipBlocked,
+  isJournalProsConsBlocked,
+  getJournalProsConsRatio,
+  getJournalQueueMaxLength,
 } from '@/constants/personaBranches';
 import type { PersonaCode } from '@/utils/personaClassifier';
 
@@ -207,5 +210,138 @@ describe('isContactUrgeChipBlocked — G-6 연락 충동 칩 차단 (personaBran
 
   it('null → false (baseline·미분류는 default 노출)', () => {
     expect(isContactUrgeChipBlocked(null)).toBe(false);
+  });
+});
+
+// Ref-7 일기 통합 큐 — 정책 SSOT 잠금.
+// 정책 문서: docs/journal-unified-queue.md
+describe('일기 통합 큐 (personaBranches.ts Ref-7)', () => {
+  describe('getJournalQueueMaxLength — 큐 길이 상한', () => {
+    it('D+0 → 3 (회복 초기 부담 최소)', () => {
+      expect(getJournalQueueMaxLength(0)).toBe(3);
+    });
+    it('D+7 → 3 (boundary inclusive)', () => {
+      expect(getJournalQueueMaxLength(7)).toBe(3);
+    });
+    it('D+8 → 5 (확장)', () => {
+      expect(getJournalQueueMaxLength(8)).toBe(5);
+    });
+    it('D+100 → 5 (상한 유지)', () => {
+      expect(getJournalQueueMaxLength(100)).toBe(5);
+    });
+  });
+
+  describe('isJournalProsConsBlocked — 장단점 풀 차단 페르소나', () => {
+    const blocked: PersonaCode[] = ['P01', 'P14', 'P16', 'P19', 'P20'];
+    for (const p of blocked) {
+      it(`${p} → true (차단)`, () => {
+        expect(isJournalProsConsBlocked(p)).toBe(true);
+      });
+    }
+
+    const allowed: PersonaCode[] = [
+      'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08',
+      'P09', 'P10', 'P11', 'P12', 'P15', 'P17', 'P18',
+    ];
+    for (const p of allowed) {
+      it(`${p} → false (통과)`, () => {
+        expect(isJournalProsConsBlocked(p)).toBe(false);
+      });
+    }
+
+    it('null → false (baseline)', () => {
+      expect(isJournalProsConsBlocked(null)).toBe(false);
+    });
+  });
+
+  describe('getJournalProsConsRatio — 페르소나·D+N별 단점 비율', () => {
+    describe('default 곡선 (P02·P04·P06·P08)', () => {
+      it('P02 D+0 → 0.7', () => {
+        expect(getJournalProsConsRatio('P02', 0)).toBe(0.7);
+      });
+      it('P02 D+7 → 0.7 (boundary)', () => {
+        expect(getJournalProsConsRatio('P02', 7)).toBe(0.7);
+      });
+      it('P02 D+8 → 0.6', () => {
+        expect(getJournalProsConsRatio('P02', 8)).toBe(0.6);
+      });
+      it('P02 D+30 → 0.6 (boundary)', () => {
+        expect(getJournalProsConsRatio('P02', 30)).toBe(0.6);
+      });
+      it('P02 D+31 → 0.5', () => {
+        expect(getJournalProsConsRatio('P02', 31)).toBe(0.5);
+      });
+      it('P04·P06·P08도 동일 곡선', () => {
+        expect(getJournalProsConsRatio('P04', 0)).toBe(0.7);
+        expect(getJournalProsConsRatio('P06', 0)).toBe(0.7);
+        expect(getJournalProsConsRatio('P08', 0)).toBe(0.7);
+      });
+    });
+
+    describe('분노 강 곡선 (P10)', () => {
+      it('D+0 → 0.8 (분노 표출)', () => {
+        expect(getJournalProsConsRatio('P10', 0)).toBe(0.8);
+      });
+      it('D+8 → 0.7', () => {
+        expect(getJournalProsConsRatio('P10', 8)).toBe(0.7);
+      });
+      it('D+31 → 0.6', () => {
+        expect(getJournalProsConsRatio('P10', 31)).toBe(0.6);
+      });
+    });
+
+    describe('장점 우세 곡선 (P05·P07·P09·P12·P15)', () => {
+      it('P05 D+0 → 0.6', () => {
+        expect(getJournalProsConsRatio('P05', 0)).toBe(0.6);
+      });
+      it('P12 D+8 → 0.5', () => {
+        expect(getJournalProsConsRatio('P12', 8)).toBe(0.5);
+      });
+      it('P09 D+31 → 0.4 (장점 우세)', () => {
+        expect(getJournalProsConsRatio('P09', 31)).toBe(0.4);
+      });
+    });
+
+    describe('균형 곡선 (P03·P11·P18) — D+N 무관 0.5', () => {
+      it('P03 D+0 → 0.5', () => {
+        expect(getJournalProsConsRatio('P03', 0)).toBe(0.5);
+      });
+      it('P03 D+100 → 0.5 (변하지 않음)', () => {
+        expect(getJournalProsConsRatio('P03', 100)).toBe(0.5);
+      });
+      it('P11 D+0 → 0.5', () => {
+        expect(getJournalProsConsRatio('P11', 0)).toBe(0.5);
+      });
+      it('P18 D+30 → 0.5', () => {
+        expect(getJournalProsConsRatio('P18', 30)).toBe(0.5);
+      });
+    });
+
+    describe('Continuing Bonds (P17) — 장점 보존', () => {
+      it('P17 D+0 → 0.3 (단점 ↓)', () => {
+        expect(getJournalProsConsRatio('P17', 0)).toBe(0.3);
+      });
+      it('P17 D+100 → 0.3 (D+N 무관)', () => {
+        expect(getJournalProsConsRatio('P17', 100)).toBe(0.3);
+      });
+    });
+
+    describe('차단 페르소나 — fallback 0.5 (정상 흐름에선 호출되지 않음)', () => {
+      it('P01 → 0.5', () => {
+        expect(getJournalProsConsRatio('P01', 0)).toBe(0.5);
+      });
+      it('P14 → 0.5', () => {
+        expect(getJournalProsConsRatio('P14', 30)).toBe(0.5);
+      });
+    });
+
+    describe('null (baseline·미분류) — default 곡선', () => {
+      it('null D+0 → 0.7', () => {
+        expect(getJournalProsConsRatio(null, 0)).toBe(0.7);
+      });
+      it('null D+31 → 0.5', () => {
+        expect(getJournalProsConsRatio(null, 31)).toBe(0.5);
+      });
+    });
   });
 });
