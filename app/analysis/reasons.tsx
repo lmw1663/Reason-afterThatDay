@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, ScrollView, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { Pill } from '@/components/ui/Pill';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
@@ -61,6 +62,7 @@ export default function AnalysisReasonScreen() {
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
+        <BackHeader />
         <Caption className="mb-2">관계 분석 · 1 / 5</Caption>
         <Heading className="mb-2">왜 헤어졌어?</Heading>
         <Body className="text-gray-400 mb-8">

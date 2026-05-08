@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, ScrollView, ActivityIndicator, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
 import { Pill } from '@/components/ui/Pill';
@@ -121,6 +122,7 @@ export default function JournalMiniScreen() {
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       >
+        <BackHeader />
         <Caption className="mb-2">이별 일기 · 미니</Caption>
         <Heading className="mb-2">지금 기분이 어때?</Heading>
         <Caption className="mb-8 text-gray-500">
