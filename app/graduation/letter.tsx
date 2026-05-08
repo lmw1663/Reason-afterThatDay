@@ -12,13 +12,18 @@ import { useCoolingStore } from '@/store/useCoolingStore';
 import { fetchGraduationLetter } from '@/api/ai';
 import { useKnotPolicy } from '@/hooks/useKnotPolicy';
 import { useGraduationLockGuard } from '@/hooks/useGraduationLockGuard';
-import { fetchResponseHistory, type ResponseHistoryEntry } from '@/api/questions';
+import { useQuestionStore } from '@/store/useQuestionStore';
+import { fetchResponseHistoryByCategory, type ResponseHistoryEntry } from '@/api/questions';
 import { FirstVsLatestCard } from '@/components/ui/FirstVsLatestCard';
+import { pickReasonReflection } from '@/utils/reasonReflection';
 
-// 졸업 편지에 회상 카드를 곁들일 핵심 질문 — v2 §4 "헤어진 이유" 변화 흐름.
-// 마이그 037에서 a_breakup_reason 은 revisit_after_days=7 이라 충분한 history 누적 가능.
-const LETTER_REFLECTION_QID = 'a_breakup_reason';
-const LETTER_REFLECTION_TEXT = '처음에 적었던 헤어진 이유';
+// Phase H — 졸업 편지의 회상 카드는 'reason' 카테고리 안에서 *가장 최근까지 변화가 있는*
+// 질문을 자동 선택. 현재 시드는 a_breakup_reason 단일이지만, 향후 reason 카테고리에 다른
+// 질문이 추가돼도 코드 변경 없이 가장 활동적인 변화를 노출.
+const REFLECTION_CATEGORY = 'reason' as const;
+
+// 사용자에게 보여줄 카드 라벨 — 질문 풀에서 텍스트 가져오면 정확하지만, 풀 미로드 대비 폴백.
+const REFLECTION_TEXT_FALLBACK = '처음에 적었던 헤어진 이유';
 
 export default function GraduationLetterScreen() {
   const { userId, daysElapsed } = useUserStore();
@@ -29,9 +34,10 @@ export default function GraduationLetterScreen() {
   // Phase G — 진입 후 C-SSRS 잠금 발생(예: cooling 중 위기 신호)으로 매듭 트랙이
   // 닫혔을 경우 letter 화면도 즉시 redirect. fail-open(서버 장애 시 unlocked).
   const lockState = useGraduationLockGuard();
+  const pool = useQuestionStore((s) => s.pool);
   const [letter, setLetter] = useState('');
   const [loading, setLoading] = useState(true);
-  const [reflectionHistory, setReflectionHistory] = useState<ResponseHistoryEntry[]>([]);
+  const [reflection, setReflection] = useState<ReturnType<typeof pickReasonReflection>>(null);
 
   const moodAvg = stats?.moodTrend.length
     ? stats.moodTrend.reduce((a, b) => a + b, 0) / stats.moodTrend.length
@@ -45,32 +51,27 @@ export default function GraduationLetterScreen() {
     .map((r) => r.note as string)
     .filter(Boolean);
 
-  // Phase G — 카테고리 회상 입력. history.length === 1 fast path 처리:
-  //   · 0건: undefined → 카드 미표시 + GPT 입력 미포함
-  //   · 1건: first === latest 참조 동일 → 카드 미표시, GPT 에 reasonReflection=null
-  //   · 2+건: 카드 표시 + GPT 에 reasonReflection 포함
-  const reflectionFirst = reflectionHistory[0];
-  const reflectionLatest = reflectionHistory[reflectionHistory.length - 1];
-  const showReflectionCard = reflectionFirst && reflectionLatest && reflectionFirst !== reflectionLatest;
+  // 풀에서 회상 질문의 텍스트 — 미로드 시 폴백
+  const reflectionText = reflection
+    ? pool.find((q) => q.id === reflection.questionId)?.text ?? REFLECTION_TEXT_FALLBACK
+    : REFLECTION_TEXT_FALLBACK;
 
-  // Phase G — 잠금/unlocked 확인 후 history 와 letter 를 직렬 fetch.
-  // 이중 letter 호출(이전: history 도착 시 재발사)·lockState='loading' 단계 GPT 누설 모두 회피.
+  // Phase H — reason 카테고리 전체에서 가장 활동적인 변화 자동 선택.
+  // 잠금/unlocked 확인 후 카테고리 history 와 letter 를 직렬 fetch.
   useEffect(() => {
     if (lockState !== 'unlocked' || !userId) return;
     let cancelled = false;
 
-    fetchResponseHistory(userId, LETTER_REFLECTION_QID)
-      .then((history) => {
-        if (cancelled) return history;
-        setReflectionHistory(history);
-        return history;
-      })
+    fetchResponseHistoryByCategory(userId, REFLECTION_CATEGORY)
       .catch(() => [] as ResponseHistoryEntry[])
       .then((history) => {
+        if (cancelled) return null;
+        const picked = pickReasonReflection(history);
+        setReflection(picked);
+        return picked;
+      })
+      .then((picked) => {
         if (cancelled) return;
-        const first = history[0];
-        const latest = history[history.length - 1];
-        const haveDelta = first && latest && first !== latest;
         return fetchGraduationLetter({
           daysElapsed,
           moodAvg,
@@ -80,10 +81,10 @@ export default function GraduationLetterScreen() {
           journalCount: entries.length,
           checkinMoods,
           checkinNotes,
-          reasonReflection: haveDelta
+          reasonReflection: picked
             ? {
-                first: { value: first.responseValue, dPlus: first.dPlus },
-                latest: { value: latest.responseValue, dPlus: latest.dPlus },
+                first: { value: picked.first.responseValue, dPlus: picked.first.dPlus },
+                latest: { value: picked.latest.responseValue, dPlus: picked.latest.dPlus },
               }
             : null,
         });
@@ -130,12 +131,12 @@ export default function GraduationLetterScreen() {
               <Text className="text-white text-base leading-loose">{letter}</Text>
             </View>
 
-            {showReflectionCard && (
+            {reflection && (
               <FirstVsLatestCard
                 className="mt-6"
-                questionText={LETTER_REFLECTION_TEXT}
-                first={{ value: reflectionFirst.responseValue, dPlus: reflectionFirst.dPlus }}
-                latest={{ value: reflectionLatest.responseValue, dPlus: reflectionLatest.dPlus }}
+                questionText={reflectionText}
+                first={{ value: reflection.first.responseValue, dPlus: reflection.first.dPlus }}
+                latest={{ value: reflection.latest.responseValue, dPlus: reflection.latest.dPlus }}
               />
             )}
           </>
