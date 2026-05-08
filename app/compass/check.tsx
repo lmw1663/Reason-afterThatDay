@@ -9,6 +9,7 @@ import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { PreviousAnswerHint } from '@/components/ui/PreviousAnswerHint';
 import { useUserStore } from '@/store/useUserStore';
+import { useQuestionStore } from '@/store/useQuestionStore';
 import { upsertQuestionResponse } from '@/api/questions';
 import { useSmartQuestion } from '@/hooks/useSmartQuestion';
 import type { Direction } from '@/store/useJournalStore';
@@ -34,10 +35,25 @@ function highlightCaption(source: 'follow_up' | 'revisit'): string {
   return source === 'follow_up' ? '이어서 물어볼게' : '다시 떠올려볼게';
 }
 
+// Phase K-2 — 이전 답변을 default 로 prefill. 사용자는 keep 하거나 *바뀌면 수정* 가능.
+// v2 §4 명시: "이미 답한 건 보여주고, 마음이 바뀌면 수정 가능".
+// answered 의 responseValue 는 boolean (true/false) — 'yes'/'no' UI 키로 매핑.
+function answersFromStore(answered: Record<string, { responseValue: unknown } | undefined>): Record<string, 'yes' | 'no'> {
+  const initial: Record<string, 'yes' | 'no'> = {};
+  for (const q of CHECK_QUESTIONS) {
+    const a = answered[q.id];
+    if (a?.responseValue === true) initial[q.id] = 'yes';
+    else if (a?.responseValue === false) initial[q.id] = 'no';
+  }
+  return initial;
+}
+
 export default function CompassCheckScreen() {
   const params = useLocalSearchParams<{ want: string; affectionLevel: string }>();
   const { userId } = useUserStore();
-  const [answers, setAnswers] = useState<Record<string, 'yes' | 'no'>>({});
+  const answeredStore = useQuestionStore((s) => s.answered);
+  // 화면 마운트 시 1회 — 이후 사용자가 토글하면 setAnswers 가 store 와 분리된 로컬 상태 관리.
+  const [answers, setAnswers] = useState<Record<string, 'yes' | 'no'>>(() => answersFromStore(answeredStore));
 
   // Phase H+1 — params.want 를 Direction 으로 캐스팅. 비정상 입력은 'undecided' 폴백.
   const want: Direction =
@@ -126,7 +142,9 @@ export default function CompassCheckScreen() {
                 </Caption>
               )}
               <Text className="text-white text-base font-medium mb-3">{q.text}</Text>
-              <PreviousAnswerHint questionId={q.id} />
+              {/* Phase K-2 — prefill 된 답변에도 안내. previousValue 있으면 "저번엔 X"
+                  (변경 history 회상), 없으면 fallbackToLatest 로 "전에 X" (한 번만 답한 회상). */}
+              <PreviousAnswerHint questionId={q.id} fallbackToLatest fallbackPrefix="전에" />
               <View style={{ flexDirection: 'row', gap: 12 }}>
                 {(['yes', 'no'] as const).map((val) => (
                   <View key={val} style={{ flex: 1 }}>

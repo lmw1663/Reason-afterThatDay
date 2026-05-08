@@ -24,10 +24,17 @@ interface Props {
   formatter?: (v: unknown) => string | null;
   onUseAgain?: (v: unknown) => void;
   className?: string;
+  // Phase K — previousValue 가 없을 때 (한 번만 답한 사용자) responseValue 를 폴백.
+  // check.tsx prefill UX: 답변이 채워졌지만 hint 가 안 떠 사용자가 인지 부조화 겪는
+  // 케이스(opus K 검증 minor 1) 해소. fallbackPrefix 로 "저번엔" 대신 "전에" 같은
+  // 다른 어휘 사용 권장 — 현재 답이 그대로 다시 보임을 명시.
+  fallbackToLatest?: boolean;
+  fallbackPrefix?: string;
 }
 
 const DEFAULT_PREFIX = '저번엔';
 const DEFAULT_SUFFIX = '지금은 어때?';
+const DEFAULT_FALLBACK_PREFIX = '전에';
 
 export function PreviousAnswerHint({
   questionId,
@@ -37,17 +44,25 @@ export function PreviousAnswerHint({
   formatter = defaultPreviousAnswerFormatter,
   onUseAgain,
   className,
+  fallbackToLatest = false,
+  fallbackPrefix = DEFAULT_FALLBACK_PREFIX,
 }: Props) {
-  const previousValue = useQuestionStore((s) => s.answered[questionId]?.previousValue);
-  // null/undefined 모두 falsy — Phase A 의 store/서버 trigger 양쪽이 같은 의미.
-  if (previousValue == null) return null;
-  const display = formatter(previousValue);
+  const answered = useQuestionStore((s) => s.answered[questionId]);
+  const previousValue = answered?.previousValue;
+  const responseValue = answered?.responseValue;
+  // 1순위: previousValue (변경된 사용자) — 기존 동작
+  // 2순위: responseValue (한 번만 답한 사용자) — fallbackToLatest=true 일 때만
+  const usingFallback = previousValue == null && fallbackToLatest && responseValue != null;
+  const value = previousValue ?? (usingFallback ? responseValue : null);
+  if (value == null) return null;
+  const display = formatter(value);
   if (!display) return null;
+  const effectivePrefix = usingFallback ? fallbackPrefix : prefix;
 
   if (format === 'card') {
     const inner = (
       <View>
-        <Caption className="text-purple-400 mb-1">{prefix}</Caption>
+        <Caption className="text-purple-400 mb-1">{effectivePrefix}</Caption>
         <Text className="text-white text-base mb-1">&quot;{display}&quot;</Text>
         <Caption className="text-gray-500">{suffix}</Caption>
       </View>
@@ -63,9 +78,9 @@ export function PreviousAnswerHint({
     if (onUseAgain) {
       return (
         <Pressable
-          onPress={() => onUseAgain(previousValue)}
+          onPress={() => onUseAgain(value)}
           accessibilityRole="button"
-          accessibilityLabel={`${prefix} ${display} — 그대로 두려면 눌러봐`}
+          accessibilityLabel={`${effectivePrefix} ${display} — 그대로 두려면 눌러봐`}
           className={className}
           style={cardStyle}
         >
@@ -83,7 +98,7 @@ export function PreviousAnswerHint({
   // inline — 한 줄 보조 카피
   return (
     <Caption className={className ?? 'text-gray-500 mb-3'}>
-      {prefix} &quot;{display}&quot; — {suffix}
+      {effectivePrefix} &quot;{display}&quot; — {suffix}
     </Caption>
   );
 }

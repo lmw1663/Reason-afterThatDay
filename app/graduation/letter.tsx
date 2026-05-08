@@ -20,6 +20,13 @@ import { pickReasonReflection } from '@/utils/reasonReflection';
 // Phase H — 졸업 편지의 회상 카드는 'reason' 카테고리 안에서 *가장 최근까지 변화가 있는*
 // 질문을 자동 선택. 현재 시드는 a_breakup_reason 단일이지만, 향후 reason 카테고리에 다른
 // 질문이 추가돼도 코드 변경 없이 가장 활동적인 변화를 노출.
+//
+// Phase K-1 결정 — letter 는 *FirstVsLatestCard* (처음↔지금 2점 비교) 유지.
+// graduation/report·knot/archive 는 *AnswerTimeline* (전체 시계열). 의도적 차이:
+//   · letter 는 emotional final reflection — 2점 비교가 시 같은 호흡으로 더 적합
+//   · report·archive 는 회복 서사 분석 — 전체 흐름이 정보 가치 큼
+// 톤 정합은 두 컴포넌트 공유 formatter (`defaultPreviousAnswerFormatter`) 와
+// "변화 횟수 미표시" 정책으로 보장. 시각 형태만 의도적으로 다름.
 const REFLECTION_CATEGORY = 'reason' as const;
 
 // 사용자에게 보여줄 카드 라벨 — 질문 풀에서 텍스트 가져오면 정확하지만, 풀 미로드 대비 폴백.

@@ -1,13 +1,20 @@
-# 공유 질문 풀(Question Pool) 구현 — Phase A~H 후 현행
+# 공유 질문 풀(Question Pool) 구현 — Phase A~K 후 현행
 
 > v2 §4 "공유 질문 풀 시스템 + 맥락 넘나드는 질문 + 답변 변화 추적" 의도 복원 결과.
 > Phase A(데이터 모델) → B(PreviousAnswerHint) → C(파이프라인 분해) → D(답변 변화 후속)
 > → E(시간차 재질문 + 매듭 페르소나 가드) → F(타임라인·비교 카드) → G(카테고리 GPT 입력 + 잠금 가드)
-> → H(compass 채널 + reason 카테고리 자동 선택) 누적 결과.
+> → H(compass 채널 + reason 카테고리 자동 선택) → H+1(check.tsx 동적 강조)
+> → I(AnswerTimeline 노출 + 페르소나 시드 정합 + GPT lint 자동화)
+> → J(knot/archive 통합 + booster 통합 테스트)
+> → K(letter 톤 정합 명시 + check.tsx prefill + closeout 문서화) 누적 결과.
 
 ## 결론
 
-v2 §4 의도 ≈90% 복원. 데이터 모델·후속 그래프·시간차 재질문·답변 변화 시각화·GPT 안전 가드·매듭 페르소나 선제 차단까지 갖춰짐. 마지막 10%는 RNTL 컴포넌트 렌더 테스트 도입(별도 페이즈)·신규 카테고리 시드 추가 시 자동 활성화 형태로 점진 마무리.
+v2 §4 의도 **약 98% 복원** (Phase A~K 완료, opus 검증 누적).
+
+데이터 모델·후속 그래프·시간차 재질문·답변 변화 시각화 (FirstVsLatestCard + AnswerTimeline 두 형태)·GPT 안전 가드(시스템 프롬프트 + 코드 lint 자동화)·매듭 페르소나 선제 차단·페르소나 booster 통합 회귀·compass prefill 모두 갖춰짐.
+
+남은 ~2% 는 product 결정 영역(compass 점수 산식 redesign) + 인프라 마이그레이션(RNTL) 으로 §9 에 명시 deferred.
 
 ---
 
@@ -204,17 +211,34 @@ score = weight + (미답변 +5) + (re_ask +3) + persona_booster
 
 ---
 
-## 9. 미흡한 점 · 후속 작업 후보
+## 9. 후행 항목 — 의도적 deferred
 
-1. **RNTL 컴포넌트 렌더 테스트 미도입** — vitest config가 `.test.ts`만 포함, RN 컴포넌트는 Flow 파싱 이슈로 vitest 환경에서 직접 렌더 부담. PreviousAnswerHint/FirstVsLatestCard/AnswerTimeline 의 렌더 분기는 헬퍼 단위 테스트로만 커버 (formatter falsy 그물망 + first/latest 비교 분기). 별도 페이즈에서 jest-expo 또는 vitest+jsdom+RN mock 도입 가능.
+다음 두 항목은 product/인프라 결정 영역으로 의도적 미실행. 향후 별도 페이즈에서 검토.
 
-2. **카테고리 시드 확장 시 자동 활성화** — 현재 `reason` 카테고리는 a_breakup_reason 단일. 추가 reason 질문 시드만 넣으면 letter의 `pickReasonReflection`이 가장 활동적인 변화를 자동 선택 — 코드 변경 없음.
+### 9-1. compass 점수 산식 redesign (product 결정)
+현재 `app/compass/check.tsx` 의 5개 boolean 질문은 *고정* 가중치 (catchScore/letGoScore) 로 점수 산정. Phase H+1 이 follow_up/revisit 시점에 시각 강조 추가, Phase K-2 가 이전 답변 prefill 추가했으나 *내부 score 산식* 자체는 그대로.
 
-3. **AnswerTimeline 미사용 (예약)** — 컴포넌트 작성 + 테스트 완료. knot/archive 또는 graduation/report 통합 시 즉시 활용 가능.
+가능한 redesign 옵션:
+- 페르소나별 가중치 분기 (P05/P11 등 의사결정 패턴 반영)
+- 질문 conditional 노출 (응답 패턴 따라 일부 스킵)
+- 답변 history 기반 trend 가중
 
-4. **fu2/fu3 발화 채널 — Phase H 부분 활성화** — want.tsx에서 c_honest_want 기록 시작(fu3 parent anchor 활성). 다만 c_check_change/c_check_fear 자식이 check.tsx에서 *항상* 노출되는 fixed list 구조라 후속 트리거의 "의도된 시점에만 노출" 효과는 미실현. 후속 페이즈에서 check.tsx 동적 노출 리팩터 필요.
+deferred 사유: 점수가 결정 나침반의 진단 근거 — *임상적 의미*가 있는 영역이라 product 검증·임상 컨설턴트 자문이 선결. v2 §4 "공유 질문 풀" 의도와 별개 트랙.
 
-5. **GPT 출력 lint 자동화** — BASE_SYSTEM_PROMPT 가드는 모델 협조 의존. 실제 응답에 금지 어휘가 새어 나오는지 자동 검사하는 lintResponse 확장(시간 데이터 변화 어휘 추가) 필요.
+### 9-2. RNTL (React Native Testing Library) 미도입
+현재 vitest config 가 `.test.ts` 만 포함하고 RN flow 파싱 이슈로 RN 컴포넌트 직접 렌더 부담. UI 컴포넌트(`PreviousAnswerHint` / `FirstVsLatestCard` / `AnswerTimeline` / `BackHeader` 등) 의 *렌더 분기* 는 react-native 환경 의존이라 vitest 가 import 시 Flow 파싱 실패.
+
+대안 평가:
+- (a) jest-expo 마이그레이션 — 22 test file 전체 영향, vitest mock 헬퍼 표준 (`tests/helpers/supabaseMock.ts`) 재작성
+- (b) vitest + jsdom + RN mock — 부분 가능하나 mock 유지비
+- (c) 헬퍼 단위 테스트 (현재 채택) — formatter / 그룹화 / 우선순위 / dedup 등 *logic 분기* 만 커버. 시각 회귀는 manual smoke
+
+현재 채택: (c). v2 §4 의도 복원의 logic correctness 는 단위 테스트 491 케이스로 보장. 시각 분기는 향후 (a) 또는 (b) 로 별도 페이즈에서 보강.
+
+### 9-3. 후행 활성화 (시드 확장 시 자동)
+- **카테고리 시드 확장** — `reason`/`regret`/`lesson` 카테고리에 질문 추가 시 letter·report·archive 의 `pickActiveReasonTimeline` 이 코드 변경 없이 가장 활동적인 변화 자동 선택.
+- **followups 시드 확장** — `question_followups` 에 새 트리거 추가 시 `useSmartQuestion` 의 6단계 파이프라인이 자동 픽업.
+- **revisit 시드 확장** — `question_pool.revisit_after_days` 설정만 추가하면 `selectScheduledRevisit` 자동 활성화.
 
 ---
 
