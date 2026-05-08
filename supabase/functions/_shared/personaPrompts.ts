@@ -165,7 +165,36 @@ export function buildSystemPrompt(basePrompt: string, persona: PersonaCode | nul
 }
 
 /**
- * GPT 응답에서 페르소나 금지 키워드 검출. ok=false면 호출 측이 재생성·로그 처리.
+ * Phase G/I — 변화·평가 어휘 일괄 차단 (페르소나 무관).
+ *
+ * CLAUDE.md "단정·비난 금지" + Phase G `ai-graduation-letter` 시스템 프롬프트 가드의
+ * 자동 검증. v2 §4 의도 ("변화는 *과정*으로 묘사하되 *판정·평가* 회피") 위반 케이스를
+ * GPT 가 prompt 가드를 우회해 출력했을 때 클라이언트 폴백 트리거.
+ *
+ * 단어 단독 (예: "또"·"결국") 은 자연어에서 흔해 false positive 가 큼 — *문맥 어구*로
+ * 매칭. 단정 어미는 단독 매칭이 의도된 강한 신호.
+ */
+const GLOBAL_VARIATION_FORBIDDEN: readonly string[] = [
+  // 변화 횟수 강조
+  '또 바뀌',
+  '자꾸 바뀌',
+  '몇 번이나 바뀌',
+  // 최종 판정 어미
+  '마침내',
+  '드디어',
+  '이제야',
+  '결국엔',
+  // 단정 어미 (Phase G 시스템 프롬프트 가드)
+  '정리됐네',
+  '편해졌네',
+];
+
+/**
+ * GPT 응답에서 금지 키워드 검출. ok=false면 호출 측이 재생성·로그 처리.
+ *
+ * 두 갈래:
+ *   1. 페르소나별 forbiddenKeywords (PERSONA_PROMPT_BLOCKS)
+ *   2. 변화·평가 어휘 (GLOBAL_VARIATION_FORBIDDEN, 페르소나 무관)
  *
  * 본 lint는 *서버 응답 가드*. 클라이언트 lint(B-4 lint:persona)와 별개 — 그건 *코드 노출*만 검사.
  */
@@ -173,10 +202,11 @@ export function lintResponse(
   responseText: string,
   persona: PersonaCode | null,
 ): { ok: boolean; violations: string[] } {
-  if (!persona) return { ok: true, violations: [] };
-  const block = PERSONA_PROMPT_BLOCKS[persona];
-  if (!block) return { ok: true, violations: [] };
-  const violations = block.forbiddenKeywords.filter(k => responseText.includes(k));
+  const personaViolations = persona
+    ? (PERSONA_PROMPT_BLOCKS[persona]?.forbiddenKeywords ?? []).filter((k) => responseText.includes(k))
+    : [];
+  const globalViolations = GLOBAL_VARIATION_FORBIDDEN.filter((k) => responseText.includes(k));
+  const violations = [...personaViolations, ...globalViolations];
   return { ok: violations.length === 0, violations };
 }
 

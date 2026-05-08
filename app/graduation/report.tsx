@@ -10,9 +10,13 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore, type Direction } from '@/store/useJournalStore';
+import { useQuestionStore } from '@/store/useQuestionStore';
 import { fetchRecentEntries } from '@/api/journal';
+import { fetchResponseHistoryByCategory, type ResponseHistoryEntry } from '@/api/questions';
 import { analyzeMoodTrend } from '@/utils/moodAnalysis';
+import { pickActiveReasonTimeline } from '@/utils/reasonReflection';
 import { useKnotPolicy } from '@/hooks/useKnotPolicy';
+import { AnswerTimeline } from '@/components/ui/AnswerTimeline';
 
 const DIRECTION_LABEL: Record<Direction, string> = { catch: '잡고 싶어', let_go: '보내고 싶어', undecided: '모르겠어' };
 const DIRECTION_COLOR: Record<Direction, string> = { catch: colors.purple[400], let_go: colors.teal[400], undecided: colors.gray[400] };
@@ -21,8 +25,11 @@ const DIRECTION_DOT: Record<Direction, string> = { catch: '💜', let_go: '🩵'
 export default function GraduationReportScreen() {
   const { userId, daysElapsed } = useUserStore();
   const { entries, setEntries } = useJournalStore();
+  const pool = useQuestionStore((s) => s.pool);
   const { label } = useKnotPolicy();
   const [loading, setLoading] = useState(true);
+  // Phase I — reason 카테고리 시계열. 풀에 답이 한 번뿐이거나 변화 없으면 null → 섹션 미표시.
+  const [reasonTimeline, setReasonTimeline] = useState<ReturnType<typeof pickActiveReasonTimeline>>(null);
 
   useEffect(() => {
     if (!userId) { setLoading(false); return; }
@@ -31,6 +38,17 @@ export default function GraduationReportScreen() {
       .catch((e) => console.warn('[graduation] fetchRecentEntries failed:', e))
       .finally(() => setLoading(false));
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchResponseHistoryByCategory(userId, 'reason')
+      .then((h) => setReasonTimeline(pickActiveReasonTimeline(h as ResponseHistoryEntry[])))
+      .catch(() => {/* 타임라인 미노출 — 본 흐름 영향 없음 */});
+  }, [userId]);
+
+  const reasonQuestionText = reasonTimeline
+    ? pool.find((q) => q.id === reasonTimeline.questionId)?.text ?? '헤어진 이유를 적어왔던 흐름'
+    : null;
 
   const moodScores = entries.slice(0, 7).map((e) => e.moodScore);
   const moodAvg = moodScores.length
@@ -50,7 +68,6 @@ export default function GraduationReportScreen() {
       timeline.push({ direction: entry.direction, date: entry.createdAt.slice(0, 10) });
     }
   }
-  const switchCount = Math.max(0, timeline.length - 1);
 
   if (loading) {
     return (
@@ -100,9 +117,8 @@ export default function GraduationReportScreen() {
 
         {timeline.length > 1 && (
           <Card className="mb-6">
-            <Caption className="text-gray-500 mb-4">
-              방향 변화 타임라인 — 총 {switchCount}번 바뀌었어
-            </Caption>
+            {/* Phase G/I — 변화 횟수 강조 어휘("N번 바뀌었어") 제거. 사실(흐름)만 표시 */}
+            <Caption className="text-gray-500 mb-4">방향 변화의 흐름</Caption>
             <View style={{ gap: 8 }}>
               {timeline.map((item, i) => (
                 <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -119,6 +135,13 @@ export default function GraduationReportScreen() {
                 </View>
               ))}
             </View>
+          </Card>
+        )}
+
+        {/* Phase I — 답변 변화 타임라인 (reason 카테고리에서 가장 활동적인 질문) */}
+        {reasonTimeline && reasonQuestionText && (
+          <Card className="mb-6">
+            <AnswerTimeline questionText={reasonQuestionText} entries={reasonTimeline.entries} />
           </Card>
         )}
       </ScrollView>

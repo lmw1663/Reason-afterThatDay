@@ -1,7 +1,11 @@
 // Phase H — pickReasonReflection 의 그룹화·필터·우선순위 회귀.
 
 import { describe, it, expect } from 'vitest';
-import { pickReasonReflection, type ReflectionEntry } from '@/utils/reasonReflection';
+import {
+  pickReasonReflection,
+  pickActiveReasonTimeline,
+  type ReflectionEntry,
+} from '@/utils/reasonReflection';
 
 function entry(qid: string, value: string, recordedAt: string, dPlus: number | null = null): ReflectionEntry {
   return { questionId: qid, responseValue: value, recordedAt, dPlus };
@@ -67,5 +71,48 @@ describe('pickReasonReflection', () => {
     const r = pickReasonReflection(h);
     expect(r?.first.responseValue).toBe('처음');
     expect(r?.latest.responseValue).toBe('최근');
+  });
+});
+
+describe('pickActiveReasonTimeline', () => {
+  it('변화 없으면 null', () => {
+    expect(pickActiveReasonTimeline([])).toBeNull();
+    expect(pickActiveReasonTimeline([entry('a', 'X', '2026-04-01T00:00:00Z')])).toBeNull();
+  });
+
+  it('가장 활동적인 질문의 *전체* entries 반환', () => {
+    const h = [
+      entry('q_old', 'A', '2026-04-01T00:00:00Z'),
+      entry('q_old', 'B', '2026-04-05T00:00:00Z'),
+      entry('q_recent', 'X', '2026-04-02T00:00:00Z'),
+      entry('q_recent', 'Y', '2026-04-10T00:00:00Z'),
+      entry('q_recent', 'Z', '2026-04-20T00:00:00Z'),
+    ];
+    const r = pickActiveReasonTimeline(h);
+    expect(r?.questionId).toBe('q_recent');
+    expect(r?.entries).toHaveLength(3); // 중간 'Y' 도 포함
+    expect(r?.entries.map((e) => e.responseValue)).toEqual(['X', 'Y', 'Z']);
+  });
+
+  it('순서 뒤섞여 들어와도 recordedAt asc 로 재정렬', () => {
+    const h = [
+      entry('a_breakup_reason', 'C', '2026-04-15T00:00:00Z'),
+      entry('a_breakup_reason', 'A', '2026-04-01T00:00:00Z'),
+      entry('a_breakup_reason', 'B', '2026-04-08T00:00:00Z'),
+    ];
+    const r = pickActiveReasonTimeline(h);
+    expect(r?.entries.map((e) => e.responseValue)).toEqual(['A', 'B', 'C']);
+  });
+
+  it('인접 동일값 dedup — 사용자가 같은 답을 재제출해도 timeline 깔끔', () => {
+    const h = [
+      entry('a_breakup_reason', 'X', '2026-04-01T00:00:00Z'),
+      entry('a_breakup_reason', 'X', '2026-04-05T00:00:00Z'), // 동일 — 제거
+      entry('a_breakup_reason', 'Y', '2026-04-10T00:00:00Z'),
+      entry('a_breakup_reason', 'Y', '2026-04-15T00:00:00Z'), // 동일 — 제거
+      entry('a_breakup_reason', 'Z', '2026-04-20T00:00:00Z'),
+    ];
+    const r = pickActiveReasonTimeline(h);
+    expect(r?.entries.map((e) => e.responseValue)).toEqual(['X', 'Y', 'Z']);
   });
 });
