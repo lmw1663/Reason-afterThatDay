@@ -6,7 +6,7 @@ import { getActivePersona } from '@/api/persona';
 import { parseDateStr } from '@/utils/dateUtils';
 
 export function useAuth() {
-  const { setUserId, setBreakupDate, setOnboardingCompleted } = useUserStore();
+  const { setUserId, setBreakupDate } = useUserStore();
 
   useEffect(() => {
     // 세션이 없으면 익명 가입을 자동 수행한다.
@@ -53,7 +53,8 @@ export function useAuth() {
 
     if (data.breakup_date) setBreakupDate(parseDateStr(data.breakup_date));
     if (typeof data.onboarding_completed === 'boolean') {
-      setOnboardingCompleted(data.onboarding_completed);
+      // DB→store sync 전용 — setter 호출하면 같은 값을 DB에 되쓰는 라운드트립 발생.
+      useUserStore.setState({ onboardingCompleted: data.onboarding_completed });
     }
     if (data.consent_versions && data.consent_accepted_at) {
       useUserStore.getState().setConsent(

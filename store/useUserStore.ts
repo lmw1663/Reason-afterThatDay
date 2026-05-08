@@ -17,7 +17,7 @@ interface UserState {
 
   setUserId: (id: string) => void;
   setBreakupDate: (date: Date) => void;
-  setOnboardingCompleted: (v: boolean) => void;
+  setOnboardingCompleted: (v: boolean) => Promise<void>;
   setPushToken: (token: string) => void;
   setRelationshipDuration: (d: DurationRange) => Promise<void>;
   setConsent: (versions: ConsentVersionMap, acceptedAt: Date) => void;
@@ -42,7 +42,16 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ breakupDate: date, daysElapsed: calcDaysElapsed(date) });
   },
 
-  setOnboardingCompleted: (v) => set({ onboardingCompleted: v }),
+  setOnboardingCompleted: async (v) => {
+    set({ onboardingCompleted: v });
+    const { userId } = get();
+    if (userId) {
+      await supabase
+        .from('users')
+        .update({ onboarding_completed: v })
+        .eq('id', userId);
+    }
+  },
 
   setPushToken: (token) => set({ pushToken: token }),
 

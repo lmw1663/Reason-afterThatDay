@@ -6,6 +6,7 @@ import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { signInWithProvider, type OAuthProvider } from '@/api/auth';
+import { supabase } from '@/api/supabase';
 import { useUserStore } from '@/store/useUserStore';
 import { isConsentValid } from '@/constants/consent';
 import { useScreenView } from '@/hooks/useScreenView';
@@ -42,7 +43,20 @@ export default function LoginScreen() {
     try {
       const { session } = await signInWithProvider(provider);
       if (!session) throw new Error('세션을 받지 못했어');
-      router.replace('/onboarding' as never);
+
+      // 이미 온보딩을 완료한 사용자(같은 계정 재로그인)는 홈 직진.
+      // 미완료면 날짜 입력부터 시작.
+      const { data } = await supabase
+        .from('users')
+        .select('onboarding_completed')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (data?.onboarding_completed) {
+        router.replace('/(tabs)' as never);
+      } else {
+        router.replace('/onboarding' as never);
+      }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : '로그인에 실패했어';
       Alert.alert('잠깐만', message);

@@ -183,7 +183,7 @@ export default function PersonaOnboardingScreen() {
       if (result.mode === 'standard') {
         setPersona({ primary: result.primary, secondary: result.secondary, estimatedAt: new Date() });
       }
-      setOnboardingCompleted(true);
+      await setOnboardingCompleted(true);
 
       // 위기 사용자는 홈 대신 안전 해제 흐름으로 직행 — CLAUDE.md 위기 신호 절대 규칙.
       // /safety/release 화면이 24h 경과 + 안전 4문항 통과 시까지 사용자를 안전 자원에 머물게 함.
