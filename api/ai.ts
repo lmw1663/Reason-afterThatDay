@@ -247,6 +247,11 @@ export async function fetchGraduationLetter(params: {
   journalCount?: number;
   checkinMoods?: number[];    // 유예 기간 체크인 감정 점수 배열
   checkinNotes?: string[];    // 유예 기간 체크인 메모 배열
+  // Phase G — 카테고리 회상 입력 (변화 시각화). null/undefined OK.
+  reasonReflection?: {
+    first: { value: unknown; dPlus: number | null };
+    latest: { value: unknown; dPlus: number | null };
+  } | null;
 }): Promise<string> {
   const FALLBACK = '지금 이 순간까지 버텨온 나에게.\n\n쉽지 않았어. 그 마음 알아. 그런데 있잖아, 지금 여기까지 온 것만으로도 충분해.\n\n앞으로 어떻게 될지 모르겠어. 근데 그게 나쁜 건 아닐 것 같아. 아직 쓰여지지 않은 페이지가 있다는 거니까.';
   if (await isAiSuspended()) {

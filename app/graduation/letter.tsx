@@ -11,6 +11,7 @@ import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { fetchGraduationLetter } from '@/api/ai';
 import { useKnotPolicy } from '@/hooks/useKnotPolicy';
+import { useGraduationLockGuard } from '@/hooks/useGraduationLockGuard';
 import { fetchResponseHistory, type ResponseHistoryEntry } from '@/api/questions';
 import { FirstVsLatestCard } from '@/components/ui/FirstVsLatestCard';
 
@@ -25,6 +26,9 @@ export default function GraduationLetterScreen() {
   const { profile } = useRelationshipStore();
   const { checkinResponses } = useCoolingStore();
   const { label } = useKnotPolicy();
+  // Phase G — 진입 후 C-SSRS 잠금 발생(예: cooling 중 위기 신호)으로 매듭 트랙이
+  // 닫혔을 경우 letter 화면도 즉시 redirect. fail-open(서버 장애 시 unlocked).
+  const lockState = useGraduationLockGuard();
   const [letter, setLetter] = useState('');
   const [loading, setLoading] = useState(true);
   const [reflectionHistory, setReflectionHistory] = useState<ResponseHistoryEntry[]>([]);
@@ -41,31 +45,64 @@ export default function GraduationLetterScreen() {
     .map((r) => r.note as string)
     .filter(Boolean);
 
-  useEffect(() => {
-    fetchGraduationLetter({
-      daysElapsed,
-      moodAvg,
-      reasons: profile.reasons,
-      pros: profile.pros,
-      cons: profile.cons,
-      journalCount: entries.length,
-      checkinMoods,
-      checkinNotes,
-    })
-      .then(setLetter)
-      .finally(() => setLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (!userId) return;
-    fetchResponseHistory(userId, LETTER_REFLECTION_QID)
-      .then(setReflectionHistory)
-      .catch(() => {/* 회상 카드 미노출 — 본 편지 흐름 영향 없음 */});
-  }, [userId]);
-
+  // Phase G — 카테고리 회상 입력. history.length === 1 fast path 처리:
+  //   · 0건: undefined → 카드 미표시 + GPT 입력 미포함
+  //   · 1건: first === latest 참조 동일 → 카드 미표시, GPT 에 reasonReflection=null
+  //   · 2+건: 카드 표시 + GPT 에 reasonReflection 포함
   const reflectionFirst = reflectionHistory[0];
   const reflectionLatest = reflectionHistory[reflectionHistory.length - 1];
   const showReflectionCard = reflectionFirst && reflectionLatest && reflectionFirst !== reflectionLatest;
+
+  // Phase G — 잠금/unlocked 확인 후 history 와 letter 를 직렬 fetch.
+  // 이중 letter 호출(이전: history 도착 시 재발사)·lockState='loading' 단계 GPT 누설 모두 회피.
+  useEffect(() => {
+    if (lockState !== 'unlocked' || !userId) return;
+    let cancelled = false;
+
+    fetchResponseHistory(userId, LETTER_REFLECTION_QID)
+      .then((history) => {
+        if (cancelled) return history;
+        setReflectionHistory(history);
+        return history;
+      })
+      .catch(() => [] as ResponseHistoryEntry[])
+      .then((history) => {
+        if (cancelled) return;
+        const first = history[0];
+        const latest = history[history.length - 1];
+        const haveDelta = first && latest && first !== latest;
+        return fetchGraduationLetter({
+          daysElapsed,
+          moodAvg,
+          reasons: profile.reasons,
+          pros: profile.pros,
+          cons: profile.cons,
+          journalCount: entries.length,
+          checkinMoods,
+          checkinNotes,
+          reasonReflection: haveDelta
+            ? {
+                first: { value: first.responseValue, dPlus: first.dPlus },
+                latest: { value: latest.responseValue, dPlus: latest.dPlus },
+              }
+            : null,
+        });
+      })
+      .then((text) => {
+        if (cancelled || !text) return;
+        setLetter(text);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [lockState, userId]);
+
+  // Phase G — 잠금 발생 시(loading→locked 전이 포함) 즉시 cooling 메인으로 redirect
+  useEffect(() => {
+    if (lockState === 'locked') router.replace('/(tabs)/' as never);
+  }, [lockState]);
 
   return (
     <ScreenWrapper>

@@ -143,3 +143,33 @@ export async function fetchResponseHistory(
     dPlus: ((row as Record<string, unknown>).d_plus as number | null | undefined) ?? null,
   }));
 }
+
+// Phase G — 카테고리 그룹별 응답 history 조회
+//
+// 졸업 letter 의 카테고리별 회상 입력(reason/regret/lesson 등)에 사용. question_pool 의
+// category 컬럼(마이그 037)을 join 해서 해당 카테고리에 속한 사용자 응답 history 를 모두 반환.
+// 한 카테고리 안에 여러 질문이 있을 수 있으므로 questionId 별로 first/latest 를 호출자가 추출.
+export async function fetchResponseHistoryByCategory(
+  userId: string,
+  category: QuestionCategory,
+): Promise<ResponseHistoryEntry[]> {
+  // PostgREST 의 inner join — pool.category=$cat 인 question_id 만
+  const { data, error } = await supabase
+    .from('question_response_history')
+    .select('question_id, response_value, recorded_at, source_screen, d_plus, question_pool!inner(category)')
+    .eq('user_id', userId)
+    .eq('question_pool.category', category)
+    .order('recorded_at', { ascending: true });
+
+  if (error || !data) return [];
+  return data.map((row) => {
+    const r = row as Record<string, unknown>;
+    return {
+      questionId: r.question_id as string,
+      responseValue: r.response_value,
+      recordedAt: r.recorded_at as string,
+      sourceScreen: (r.source_screen as string | null | undefined) ?? null,
+      dPlus: (r.d_plus as number | null | undefined) ?? null,
+    };
+  });
+}
