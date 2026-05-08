@@ -66,7 +66,7 @@ export default function RecoveryTraceScreen() {
         <BackHeader label="뒤로" />
         <Heading className="mb-1">회복의 결</Heading>
         <Caption className="text-gray-500 mb-6">
-          오늘까지 쌓인 마음의 결을 보자. 정답이 아니야.
+          짧은 심리검사 3개(우울·불안·자존감)로 시간에 따른 변화를 따라가 봐.
         </Caption>
 
         {!hasAny ? <EmptyState /> : (
