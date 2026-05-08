@@ -30,6 +30,7 @@ export default function JournalQuestionScreen() {
     smart?.source === 'direction_change' ? '마음이 바뀐 날 · 3 / 4'
     : smart?.source === 'direction_steady' ? '단단해진 마음 · 3 / 4'
     : smart?.source === 'follow_up'       ? '이어서 물어볼게 · 3 / 4'
+    : smart?.source === 'revisit'         ? '다시 떠올려볼게 · 3 / 4'
     : '이별 일기 · 3 / 4';
 
   function handleNext() {

@@ -1,15 +1,17 @@
 // Phase C — useSmartQuestion 파이프라인 분해
 // Phase D — 후속 트리거 단계 추가 (selectAnswerChangedFollowUp / selectScheduledFollowUp)
+// Phase E — 시간차 재질문 (selectScheduledRevisit) — 자기참조 D+N 재노출
 //
 // 변경 전: 단일 함수 안에서 방향 변화·연속·일반 점수 분기를 모두 수행.
-// 변경 후: 순수 함수 단계로 분리 → 단위 테스트 + Phase D 후속 트리거 단계 추가.
+// 변경 후: 순수 함수 단계로 분리 → 단위 테스트 + 트리거 단계 점진 추가.
 //
 // 우선순위 (위 → 아래, 첫 매칭만 반환):
 //   1. selectDirectionChange       — 어제 ↔ 오늘 방향 다름
 //   2. selectAnswerChangedFollowUp — 부모 응답이 *바뀌면* 자식 질문 (Phase D)
 //   3. selectScheduledFollowUp     — 부모 응답 후 N시간 경과 (Phase D)
-//   4. selectDirectionSteady       — 3일 연속 같은 방향
-//   5. selectByGeneralScore        — 컨텍스트 매칭 + 페르소나 부스터/차단 + 쿨다운
+//   4. selectScheduledRevisit      — 같은 질문을 D+N 에 *다시 묻기* (Phase E)
+//   5. selectDirectionSteady       — 3일 연속 같은 방향
+//   6. selectByGeneralScore        — 컨텍스트 매칭 + 페르소나 부스터/차단 + 쿨다운
 //
 // 후속(2·3) 발화 상한: 하루 1개. 이미 오늘 후속 자식 질문에 답한 사용자에게는
 // 후속 단계를 건너뛰고 4·5로 폴백 — 압박감 회피 (CLAUDE.md "단정 금지").
@@ -60,6 +62,15 @@ export const COOLDOWN_MS = 72 * 60 * 60 * 1000; // 72시간
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 
+// 매듭 권유 비허용 페르소나 — graduation context 질문이 *어떤 경로로도* 노출되면 안 됨
+// (CLAUDE.md "매듭 권유 비허용" 절대 규칙). Phase F 의 graduation hook 채널이 열리기
+// *전에* 선제적으로 가드 — 호출 채널이 없는 현재는 무동작, 채널 개방 시 자동 보호.
+const KNOT_FORBIDDEN_PERSONAS: ReadonlySet<PersonaCode> = new Set(['P03', 'P11', 'P16', 'P19']);
+
+function isGraduationBlocked(context: QuestionContext, persona: PersonaCode | null): boolean {
+  return context === 'graduation' && persona !== null && KNOT_FORBIDDEN_PERSONAS.has(persona);
+}
+
 // 답변 변화 후속이 *최근* 변화에만 반응하도록 — 너무 오래된 변경은 의도적으로 무시
 const ANSWER_CHANGED_WINDOW_MS = 72 * HOUR_MS;
 // 시간차 후속의 만료 — delay_hours 후에도 7일 안에 사용자가 진입해야 발화
@@ -69,6 +80,7 @@ export type SmartQuestionSource =
   | 'direction_change'
   | 'direction_steady'
   | 'follow_up'
+  | 'revisit'
   | 'general';
 
 export interface SmartQuestionResult {
@@ -177,6 +189,9 @@ export function selectScheduledFollowUp(
   for (const fu of followups) {
     if (fu.triggerType !== 'always') continue;
     if (fu.delayHours <= 0) continue; // delay 0 인 always 는 의미상 즉시 후속 — 본 단계에선 다루지 않음 (Phase E/회로 추후)
+    // 자기참조 패턴은 Phase E selectScheduledRevisit 의 공식 경로 — follow-up
+    // 자기참조는 silent failure 회피 위해 차단 (마이그 038 depth=1 약속 코드화)
+    if (fu.parentId === fu.childId) continue;
     const parent = answered[fu.parentId];
     if (!parent) continue;
 
@@ -205,7 +220,58 @@ export function selectScheduledFollowUp(
   return candidates[0].child;
 }
 
-// 4) 3일 연속 동일 방향
+// 4) 시간차 재질문 — `question_pool.revisit_after_days` 가 설정된 질문이
+//    D+N(±revisit_window_days) 시점에 다시 떠오름.
+//
+// v2 §4 "그때 [대화 줄었다] 했잖아. 지금도 그게 가장 큰 이유야?" 사례 코드화.
+//
+// 발화 조건:
+//   · pool 의 `revisitAfterDays > 0` + `isActive`
+//   · 사용자가 한 번 이상 *답변*했을 것 (status === 'answered', shown 단독 상태 아님)
+//   · 마지막 응답 후 revisitAfterDays ~ revisitAfterDays + revisitWindowDays 사이
+//   · 현재 context 매칭 + 페르소나 차단 통과
+//
+// "다시 묻는" 단계라 쿨다운 체크 무관. 자식이 부모인 자기참조 패턴이라
+// `selectScheduledFollowUp` 의 "자식이 부모 후 답변됐는지" 체크 자체가 무의미 —
+// 본 단계는 *마지막 응답*만 anchor.
+export function selectScheduledRevisit(
+  pool: Question[],
+  answered: Record<string, AnsweredQuestion | undefined>,
+  context: QuestionContext,
+  persona: PersonaCode | null,
+  now: number = Date.now(),
+): Question | null {
+  // 매듭 비허용 페르소나가 graduation context 진입 시 일괄 차단 (CLAUDE.md 절대 규칙)
+  if (isGraduationBlocked(context, persona)) return null;
+
+  type Candidate = { question: Question; lastAnsweredAt: number };
+  const candidates: Candidate[] = [];
+
+  for (const q of pool) {
+    if (!q.isActive) continue;
+    if (q.revisitAfterDays == null || q.revisitAfterDays <= 0) continue;
+    if (!q.context.includes(context)) continue;
+    if (isQuestionBlocked(persona, q.id)) continue;
+
+    const a = answered[q.id];
+    if (!a || a.status !== 'answered') continue;
+
+    const lastAt = new Date(a.updatedAt).getTime();
+    const dueAt = lastAt + q.revisitAfterDays * DAY_MS;
+    const windowEnd = dueAt + (q.revisitWindowDays ?? 3) * DAY_MS;
+    if (now < dueAt || now > windowEnd) continue;
+
+    candidates.push({ question: q, lastAnsweredAt: lastAt });
+  }
+
+  if (candidates.length === 0) return null;
+
+  // 가장 오래된 응답(가장 due 한 것) 우선 — D+N 가 더 임박한 회상에 더 절실
+  candidates.sort((a, b) => a.lastAnsweredAt - b.lastAnsweredAt);
+  return candidates[0].question;
+}
+
+// 5) 3일 연속 동일 방향
 export function selectDirectionSteady(
   pool: Question[],
   recentDirections: Direction[],
@@ -301,20 +367,24 @@ export function selectSmartQuestion(args: SelectSmartQuestionArgs): SmartQuestio
   const directionChange = selectDirectionChange(pool, prevDirection, currentDirection);
   if (directionChange) return { question: directionChange, source: 'direction_change' };
 
-  // 2·3 — 일일 상한 체크
+  // 2·3·4 — 의도적 재노출 단계, 일일 상한 체크
+  // 보수적: 오늘 후속 자식 1개라도 답했으면 재노출 단계 모두 스킵 (압박감 회피)
   if (!followUpAlreadyToday) {
     const answerChanged = selectAnswerChangedFollowUp(pool, followups, answered, context, persona, now);
     if (answerChanged) return { question: answerChanged, source: 'follow_up' };
 
     const scheduled = selectScheduledFollowUp(pool, followups, answered, context, persona, now);
     if (scheduled) return { question: scheduled, source: 'follow_up' };
+
+    const revisit = selectScheduledRevisit(pool, answered, context, persona, now);
+    if (revisit) return { question: revisit, source: 'revisit' };
   }
 
-  // 4
+  // 5
   const directionSteady = selectDirectionSteady(pool, recentDirections, currentDirection);
   if (directionSteady) return { question: directionSteady, source: 'direction_steady' };
 
-  // 5
+  // 6
   const general = selectByGeneralScore(pool, context, answered, persona, now);
   if (general) return { question: general, source: 'general' };
 

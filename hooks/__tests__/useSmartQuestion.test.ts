@@ -11,6 +11,7 @@ import {
   selectByGeneralScore,
   selectAnswerChangedFollowUp,
   selectScheduledFollowUp,
+  selectScheduledRevisit,
   countTodayFollowUpAnswers,
   selectSmartQuestion,
   COOLDOWN_MS,
@@ -366,6 +367,128 @@ describe('countTodayFollowUpAnswers', () => {
 });
 
 // ------------------------------------------------------------
+// Phase E — selectScheduledRevisit (D+N 자기참조 재질문)
+// ------------------------------------------------------------
+const DAY = 24 * HOUR;
+
+const PE_POOL: Question[] = [
+  // revisit 7d (window 3d)
+  { id: 'a_breakup_reason', text: '헤어진 이유',  context: ['analysis'], isActive: true, weight: 7,
+    revisitAfterDays: 7, revisitWindowDays: 3 },
+  // revisit 30d (window 5d)
+  { id: 'g_regret_best',    text: '아쉬운 기억', context: ['graduation'], isActive: true, weight: 8,
+    revisitAfterDays: 30, revisitWindowDays: 5 },
+  // 다른 context — analysis 호출 시 미매칭
+  { id: 'g_learned',        text: '배운 점',    context: ['graduation'], isActive: true, weight: 8,
+    revisitAfterDays: 30, revisitWindowDays: 5 },
+  // revisit 미설정 — 후보 안 됨
+  { id: 'a_their_feeling',  text: '상대 마음',  context: ['analysis'], isActive: true, weight: 5 },
+];
+
+describe('selectScheduledRevisit', () => {
+  const now = new Date('2026-05-08T12:00:00Z').getTime();
+
+  it('답변 안 한 질문 → null', () => {
+    expect(selectScheduledRevisit(PE_POOL, {}, 'analysis', null, now)).toBeNull();
+  });
+
+  it('답변 직후 (D+0) → null (아직 due 미충족)', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - HOUR).toISOString(),
+      },
+    };
+    expect(selectScheduledRevisit(PE_POOL, answered, 'analysis', null, now)).toBeNull();
+  });
+
+  it('D+7 정확히 (window 시작) → 후보', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 7 * DAY).toISOString(),
+      },
+    };
+    const q = selectScheduledRevisit(PE_POOL, answered, 'analysis', null, now);
+    expect(q?.id).toBe('a_breakup_reason');
+  });
+
+  it('D+9 (window 7+3 안) → 후보', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 9 * DAY).toISOString(),
+      },
+    };
+    const q = selectScheduledRevisit(PE_POOL, answered, 'analysis', null, now);
+    expect(q?.id).toBe('a_breakup_reason');
+  });
+
+  it('D+11 (window 7+3 초과) → null', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 11 * DAY).toISOString(),
+      },
+    };
+    expect(selectScheduledRevisit(PE_POOL, answered, 'analysis', null, now)).toBeNull();
+  });
+
+  it('context 미일치 → null', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 7 * DAY).toISOString(),
+      },
+    };
+    // graduation context 진입 — a_breakup_reason 은 analysis 라 미매칭
+    expect(selectScheduledRevisit(PE_POOL, answered, 'graduation', null, now)).toBeNull();
+  });
+
+  it('shown 상태 (답변 미완료) → null', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: null,
+        status: 'shown' as const, updatedAt: new Date(now - 7 * DAY).toISOString(),
+      },
+    };
+    expect(selectScheduledRevisit(PE_POOL, answered, 'analysis', null, now)).toBeNull();
+  });
+
+  it('매듭 비허용 페르소나(P03) + graduation context → null (선제 가드)', () => {
+    const answered = {
+      g_regret_best: {
+        questionId: 'g_regret_best', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 31 * DAY).toISOString(),
+      },
+    };
+    expect(selectScheduledRevisit(PE_POOL, answered, 'graduation', 'P03', now)).toBeNull();
+    expect(selectScheduledRevisit(PE_POOL, answered, 'graduation', 'P11', now)).toBeNull();
+    expect(selectScheduledRevisit(PE_POOL, answered, 'graduation', 'P16', now)).toBeNull();
+    expect(selectScheduledRevisit(PE_POOL, answered, 'graduation', 'P19', now)).toBeNull();
+    // 비차단 페르소나 (예: P05) 는 정상 후보
+    const q = selectScheduledRevisit(PE_POOL, answered, 'graduation', 'P05', now);
+    expect(q?.id).toBe('g_regret_best');
+  });
+
+  it('두 후보 모두 due → 가장 오래된 응답이 우선', () => {
+    const answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 8 * DAY).toISOString(),
+      },
+      g_regret_best: {
+        questionId: 'g_regret_best', responseValue: 'v',
+        status: 'answered' as const, updatedAt: new Date(now - 33 * DAY).toISOString(),
+      },
+    };
+    // analysis context — a_breakup_reason 만 매칭. g_regret_best 는 graduation context.
+    const q = selectScheduledRevisit(PE_POOL, answered, 'analysis', null, now);
+    expect(q?.id).toBe('a_breakup_reason');
+  });
+});
+
+// ------------------------------------------------------------
 // Phase D — selectSmartQuestion 통합 우선순위 회귀
 // ------------------------------------------------------------
 describe('selectSmartQuestion 우선순위 통합', () => {
@@ -456,5 +579,56 @@ describe('selectSmartQuestion 우선순위 통합', () => {
     args.pool = [];
     const r = selectSmartQuestion(args);
     expect(r).toBeNull();
+  });
+
+  it('Phase E — D+8 시점 진입 → revisit source 우승', () => {
+    const args = baseArgs();
+    args.pool = PE_POOL;
+    args.context = 'analysis';
+    args.answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered', updatedAt: new Date(now - 8 * DAY).toISOString(),
+      },
+    };
+    const r = selectSmartQuestion(args);
+    expect(r?.source).toBe('revisit');
+    expect(r?.question.id).toBe('a_breakup_reason');
+  });
+
+  it('Phase E — answer_changed 와 revisit 동시 매칭 → answer_changed 우승 (파이프라인 순서)', () => {
+    const args = baseArgs();
+    args.pool = [...PE_POOL, ...PD_POOL.filter((q) => q.id === 'a_fix_possible')];
+    args.context = 'analysis';
+    args.answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'new',
+        previousValue: 'old', // answer_changed 트리거
+        status: 'answered', updatedAt: new Date(now - HOUR).toISOString(), // 변경은 최근, revisit 안 됨
+      },
+    };
+    // 위 setup 은 revisit 안 됨 (D+0). answer_changed 만 매칭 → follow_up
+    const r = selectSmartQuestion(args);
+    expect(r?.source).toBe('follow_up');
+  });
+
+  it('Phase E — 오늘 follow-up 자식 답 → revisit 도 스킵 (보수적 일일 상한)', () => {
+    const args = baseArgs();
+    args.pool = PE_POOL;
+    args.context = 'analysis';
+    args.answered = {
+      a_breakup_reason: {
+        questionId: 'a_breakup_reason', responseValue: 'v',
+        status: 'answered', updatedAt: new Date(now - 8 * DAY).toISOString(),
+      },
+      // 오늘 follow-up 자식이 답변됨
+      a_fix_possible: {
+        questionId: 'a_fix_possible', responseValue: 'y',
+        status: 'answered', updatedAt: new Date(now - 2 * HOUR).toISOString(),
+      },
+    };
+    const r = selectSmartQuestion(args);
+    // revisit 단계 스킵 → general 폴백 (a_fix_possible 은 PE_POOL 에 없음, a_their_feeling 우승)
+    expect(r?.source).toBe('general');
   });
 });
