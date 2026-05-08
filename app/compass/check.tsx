@@ -10,9 +10,11 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { PreviousAnswerHint } from '@/components/ui/PreviousAnswerHint';
 import { useUserStore } from '@/store/useUserStore';
 import { useQuestionStore } from '@/store/useQuestionStore';
+import { useJournalStore } from '@/store/useJournalStore';
 import { upsertQuestionResponse } from '@/api/questions';
 import { useSmartQuestion } from '@/hooks/useSmartQuestion';
 import type { Direction } from '@/store/useJournalStore';
+import { computeCompassScore } from '@/utils/compassScoring';
 import { colors } from '@/constants/colors';
 
 // ID는 question_pool의 compass 체크 질문과 1:1 매핑 (migration 005)
@@ -52,6 +54,8 @@ export default function CompassCheckScreen() {
   const params = useLocalSearchParams<{ want: string; affectionLevel: string }>();
   const { userId } = useUserStore();
   const answeredStore = useQuestionStore((s) => s.answered);
+  // 최근 7일 방향 — Phase L-1 stability bonus 계산 입력
+  const recentDirections = useJournalStore((s) => s.entries).slice(0, 7).map((e) => e.direction);
   // 화면 마운트 시 1회 — 이후 사용자가 토글하면 setAnswers 가 store 와 분리된 로컬 상태 관리.
   const [answers, setAnswers] = useState<Record<string, 'yes' | 'no'>>(() => answersFromStore(answeredStore));
 
@@ -69,19 +73,16 @@ export default function CompassCheckScreen() {
 
   const allAnswered = CHECK_QUESTIONS.every((q) => answers[q.id]);
 
-  function calcScore(): number {
-    let score = 0;
-    for (const q of CHECK_QUESTIONS) {
-      if (answers[q.id] === 'yes') score += q.catchScore;
-      else if (answers[q.id] === 'no') score += q.letGoScore * -1;
-    }
-    if (want === 'catch')  score += 2;
-    if (want === 'let_go') score -= 2;
-    return score;
-  }
-
   function handleNext() {
-    const score = calcScore();
+    // Phase L-1 — pure util 호출. recentDirections 기반 stability bonus +
+    // confidence 계산이 점수와 함께 떨어진다.
+    const result = computeCompassScore({
+      answers,
+      questions: CHECK_QUESTIONS,
+      want,
+      recentDirections,
+    });
+
     // 답변을 질문 풀에 저장 — cross-track 연계
     if (userId) {
       for (const q of CHECK_QUESTIONS) {
@@ -100,7 +101,8 @@ export default function CompassCheckScreen() {
       pathname: '/compass/scenario',
       params: {
         want, // 캐스팅된 Direction 만 전달 — deeplink 비정상 입력에도 안전
-        score: String(score),
+        score: String(result.score),
+        confidence: String(result.confidence),
         affectionLevel: params.affectionLevel ?? '5',
       },
     });

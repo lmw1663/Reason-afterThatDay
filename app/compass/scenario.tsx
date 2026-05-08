@@ -7,6 +7,8 @@ import { ChoiceButton } from '@/components/ui/ChoiceButton';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { computeConfidence } from '@/utils/compassScoring';
+import type { Direction } from '@/store/useJournalStore';
 
 const SCENARIOS = [
   {
@@ -46,7 +48,19 @@ export default function CompassScenarioScreen() {
 
   function handleNext() {
     const finalScore = calcFinalScore();
-    router.push({ pathname: '/compass/needle', params: { ...params, finalScore: String(finalScore) } });
+    // Phase L-1 minor — finalScore 시점에 confidence 재계산. check 단계 confidence 는
+    // 5문항만 본 score 기준이라 시나리오 ±2 가 더해진 finalScore 와 불일치 가능.
+    const want: Direction =
+      params.want === 'catch' || params.want === 'let_go' ? params.want : 'undecided';
+    const finalConfidence = computeConfidence(want, finalScore);
+    router.push({
+      pathname: '/compass/needle',
+      params: {
+        ...params,
+        finalScore: String(finalScore),
+        confidence: String(finalConfidence),
+      },
+    });
   }
 
   return (
