@@ -191,9 +191,27 @@ function ComparisonCard({ instrument, label, d0, current, series }: ComparisonPr
 
   // 변화 방향 — PHQ9/GAD7은 *낮을수록* 호전, RSE는 *높을수록* 호전
   const lowerIsBetter = instrument !== 'RSE';
+  // 카드 분기 정책:
+  //  · 측정 1번뿐 → "처음 결" 단일 (비교 대상 없음)
+  //  · 측정 2번 이상 + band 동일 → "지금 결" 단일 (변화 없음, 같은 메타포 두 개 띄우면 어색)
+  //  · 측정 2번 이상 + band 다름 → 처음·지금 비교 + 변화 태그
+  const isFirstOnly = series.length === 1;
+  const sameBand = d0Band === currentBand;
   const delta = (current ?? 0) - (d0 ?? 0);
   const improved = lowerIsBetter ? delta < 0 : delta > 0;
-  const same = delta === 0;
+
+  const showComparison = !isFirstOnly && !sameBand;
+  const headerTag = isFirstOnly
+    ? null
+    : sameBand
+    ? { label: '비슷한 결', bg: colors.overlayGrayMuted, fg: colors.gray[400] }
+    : improved
+    ? { label: '결이 가벼워졌어', bg: colors.overlayTealSoft, fg: colors.teal[400] }
+    : { label: '결이 무거워졌어', bg: colors.overlayAmberSoft, fg: colors.amber[400] };
+
+  // 단일 카드에 띄울 메타포 — 첫 측정만이면 d0, 두번째 이상 동일이면 지금
+  const singleMeta = isFirstOnly ? d0Meta : currentMeta;
+  const singleLabel = isFirstOnly ? '처음 결' : '지금 결';
 
   return (
     <Card className="p-4 mb-3">
@@ -202,38 +220,33 @@ function ComparisonCard({ instrument, label, d0, current, series }: ComparisonPr
           <Caption className="text-purple-400 font-semibold">{label}</Caption>
           <Caption className="text-gray-600 text-xs mt-0.5">{description}</Caption>
         </View>
-        <View
-          className="rounded-full px-2.5 py-1"
-          style={{
-            backgroundColor: same
-              ? colors.overlayGrayMuted
-              : improved
-              ? colors.overlayTealSoft
-              : colors.overlayAmberSoft,
-          }}
-        >
-          <Caption
-            className="text-xs font-medium"
-            style={{
-              color: same ? colors.gray[400] : improved ? colors.teal[400] : colors.amber[400],
-            }}
-          >
-            {same ? '비슷한 결' : improved ? '결이 가벼워졌어' : '결이 무거워졌어'}
-          </Caption>
-        </View>
+        {headerTag && (
+          <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: headerTag.bg }}>
+            <Caption className="text-xs font-medium" style={{ color: headerTag.fg }}>
+              {headerTag.label}
+            </Caption>
+          </View>
+        )}
       </View>
 
-      <View className="flex-row gap-3 mb-3">
-        <View className="flex-1 rounded-xl px-3 py-3" style={{ backgroundColor: colors.bg }}>
-          <Caption className="text-gray-600 text-xs mb-1">처음 결</Caption>
-          <Body className="text-gray-300 font-semibold text-sm">{d0Meta.headline}</Body>
+      {showComparison ? (
+        <View className="flex-row gap-3 mb-3">
+          <View className="flex-1 rounded-xl px-3 py-3" style={{ backgroundColor: colors.bg }}>
+            <Caption className="text-gray-600 text-xs mb-1">처음 결</Caption>
+            <Body className="text-gray-300 font-semibold text-sm">{d0Meta.headline}</Body>
+          </View>
+          <View className="flex-1 rounded-xl px-3 py-3" style={{ backgroundColor: colors.overlayPurpleSoft }}>
+            <Caption className="text-purple-400 text-xs mb-1">지금 결</Caption>
+            <Body className="text-purple-50 font-semibold text-sm">{currentMeta.headline}</Body>
+          </View>
         </View>
-        <View className="flex-1 rounded-xl px-3 py-3" style={{ backgroundColor: colors.overlayPurpleSoft }}>
-          <Caption className="text-purple-400 text-xs mb-1">지금 결</Caption>
-          <Body className="text-purple-50 font-semibold text-sm">{currentMeta.headline}</Body>
+      ) : (
+        <View className="rounded-xl px-3 py-3 mb-3" style={{ backgroundColor: colors.overlayPurpleSoft }}>
+          <Caption className="text-purple-400 text-xs mb-1">{singleLabel}</Caption>
+          <Body className="text-purple-50 font-semibold text-sm">{singleMeta.headline}</Body>
         </View>
-      </View>
-      <Caption className="text-gray-500 text-xs leading-5">{currentMeta.subline}</Caption>
+      )}
+      <Caption className="text-gray-500 text-xs leading-5">{singleMeta.subline}</Caption>
 
       {series.length >= 2 && <TraceLine series={series} accentColor={colors.purple[400]} />}
     </Card>
