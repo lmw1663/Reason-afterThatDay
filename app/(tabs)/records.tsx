@@ -105,6 +105,12 @@ export default function RecordsScreen() {
             onPress={() => router.push('/recovery-trace' as never)}
           />
           <RecordCard
+            icon="leaf"
+            title="질문통"
+            subtitle="미리 준비된 질문 중에서 골라 답해봐"
+            onPress={() => router.push('/question-pool' as never)}
+          />
+          <RecordCard
             icon="message-circle"
             title="내가 답한 질문"
             subtitle="그동안 답해온 자유 질문 모아보기"
