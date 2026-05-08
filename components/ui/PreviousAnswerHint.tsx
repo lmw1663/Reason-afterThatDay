@@ -12,6 +12,9 @@ import { Pressable, Text, View } from 'react-native';
 import { useQuestionStore } from '@/store/useQuestionStore';
 import { Caption } from './Typography';
 import { colors } from '@/constants/colors';
+import { defaultPreviousAnswerFormatter } from './answerFormatters';
+
+export { defaultPreviousAnswerFormatter };
 
 interface Props {
   questionId: string;
@@ -25,22 +28,6 @@ interface Props {
 
 const DEFAULT_PREFIX = '저번엔';
 const DEFAULT_SUFFIX = '지금은 어때?';
-
-// jsonb 응답값 → 표시 문자열. 객체는 안전하게 표시 불가능 — 호출자가 formatter 명시.
-export function defaultPreviousAnswerFormatter(v: unknown): string | null {
-  if (v == null) return null;
-  if (typeof v === 'string') {
-    const trimmed = v.trim();
-    return trimmed.length > 0 ? trimmed : null;
-  }
-  if (typeof v === 'number') return Number.isFinite(v) ? String(v) : null;
-  if (typeof v === 'boolean') return v ? '그래' : '아니야';
-  if (Array.isArray(v)) {
-    const items = v.filter((x) => x != null && x !== '').map(String);
-    return items.length > 0 ? items.join(', ') : null;
-  }
-  return null;
-}
 
 export function PreviousAnswerHint({
   questionId,
