@@ -296,6 +296,11 @@ export function scoreCandidate(
 }
 
 // 5) 일반 점수 기반
+//
+// 답변 상태 정책:
+//  · status === 'answered' 제외 — 사용자 요청 "이미 답한 건 통합큐에 안 넣어"
+//  · 의도된 재노출(후속·시간차 재질문)은 단계 2~4에서 처리 — 본 단계 6은 첫 노출 전용
+//  · status가 'shown' 또는 're_ask'인 경우는 통과 (아직 답변 전 또는 의도된 재노출)
 export function selectByGeneralScore(
   pool: Question[],
   context: QuestionContext,
@@ -305,6 +310,7 @@ export function selectByGeneralScore(
 ): Question | null {
   const candidates = pool
     .filter((q) => q.context.includes(context) && q.isActive)
+    .filter((q) => answered[q.id]?.status !== 'answered')
     .filter((q) => !isInCooldown(answered[q.id], now))
     .filter((q) => !isQuestionBlocked(persona, q.id))
     .sort((a, b) => scoreCandidate(b, answered, persona) - scoreCandidate(a, answered, persona));
