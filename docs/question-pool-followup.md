@@ -28,23 +28,17 @@
 
 ## 2. display_type 별 답변 UI 분기
 
-현재 모든 질문이 free_text TextInput으로 통일. 풀에는 5가지 type 존재:
-
-| display_type | 현재 | 후속 안 |
+| display_type | 현재 | 시드 |
 |---|---|---|
-| `free_text` | TextInput | 그대로 |
-| `boolean` | TextInput (어색) | 그래/아니야 두 버튼 |
-| `pill` | TextInput | options.choices 다중 선택 칩 |
-| `choice` | TextInput | options.choices 단일 선택 라디오 |
-| `slider` | TextInput | 1~10 또는 5단계 슬라이더 |
+| `free_text` | TextInput | 대부분 |
+| `boolean` | ✅ 그래/아니야 두 버튼 | `c_check_past`·`c_check_change`·`c_check_harder`·`c_check_free`·`c_check_fear` (5개) |
+| `choice` | TextInput fallback (options 시드 없음) | `j_direction_change`·`j_direction_steady` (2개) |
+| `pill` | TextInput fallback | 시드 없음 |
+| `slider` | TextInput fallback | 시드 없음 |
 
-- **우선순위**: 중-하. 현재 풀 시드 30개 중 free_text 비율이 높을 것으로 추정 — 영향 범위 작음. 신규 시드가 boolean/pill 중심으로 늘어나면 우선순위 상승.
-- **구현 가이드**: `components/ui/QuestionInput.tsx` 같은 컴포넌트로 분기. 각 타입의 응답값 형태:
-  - boolean: `true | false`
-  - pill: `string[]`
-  - choice: `string`
-  - slider: `number`
-- 기존 `defaultPreviousAnswerFormatter` 가 모든 타입 표시 가능하므로 `/answers` 화면 변경 불필요
+- **boolean 적용 완료** — `app/question-pool/index.tsx` AnswerModal의 `isBoolean` 분기.
+- choice/pill/slider는 시드가 없거나 options 미설정이라 free_text fallback 유지. 신규 시드 추가 시점에 분기 확장.
+- 기존 `defaultPreviousAnswerFormatter` 가 모든 타입 표시 가능 — `/answers` 화면 변경 불필요.
 
 ## 3. 의도적으로 안 하는 것
 
@@ -58,8 +52,9 @@
 | 항목 | 우선순위 | 비고 |
 |---|---|---|
 | 1.1 통합큐 미답변 필터 | **High** | ✅ 완료 |
-| 1.2 질문통 → 통합큐 push UI | Mid | Q-2 안착 대기 |
-| 2. display_type 분기 | Low-Mid | 신규 시드 추가 시점에 |
+| 1.2 질문통 → 통합큐 push UI | Mid | Q-3 untracked 작업 안착 후 |
+| 2. display_type 분기 (boolean) | Mid | ✅ 완료 |
+| 2. display_type 분기 (choice/pill/slider) | Low | 신규 시드 추가 시점에 |
 | 3. 다시 답하기 흐름 | — | 안 함 (결정) |
 
 ## 5. 관련 파일

@@ -84,6 +84,7 @@ export default function QuestionPoolScreen() {
   const [loading, setLoading] = useState(true);
   const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
   const [answerText, setAnswerText] = useState('');
+  const [answerBoolean, setAnswerBoolean] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
 
   useScreenView('question_pool');
@@ -119,22 +120,37 @@ export default function QuestionPoolScreen() {
   function openAnswerModal(q: Question) {
     setActiveQuestion(q);
     setAnswerText('');
+    setAnswerBoolean(null);
   }
 
   function closeAnswerModal() {
     setActiveQuestion(null);
     setAnswerText('');
+    setAnswerBoolean(null);
+  }
+
+  // display_type별 응답값·유효성 분기.
+  // boolean → true|false, 그 외(choice w/o options 포함) → free_text fallback.
+  function getResponseValue(): unknown | null {
+    if (!activeQuestion) return null;
+    if (activeQuestion.displayType === 'boolean') {
+      return answerBoolean;
+    }
+    const trimmed = answerText.trim();
+    return trimmed.length > 0 ? trimmed : null;
   }
 
   async function handleSave() {
-    if (!activeQuestion || !userId || !answerText.trim() || saving) return;
+    if (!activeQuestion || !userId || saving) return;
+    const value = getResponseValue();
+    if (value === null) return;
     setSaving(true);
     try {
       await upsertQuestionResponse({
         userId,
         questionId: activeQuestion.id,
         responseType: activeQuestion.displayType ?? 'free_text',
-        responseValue: answerText.trim(),
+        responseValue: value,
         status: 'answered',
       });
       // 로컬에서 답변 ID 추가 — 카드 즉시 사라짐
@@ -224,9 +240,12 @@ export default function QuestionPoolScreen() {
         question={activeQuestion}
         text={answerText}
         onChangeText={setAnswerText}
+        booleanValue={answerBoolean}
+        onChangeBoolean={setAnswerBoolean}
         onClose={closeAnswerModal}
         onSave={handleSave}
         saving={saving}
+        canSave={getResponseValue() !== null}
       />
     </ScreenWrapper>
   );
@@ -283,12 +302,20 @@ interface AnswerModalProps {
   question: Question | null;
   text: string;
   onChangeText: (s: string) => void;
+  booleanValue: boolean | null;
+  onChangeBoolean: (v: boolean) => void;
   onClose: () => void;
   onSave: () => void;
   saving: boolean;
+  canSave: boolean;
 }
 
-function AnswerModal({ question, text, onChangeText, onClose, onSave, saving }: AnswerModalProps) {
+function AnswerModal({
+  question, text, onChangeText, booleanValue, onChangeBoolean,
+  onClose, onSave, saving, canSave,
+}: AnswerModalProps) {
+  const isBoolean = question?.displayType === 'boolean';
+
   return (
     <Modal
       visible={!!question}
@@ -308,28 +335,63 @@ function AnswerModal({ question, text, onChangeText, onClose, onSave, saving }: 
           onPress={(e) => e.stopPropagation()}
         >
           <Heading className="mb-4">{question?.text}</Heading>
-          <TextInput
-            value={text}
-            onChangeText={onChangeText}
-            placeholder="솔직하게 적어봐..."
-            placeholderTextColor={colors.gray[600]}
-            multiline
-            autoFocus
-            accessibilityLabel="답변 입력"
-            className="text-white text-base leading-relaxed mb-4"
-            style={{
-              minHeight: 100,
-              backgroundColor: colors.bg,
-              borderWidth: 1,
-              borderColor: colors.border,
-              borderRadius: 12,
-              padding: 12,
-            }}
-          />
+
+          {isBoolean ? (
+            <View className="flex-row gap-3 mb-4">
+              {([
+                { v: true, label: '그래' },
+                { v: false, label: '아니야' },
+              ] as const).map(({ v, label }) => {
+                const selected = booleanValue === v;
+                return (
+                  <Pressable
+                    key={label}
+                    onPress={() => onChangeBoolean(v)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={label}
+                    className="flex-1 rounded-xl py-4 items-center active:opacity-80"
+                    style={{
+                      backgroundColor: selected ? colors.purple[600] : colors.bg,
+                      borderWidth: 1,
+                      borderColor: selected ? colors.purple[600] : colors.border,
+                    }}
+                  >
+                    <Body
+                      className="font-semibold"
+                      style={{ color: selected ? '#FFFFFF' : colors.gray[400] }}
+                    >
+                      {label}
+                    </Body>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : (
+            <TextInput
+              value={text}
+              onChangeText={onChangeText}
+              placeholder="솔직하게 적어봐..."
+              placeholderTextColor={colors.gray[600]}
+              multiline
+              autoFocus
+              accessibilityLabel="답변 입력"
+              className="text-white text-base leading-relaxed mb-4"
+              style={{
+                minHeight: 100,
+                backgroundColor: colors.bg,
+                borderWidth: 1,
+                borderColor: colors.border,
+                borderRadius: 12,
+                padding: 12,
+              }}
+            />
+          )}
+
           <PrimaryButton
             label={saving ? '저장 중...' : '저장하기'}
             onPress={onSave}
-            disabled={!text.trim() || saving}
+            disabled={!canSave || saving}
             loading={saving}
           />
           <Pressable
