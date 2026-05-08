@@ -104,6 +104,12 @@ export default function RecordsScreen() {
             subtitle="처음과 지금의 마음 결을 비교해봐"
             onPress={() => router.push('/recovery-trace' as never)}
           />
+          <RecordCard
+            icon="message-circle"
+            title="내가 답한 질문"
+            subtitle="그동안 답해온 자유 질문 모아보기"
+            onPress={() => router.push('/answers' as never)}
+          />
           {hasKnotHistory && (
             <RecordCard
               icon="link"
