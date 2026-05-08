@@ -362,6 +362,30 @@ export function isEncounterPlanRecommended(p: PersonaCode | null): boolean {
   return p !== null && ENCOUNTER_PLAN_RECOMMENDED.includes(p);
 }
 
+// ───────── Ref-6 연락 충동 보고 칩 노출 차단 (G-6 보조 카드) ─────────
+
+/**
+ * 연락 충동 보고 칩(`ContactUrgeChip`) 노출 차단 페르소나.
+ *
+ * 칩의 본래 목적은 *충동 자가 인식 + 7일 추세*이지만, 일부 페르소나에서는
+ * 매일 노출 자체가 임상적으로 역효과:
+ *  - P14 외도 가해: 가해자→피해자 연락 충동 +1 카운트는 *행동 권장* 톤이 됨
+ *  - P16 결혼·이혼: 자녀 양육·법적 사유로 *필수 연락*이 존재 → 충동 vs 의무 구분 모호
+ *  - P17 강제 이별: 사별·접근금지·실종 등 — 연락 자체가 불가능해 노출이 잔인
+ *  - P19 ROCD: 매일 "오늘 연락하고 싶었어?" 자체가 강박 도구화 자극
+ *  - P20 트라우마 본딩: 연락 = 재희생 위험. +1 누적 표시가 충동 정상화로 흐름
+ *
+ * 그 외 페르소나는 노출 — 특히 P03·P06·P10은 핵심 타겟.
+ *
+ * appliesGuard 패턴(R5 "부의 금기만 추가")으로 검사 — effective·overlay 한 쪽이라도
+ * 차단 페르소나면 숨김. (예: 주 P03 + 부 P14 → P14 보호 우선으로 숨김.)
+ */
+const CONTACT_URGE_CHIP_BLOCKED: PersonaCode[] = ['P14', 'P16', 'P17', 'P19', 'P20'];
+
+export function isContactUrgeChipBlocked(p: PersonaCode | null): boolean {
+  return p !== null && CONTACT_URGE_CHIP_BLOCKED.includes(p);
+}
+
 // ───────── Ref-3 새벽 푸시 차단 (참고용 §2 P03) ─────────
 
 /**

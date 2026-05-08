@@ -6,6 +6,7 @@ import {
   isDeclutterRecommended,
   isContinuingBondsRecommended,
   isEncounterPlanRecommended,
+  isContactUrgeChipBlocked,
 } from '@/constants/personaBranches';
 import type { PersonaCode } from '@/utils/personaClassifier';
 
@@ -175,5 +176,36 @@ describe('G-7c 회상 의식 트랙 헬퍼 (personaBranches.ts G-7c 섹션)', ()
         expect(other.fn(t.persona)).toBe(false);
       }
     }
+  });
+});
+
+// G-6 연락 충동 보고 칩 노출 차단 — Ref-6.
+// 차단: P14·P16·P17·P19·P20 (임상 안전 — docs/persona-contact-urge-policy.md)
+describe('isContactUrgeChipBlocked — G-6 연락 충동 칩 차단 (personaBranches.ts Ref-6)', () => {
+  const blocked: PersonaCode[] = ['P14', 'P16', 'P17', 'P19', 'P20'];
+
+  describe('차단 페르소나 — true', () => {
+    for (const p of blocked) {
+      it(`${p} → true (차단)`, () => {
+        expect(isContactUrgeChipBlocked(p)).toBe(true);
+      });
+    }
+  });
+
+  describe('비차단 페르소나 — false (노출)', () => {
+    // 핵심 타겟 + 기타 안전 노출 페르소나
+    const allowed: PersonaCode[] = [
+      'P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08',
+      'P09', 'P10', 'P11', 'P12', 'P15', 'P18',
+    ];
+    for (const p of allowed) {
+      it(`${p} → false (노출)`, () => {
+        expect(isContactUrgeChipBlocked(p)).toBe(false);
+      });
+    }
+  });
+
+  it('null → false (baseline·미분류는 default 노출)', () => {
+    expect(isContactUrgeChipBlocked(null)).toBe(false);
   });
 });
