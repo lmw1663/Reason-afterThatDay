@@ -123,12 +123,18 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<{ ses
     );
   }
 
-  // 현재 세션 확보 — useAuth가 익명 가입을 자동으로 했어야 함
-  const { data: pre } = await supabase.auth.getSession();
-  if (!pre.session) {
-    throw new Error('계정이 준비되지 않았어. 잠시 후 다시 시도해줘');
+  // 현재 세션 확보 — useAuth가 마운트 시 1회만 익명 가입을 발사하므로
+  // 계정 영구 삭제(doDelete) → signOut 후 같은 세션에서 재로그인 시도 시 session 부재.
+  // session 없으면 *지금* 익명 가입 후 그 위에 linkIdentity 진행 — 데이터 단절 회피.
+  let preSession = (await supabase.auth.getSession()).data.session;
+  if (!preSession) {
+    const { data: anon, error: anonError } = await supabase.auth.signInAnonymously();
+    if (anonError || !anon.session) {
+      throw new Error('계정이 준비되지 않았어. 잠시 후 다시 시도해줘');
+    }
+    preSession = anon.session;
   }
-  const oldUserId = pre.session.user.id;
+  const oldUserId = preSession.user.id;
 
   // 익명 세션 위에서 provider 연결 — 데이터 보존을 위해 linkIdentity 사용
   const { data, error } = await supabase.auth.linkIdentity({
