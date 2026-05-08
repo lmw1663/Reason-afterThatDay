@@ -155,15 +155,32 @@ interface ComparisonProps {
   series: TimePoint[];
 }
 
+const INSTRUMENT_DESCRIPTION: Partial<Record<Instrument, string>> = {
+  PHQ9: '우울 정도를 살펴보는 9문항',
+  GAD7: '불안 정도를 살펴보는 7문항',
+  RSE: '자존감을 살펴보는 10문항',
+};
+
 function ComparisonCard({ instrument, label, d0, current, series }: ComparisonProps) {
+  const description = INSTRUMENT_DESCRIPTION[instrument] ?? '';
+
   if (series.length === 0) {
     return (
-      <Card className="p-4 mb-3">
-        <Caption className="text-gray-500">{label} — 측정 전</Caption>
-        <Body className="text-gray-300 text-sm mt-1">
-          /assessments/{instrument} 에서 시작할 수 있어
-        </Body>
-      </Card>
+      <Pressable
+        onPress={() => router.push(`/assessments/${instrument}?source=manual` as Href)}
+        accessibilityRole="button"
+        accessibilityLabel={`${label} 측정 시작`}
+        className="active:opacity-70"
+      >
+        <Card className="p-4 mb-3 flex-row items-center justify-between">
+          <View className="flex-1">
+            <Caption className="text-gray-400 font-medium">{label}</Caption>
+            <Caption className="text-gray-600 text-xs mt-0.5">{description}</Caption>
+            <Body className="text-purple-400 text-sm mt-2 font-medium">지금 시작하기 ›</Body>
+          </View>
+          <Icon name="chevron-right" size={18} color={colors.gray[600]} />
+        </Card>
+      </Pressable>
     );
   }
 
@@ -180,8 +197,11 @@ function ComparisonCard({ instrument, label, d0, current, series }: ComparisonPr
 
   return (
     <Card className="p-4 mb-3">
-      <View className="flex-row items-center justify-between mb-3">
-        <Caption className="text-purple-400 font-semibold">{label}</Caption>
+      <View className="flex-row items-start justify-between mb-3">
+        <View className="flex-1">
+          <Caption className="text-purple-400 font-semibold">{label}</Caption>
+          <Caption className="text-gray-600 text-xs mt-0.5">{description}</Caption>
+        </View>
         <View
           className="rounded-full px-2.5 py-1"
           style={{
