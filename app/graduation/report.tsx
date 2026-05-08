@@ -47,7 +47,7 @@ export default function GraduationReportScreen() {
   }, [userId]);
 
   const reasonQuestionText = reasonTimeline
-    ? pool.find((q) => q.id === reasonTimeline.questionId)?.text ?? '헤어진 이유를 적어왔던 흐름'
+    ? pool.find((q) => q.id === reasonTimeline.questionId)?.text ?? '헤어진 이유, 어떻게 적어왔는지'
     : null;
 
   const moodScores = entries.slice(0, 7).map((e) => e.moodScore);

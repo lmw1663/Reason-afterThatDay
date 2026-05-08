@@ -5,9 +5,13 @@ import { BackHeader } from '@/components/ui/BackHeader';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Display, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
+import { AnswerTimeline } from '@/components/ui/AnswerTimeline';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
+import { useQuestionStore } from '@/store/useQuestionStore';
 import { fetchKnotArchives, type KnotArchiveRow } from '@/api/knotArchive';
+import { fetchResponseHistoryByCategory, type ResponseHistoryEntry } from '@/api/questions';
+import { pickActiveReasonTimeline } from '@/utils/reasonReflection';
 
 /**
  * 매듭 사이클 타임라인 — F-10
@@ -22,8 +26,13 @@ import { fetchKnotArchives, type KnotArchiveRow } from '@/api/knotArchive';
  */
 export default function KnotArchiveScreen() {
   const userId = useUserStore((s) => s.userId);
+  const pool = useQuestionStore((s) => s.pool);
   const [rows, setRows] = useState<KnotArchiveRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Phase J — 사이클 타임라인 화면 *상단*에 노출할 회복 서사 시계열.
+  // 사이클 경계와 무관하게 reason 카테고리 답변 흐름을 한눈에 — "여러 매듭에 걸쳐
+  // 마음이 어떻게 흘러왔는지" 시각화. 변화 없으면 (1건 또는 같은 값) 미렌더.
+  const [reasonTimeline, setReasonTimeline] = useState<ReturnType<typeof pickActiveReasonTimeline>>(null);
 
   useEffect(() => {
     if (!userId) {
@@ -34,6 +43,17 @@ export default function KnotArchiveScreen() {
       .then(setRows)
       .catch((e: Error) => setError(e.message));
   }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetchResponseHistoryByCategory(userId, 'reason')
+      .then((h) => setReasonTimeline(pickActiveReasonTimeline(h as ResponseHistoryEntry[])))
+      .catch(() => {/* 타임라인 미노출 — 본 화면 영향 없음 */});
+  }, [userId]);
+
+  const reasonQuestionText = reasonTimeline
+    ? pool.find((q) => q.id === reasonTimeline.questionId)?.text ?? '헤어진 이유, 어떻게 적어왔는지'
+    : null;
 
   return (
     <ScreenWrapper>
@@ -67,6 +87,14 @@ export default function KnotArchiveScreen() {
               매듭은 *끝이 아니야*. 사이클의 한 챕터를 닫는 일이야.{'\n'}
               때가 되면 자연스럽게 권유가 올 거야.
             </Body>
+          </Card>
+        )}
+
+        {/* Phase J — 사이클 횡단 회복 서사. 매듭이 *최소 1회* 있을 때만 노출.
+            매듭 0회 사용자에겐 "아직 매듭이 없어" 안내가 단독으로 보이도록 가드. */}
+        {rows !== null && rows.length > 0 && reasonTimeline && reasonQuestionText && (
+          <Card className="mb-6">
+            <AnswerTimeline questionText={reasonQuestionText} entries={reasonTimeline.entries} />
           </Card>
         )}
 

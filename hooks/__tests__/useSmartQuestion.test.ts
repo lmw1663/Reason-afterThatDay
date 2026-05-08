@@ -612,6 +612,67 @@ describe('selectSmartQuestion 우선순위 통합', () => {
     expect(r?.source).toBe('follow_up');
   });
 
+  // ------------------------------------------------------------
+  // Phase J — 페르소나 booster 통합 회귀
+  // selectByGeneralScore 와 selectSmartQuestion 합성 레벨에서 booster 가
+  // 실제로 픽 결과를 바꾸는지 (단위 테스트 scoreCandidate 와 별개로
+  // *합성된 후보 정렬* 까지 정합한지) 검증.
+  // ------------------------------------------------------------
+  it('P05 + journal context → j_decision_recall 우승 (booster +20)', () => {
+    // weight=2 + 미답변 +5 + booster +20 = 27 → weight=5 + 미답변 +5 = 10 보다 큼
+    const args = baseArgs();
+    args.context = 'journal';
+    args.persona = 'P05';
+    args.pool = [
+      { id: 'j_decision_recall', text: '결정 회상', context: ['journal'], isActive: true, weight: 2 },
+      { id: 'j_today_mood',      text: '오늘 기분', context: ['journal'], isActive: true, weight: 5 },
+    ];
+    const r = selectSmartQuestion(args);
+    expect(r?.source).toBe('general');
+    expect(r?.question.id).toBe('j_decision_recall');
+  });
+
+  it('페르소나 null → j_decision_recall 의 booster 적용 안 됨', () => {
+    // weight=2 + 미답변 +5 = 7 < weight=5 + 미답변 +5 = 10 → j_today_mood 우승
+    const args = baseArgs();
+    args.context = 'journal';
+    args.persona = null;
+    args.pool = [
+      { id: 'j_decision_recall', text: '결정 회상', context: ['journal'], isActive: true, weight: 2 },
+      { id: 'j_today_mood',      text: '오늘 기분', context: ['journal'], isActive: true, weight: 5 },
+    ];
+    const r = selectSmartQuestion(args);
+    expect(r?.question.id).toBe('j_today_mood');
+  });
+
+  it('P14 + analysis → 차단된 a_their_feeling 미픽, a_breakup_reason 우승', () => {
+    // P14 차단: a_their_feeling, a_fix_possible
+    const args = baseArgs();
+    args.context = 'analysis';
+    args.persona = 'P14';
+    args.pool = [
+      { id: 'a_breakup_reason', text: '이유',     context: ['analysis'], isActive: true, weight: 7 },
+      { id: 'a_their_feeling',  text: '상대 마음', context: ['analysis'], isActive: true, weight: 5 },
+      { id: 'a_fix_possible',   text: '고칠까',   context: ['analysis'], isActive: true, weight: 5 },
+    ];
+    const r = selectSmartQuestion(args);
+    expect(r?.question.id).toBe('a_breakup_reason');
+  });
+
+  // P11 은 KNOT_FORBIDDEN_PERSONAS 에 속하지만 그건 graduation context 한정 차단.
+  // journal context 의 booster 효과는 정상 — 두 가드의 분리를 회귀로 확정.
+  it('P11 + journal → j_two_minds booster 발동 (graduation 차단과 분리)', () => {
+    const args = baseArgs();
+    args.context = 'journal';
+    args.persona = 'P11';
+    args.pool = [
+      { id: 'j_two_minds',  text: '두 마음',   context: ['journal'], isActive: true, weight: 2 },
+      { id: 'j_today_mood', text: '오늘 기분', context: ['journal'], isActive: true, weight: 5 },
+    ];
+    const r = selectSmartQuestion(args);
+    expect(r?.question.id).toBe('j_two_minds');
+  });
+
   it('Phase E — 오늘 follow-up 자식 답 → revisit 도 스킵 (보수적 일일 상한)', () => {
     const args = baseArgs();
     args.pool = PE_POOL;
