@@ -24,7 +24,7 @@ describe('todayKstString — KST 자정 anchor', () => {
   });
 });
 
-describe('selectPriorityFromRecord — 어제 스킵만 priority', () => {
+describe('selectPriorityFromRecord — 어제(today-1)만 priority, 그 외 만료', () => {
   it('record null → 빈 Set', () => {
     expect(selectPriorityFromRecord(null, '2026-05-08').size).toBe(0);
   });
@@ -32,16 +32,24 @@ describe('selectPriorityFromRecord — 어제 스킵만 priority', () => {
     const rec = { date: '2026-05-08', ids: ['memory:painful', 'aboutMe:body'] };
     expect(selectPriorityFromRecord(rec, '2026-05-08').size).toBe(0);
   });
-  it('record date 어제 → 모든 ids가 priority', () => {
+  it('record date 어제(today-1) → 모든 ids가 priority', () => {
     const rec = { date: '2026-05-07', ids: ['memory:painful', 'aboutMe:body'] };
     const result = selectPriorityFromRecord(rec, '2026-05-08');
     expect(result.size).toBe(2);
     expect(result.has('memory:painful')).toBe(true);
     expect(result.has('aboutMe:body')).toBe(true);
   });
-  it('record date 며칠 전 → 그래도 priority (자연 소멸 별도 정책 없음)', () => {
+  it('record date 이틀 전(today-2) → 만료, 빈 Set', () => {
+    const rec = { date: '2026-05-06', ids: ['smartQ:x'] };
+    expect(selectPriorityFromRecord(rec, '2026-05-08').size).toBe(0);
+  });
+  it('record date 며칠 전 → 만료, 빈 Set (오늘 페르소나 곡선과 무관)', () => {
     const rec = { date: '2026-04-01', ids: ['smartQ:j_today_mood'] };
-    expect(selectPriorityFromRecord(rec, '2026-05-08').size).toBe(1);
+    expect(selectPriorityFromRecord(rec, '2026-05-08').size).toBe(0);
+  });
+  it('record date 미래(잘못된 시계 등) → 안전상 무시', () => {
+    const rec = { date: '2026-05-09', ids: ['memory:painful'] };
+    expect(selectPriorityFromRecord(rec, '2026-05-08').size).toBe(0);
   });
 });
 

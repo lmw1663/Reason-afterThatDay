@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Pressable, View, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
@@ -7,22 +7,14 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Caption, Heading } from '@/components/ui/Typography';
 import { useJournalQueue } from '@/hooks/useJournalQueue';
 import { useQuestionStore } from '@/store/useQuestionStore';
-import type { QueueItem, JournalMemoryCategory } from '@/utils/journalQueueRouter';
+import type {
+  QueueItem,
+  QueueAnswerPayload,
+  JournalMemoryCategory,
+} from '@/utils/journalQueueRouter';
 import type { Direction } from '@/store/useJournalStore';
 import type { ReflectionCategory } from '@/api/selfReflections';
 import { colors } from '@/constants/colors';
-
-// 일기 통합 큐 응답 — 도메인 라우팅(Q-5)에서 분기 키로 사용.
-export interface QueueAnswerPayload {
-  id: string;
-  kind: QueueItem['kind'];
-  // kind별 보조 식별자
-  smartQId?: string;
-  aboutMeCategory?: ReflectionCategory;
-  memoryCategory?: JournalMemoryCategory;
-  prosCons?: 'pros' | 'cons';
-  text: string;
-}
 
 const ABOUT_ME_PROMPT: Record<ReflectionCategory, string> = {
   self_love: '오늘 너 자신을 위해 한 가지 했던 게 있어?',
@@ -97,17 +89,19 @@ export default function JournalQuestionScreen() {
 
   const [text, setText] = useState('');
   const [answers, setAnswers] = useState<QueueAnswerPayload[]>([]);
-  const [navigated, setNavigated] = useState(false);
+  // navigated 가드 — useRef로 변경해 useEffect 다중 발사 + setState 비동기 race 차단 (P1-3)
+  const navigatedRef = useRef(false);
+  // 더블탭/연타 직렬화 가드 (P0-3, P1-1)
+  const submittingRef = useRef(false);
 
   // 큐가 비어 있거나 끝나면 response로 이동 (collected answers 동봉)
+  // deps에서 params 객체 제거 — useLocalSearchParams는 매 렌더 새 객체 반환 가능 (P1-3)
   useEffect(() => {
-    if (navigated) return;
+    if (navigatedRef.current) return;
     if (!queue.ready) return;
-    const empty = queue.queue.length === 0;
-    const finished = queue.done;
-    if (!empty && !finished) return;
+    if (!queue.done) return;
 
-    setNavigated(true);
+    navigatedRef.current = true;
     // smartQ 답변이 있으면 questionAnswer로 backcompat (response.tsx의 freeText 폴백 경로)
     const smartQAnswer = answers.find((a) => a.kind === 'smartQ')?.text ?? '';
     router.replace({
@@ -118,8 +112,11 @@ export default function JournalQuestionScreen() {
         queueAnswers: JSON.stringify(answers),
       },
     });
-  }, [navigated, queue.ready, queue.queue.length, queue.done, answers, params]);
+    // params는 의도적으로 deps 제외 — 한 번만 navigate (navigatedRef 가드와 함께)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queue.ready, queue.done, answers]);
 
+  // ready 전 또는 done 직후(navigate 대기 중) → "잠시만…" (빈 큐도 done=true → useEffect로 즉시 redirect)
   if (!queue.ready || !queue.current) {
     return (
       <ScreenWrapper>
@@ -137,20 +134,32 @@ export default function JournalQuestionScreen() {
   const placeholder = getPlaceholder(item);
 
   function handleNext() {
+    if (submittingRef.current) return;
     const trimmed = text.trim();
     if (!trimmed) return;
+    submittingRef.current = true;
+    setText('');
     setAnswers((prev) => [...prev, buildPayload(item, trimmed)]);
-    // smartQ 답변은 기존 question_responses 채널에도 마킹 (Phase A 호환)
     if (item.kind === 'smartQ' && item.smartQ) {
       markQuestionAnswered(item.smartQ.id, trimmed);
     }
-    setText('');
     queue.markAnswered();
+    setTimeout(() => {
+      submittingRef.current = false;
+    }, 0);
   }
 
   async function handleSkip() {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setText('');
-    await queue.markSkipped();
+    try {
+      await queue.markSkipped();
+    } finally {
+      setTimeout(() => {
+        submittingRef.current = false;
+      }, 0);
+    }
   }
 
   return (

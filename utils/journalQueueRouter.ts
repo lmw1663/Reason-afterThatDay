@@ -34,6 +34,17 @@ export interface QueueItem {
   prosCons?: 'pros' | 'cons';
 }
 
+/** 사용자가 답변한 큐 항목 — Q-4 화면에서 수집 후 Q-5에서 도메인 라우팅. */
+export interface QueueAnswerPayload {
+  id: string;
+  kind: QueueItemKind;
+  smartQId?: string;
+  aboutMeCategory?: ReflectionCategory;
+  memoryCategory?: JournalMemoryCategory;
+  prosCons?: 'pros' | 'cons';
+  text: string;
+}
+
 export interface BuildQueueArgs {
   /** effective 페르소나 (`resolvePersona`의 effective). */
   persona: PersonaCode | null;

@@ -14,6 +14,11 @@ import { useJournalStore, type Direction } from '@/store/useJournalStore';
 import { useStreamingJournalResponse } from '@/hooks/useStreamingAI';
 import { upsertJournalEntry } from '@/api/journal';
 import { useJournalDraft } from '@/hooks/useJournalDraft';
+import {
+  composeAugmentedFreeText,
+  routeQueueAnswers,
+} from '@/utils/journalQueueSink';
+import type { QueueAnswerPayload } from '@/utils/journalQueueRouter';
 
 export default function JournalResponseScreen() {
   const params = useLocalSearchParams<{
@@ -24,6 +29,7 @@ export default function JournalResponseScreen() {
     freeText: string;
     direction: string;
     questionAnswer: string;
+    queueAnswers: string;
   }>();
 
   const { userId, daysElapsed } = useUserStore();
@@ -38,6 +44,19 @@ export default function JournalResponseScreen() {
   const affectionLevel = params.affectionLevel != null ? Number(params.affectionLevel) : null;
   const recentMoods = entries.slice(0, 3).map((e) => e.moodScore);
 
+  // Q-5: 통합 큐 답변 파싱 + augmented freeText 컴포지션 (AI·DB 단일 출처)
+  const queueAnswers = (() => {
+    try {
+      return params.queueAnswers ? (JSON.parse(params.queueAnswers) as QueueAnswerPayload[]) : [];
+    } catch {
+      return [] as QueueAnswerPayload[];
+    }
+  })();
+  const augmentedFreeText = composeAugmentedFreeText(
+    params.freeText || params.questionAnswer || undefined,
+    queueAnswers,
+  );
+
   const [reflectionDismissed, setReflectionDismissed] = useState(false);
   const showSelfReflectionSuggestion =
     tags.includes('자존감 흔들림') && (daysElapsed ?? 0) >= 8 && !reflectionDismissed;
@@ -46,7 +65,7 @@ export default function JournalResponseScreen() {
     const ctx = {
       moodScore: score,
       direction,
-      freeText: params.freeText || params.questionAnswer || undefined,
+      freeText: augmentedFreeText || undefined,
       recentMoods,
       daysElapsed,
     };
@@ -57,8 +76,11 @@ export default function JournalResponseScreen() {
   // 스트리밍 완료 후 로컬 즉시 반영 + DB 저장
   // 1) userId 유무와 상관없이 로컬 entries 에 먼저 prepend → history에 즉시 보이게.
   // 2) userId 가 있으면 DB 저장 후 서버 응답(id/createdAt) 으로 로컬 엔트리 교체.
+  // 3) Q-5: 통합 큐 답변(aboutMe/prosCons)은 도메인 테이블로 fire-and-forget 라우팅.
   useEffect(() => {
     if (!done || !text) return;
+
+    const persistedFreeText = augmentedFreeText || undefined;
 
     const localEntry = {
       id: `local-${Date.now()}`,
@@ -69,7 +91,7 @@ export default function JournalResponseScreen() {
       physicalSignals,
       affectionLevel,
       direction,
-      freeText: params.freeText || undefined,
+      freeText: persistedFreeText,
       aiResponse: text,
     };
     upsertEntry(localEntry);
@@ -83,7 +105,7 @@ export default function JournalResponseScreen() {
       physicalSignals,
       affectionLevel,
       direction,
-      freeText: params.freeText || undefined,
+      freeText: persistedFreeText,
       aiResponse: text,
     })
       .then((saved) => {
@@ -94,6 +116,13 @@ export default function JournalResponseScreen() {
         const err = e as { code?: string; message?: string };
         console.warn('[journal] save failed:', err.code ?? err.message ?? e);
       });
+
+    // 도메인 라우팅 — 일기 저장 흐름과 독립. 실패는 sink 내부에서 silent.
+    if (queueAnswers.length > 0) {
+      routeQueueAnswers(userId, queueAnswers).catch((e) => {
+        console.warn('[journal] queue routing failed:', e);
+      });
+    }
   }, [done]);
 
   return (

@@ -18,18 +18,27 @@ export function todayKstString(now: number = Date.now()): string {
   return new Date(now + KST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+/** 두 YYYY-MM-DD 문자열 사이의 일 수 차이. day1 < day2이면 양수. */
+function daysBetween(day1: string, day2: string): number {
+  const d1 = new Date(`${day1}T00:00:00Z`).getTime();
+  const d2 = new Date(`${day2}T00:00:00Z`).getTime();
+  return Math.round((d2 - d1) / (24 * 60 * 60 * 1000));
+}
+
 /**
  * 저장된 스킵 record에서 *오늘 우선노출 대상 ID*만 추출.
- * - record null → 빈 Set
- * - record date === today → 오늘 누적이라 우선노출 X (이미 큐에서 제외됨)
- * - record date !== today (어제 또는 그 이전) → 모든 ids가 priority 대상
+ *  - record null → 빈 Set
+ *  - record date === today → 오늘 누적이라 우선노출 X (이미 큐에서 제외됨)
+ *  - record date 어제(today-1) → priority (정상 케이스)
+ *  - record date 며칠 전(today-2 이상) → 만료, priority X (오늘 페르소나 곡선과 무관)
  */
 export function selectPriorityFromRecord(
   record: SkipRecord | null,
   today: string,
 ): Set<string> {
   if (!record) return new Set();
-  if (record.date === today) return new Set();
+  const diff = daysBetween(record.date, today);
+  if (diff !== 1) return new Set();
   return new Set(record.ids);
 }
 
