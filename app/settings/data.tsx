@@ -224,9 +224,13 @@ export default function DataSettingsScreen() {
         fallbackResult = await deleteAllUserData(userId);
       }
 
+      // signOut 먼저 — AsyncStorage 비우기 *전에* 토큰이 살아있을 때 서버 invalidate
+      await supabase.auth.signOut().catch(() => {/* ignore */});
       // 로컬 데이터 정리
       await AsyncStorage.clear().catch(() => {/* fail open */});
-      await supabase.auth.signOut().catch(() => {/* ignore */});
+      // store 메모리 reset — index.tsx 게이트가 인증된 상태로 오인하지 않도록
+      // (userId/consentVersions/onboardingCompleted 모두 비움 → 로그인 화면 강제)
+      useUserStore.getState().reset();
 
       const message = accountDeleted
         ? '계정과 모든 기록이 영구 삭제됐어. 그동안 함께해줘서 고마워.'
@@ -239,7 +243,10 @@ export default function DataSettingsScreen() {
       Alert.alert(
         '삭제 완료',
         `${message}\n로그아웃됐어.`,
-        [{ text: '확인', onPress: () => router.replace('/' as never) }],
+        // '/' 가 아닌 /onboarding/login 명시 — store reset 됐어도 useAuth 의 익명
+        // 가입 useEffect 는 마운트 시 1회라 재발사 안 됨. 사용자가 OAuth 로그인할
+        // 때까지 로그인 화면 머무름.
+        [{ text: '확인', onPress: () => router.replace('/onboarding/login' as never) }],
       );
     } catch {
       setError('삭제 중 오류가 발생했어. 잠시 후 다시 시도해줘.');
