@@ -3,6 +3,7 @@ import { View, TextInput, ScrollView, Pressable, Text as RNText } from 'react-na
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
+import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
 import { Pill } from '@/components/ui/Pill';
@@ -174,6 +175,7 @@ export default function JournalMoodScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <BackHeader />
         <Caption className="mb-2">이별 일기 · 1 / 4</Caption>
         <Heading className="mb-2">지금 감정 온도가 몇 도야?</Heading>
 
