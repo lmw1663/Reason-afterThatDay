@@ -35,7 +35,8 @@ export default function AnalysisReasonScreen() {
   const [selected, setSelected] = useState<string[]>(profile.reasons);
   const [answer, setAnswer] = useState('');
 
-  const poolQuestion = useSmartQuestion('analysis', 'undecided');
+  const smart = useSmartQuestion('analysis', 'undecided');
+  const poolQuestion = smart?.question;
 
   function toggle(label: string) {
     setSelected((prev) =>

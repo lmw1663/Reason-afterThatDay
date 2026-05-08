@@ -24,7 +24,12 @@ export default function JournalQuestionScreen() {
   const { markAnswered } = useQuestionStore();
 
   const direction = (params.direction ?? 'undecided') as Direction;
-  const question = useSmartQuestion('journal', direction);
+  const smart = useSmartQuestion('journal', direction);
+  const question = smart?.question;
+  const captionLabel =
+    smart?.source === 'direction_change' ? '마음이 바뀐 날 · 3 / 4'
+    : smart?.source === 'direction_steady' ? '단단해진 마음 · 3 / 4'
+    : '이별 일기 · 3 / 4';
 
   function handleNext() {
     if (question && answer.trim()) {
@@ -40,7 +45,7 @@ export default function JournalQuestionScreen() {
     <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
-        <Caption className="mb-2">이별 일기 · 3 / 4</Caption>
+        <Caption className="mb-2">{captionLabel}</Caption>
 
         <Heading className="mb-6 leading-snug">
           {question?.text ?? '오늘 하루 어떤 순간이 기억에 남아?'}
