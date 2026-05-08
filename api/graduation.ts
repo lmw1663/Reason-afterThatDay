@@ -102,17 +102,13 @@ export async function resetCooling(id: string, coolingDays: number = 7): Promise
 }
 
 export async function addCheckinResponse(id: string, response: unknown): Promise<void> {
-  const { data } = await supabase
-    .from('graduation_cooling')
-    .select('checkin_responses')
-    .eq('id', id)
-    .single();
-
-  const existing = (data?.checkin_responses as unknown[]) ?? [];
-  await supabase
-    .from('graduation_cooling')
-    .update({ checkin_responses: [...existing, response] })
-    .eq('id', id);
+  // 040 마이그레이션의 add_unique_checkin_response 함수로 atomic dedupe.
+  // 동일 응답 객체(text+date 조합)가 이미 있으면 skip — 재시도 멱등.
+  const { error } = await supabase.rpc('add_unique_checkin_response', {
+    p_cooling_id: id,
+    p_response: response,
+  });
+  if (error) throw error;
 }
 
 /**

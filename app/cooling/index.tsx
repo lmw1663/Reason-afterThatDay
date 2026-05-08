@@ -120,6 +120,7 @@ export default function CoolingDashboardScreen() {
         visible={!!reflectionError}
         message={reflectionError ?? ''}
         onHide={() => setReflectionError(null)}
+        action={{ label: '재시도', onPress: handleSaveReflection }}
       />
       {/* Day 1 호흡 모달 */}
       <Modal

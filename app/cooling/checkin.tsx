@@ -60,6 +60,7 @@ export default function CoolingCheckinScreen() {
         visible={!!error}
         message={error ?? ''}
         onHide={() => setError(null)}
+        action={{ label: '재시도', onPress: handleSave }}
       />
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
