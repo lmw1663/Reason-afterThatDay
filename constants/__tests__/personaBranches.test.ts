@@ -278,27 +278,45 @@ describe('일기 통합 큐 (personaBranches.ts Ref-7)', () => {
       });
     });
 
-    describe('분노 강 곡선 (P10)', () => {
+    describe('분노 강 곡선 (P10) — boundary 잠금', () => {
       it('D+0 → 0.8 (분노 표출)', () => {
         expect(getJournalProsConsRatio('P10', 0)).toBe(0.8);
       });
+      it('D+7 → 0.8 (boundary inclusive)', () => {
+        expect(getJournalProsConsRatio('P10', 7)).toBe(0.8);
+      });
       it('D+8 → 0.7', () => {
         expect(getJournalProsConsRatio('P10', 8)).toBe(0.7);
+      });
+      it('D+30 → 0.7 (boundary inclusive)', () => {
+        expect(getJournalProsConsRatio('P10', 30)).toBe(0.7);
       });
       it('D+31 → 0.6', () => {
         expect(getJournalProsConsRatio('P10', 31)).toBe(0.6);
       });
     });
 
-    describe('장점 우세 곡선 (P05·P07·P09·P12·P15)', () => {
+    describe('장점 우세 곡선 (P05·P07·P09·P12·P15) — P05로 boundary 전체 잠금', () => {
       it('P05 D+0 → 0.6', () => {
         expect(getJournalProsConsRatio('P05', 0)).toBe(0.6);
       });
-      it('P12 D+8 → 0.5', () => {
-        expect(getJournalProsConsRatio('P12', 8)).toBe(0.5);
+      it('P05 D+7 → 0.6 (boundary)', () => {
+        expect(getJournalProsConsRatio('P05', 7)).toBe(0.6);
       });
-      it('P09 D+31 → 0.4 (장점 우세)', () => {
+      it('P05 D+8 → 0.5', () => {
+        expect(getJournalProsConsRatio('P05', 8)).toBe(0.5);
+      });
+      it('P05 D+30 → 0.5 (boundary)', () => {
+        expect(getJournalProsConsRatio('P05', 30)).toBe(0.5);
+      });
+      it('P05 D+31 → 0.4 (장점 우세)', () => {
+        expect(getJournalProsConsRatio('P05', 31)).toBe(0.4);
+      });
+      it('P07·P09·P12·P15도 동일 곡선', () => {
+        expect(getJournalProsConsRatio('P07', 0)).toBe(0.6);
         expect(getJournalProsConsRatio('P09', 31)).toBe(0.4);
+        expect(getJournalProsConsRatio('P12', 8)).toBe(0.5);
+        expect(getJournalProsConsRatio('P15', 30)).toBe(0.5);
       });
     });
 

@@ -53,7 +53,7 @@ describe('selectPriorityFromRecord — 어제(today-1)만 priority, 그 외 만�
   });
 });
 
-describe('appendSkippedId — 스킵 누적', () => {
+describe('appendSkippedId — 스킵 누적 + dedup + 상한', () => {
   it('record null → 새 record 생성 (오늘 1개)', () => {
     const result = appendSkippedId(null, 'memory:painful', '2026-05-08');
     expect(result).toEqual({ date: '2026-05-08', ids: ['memory:painful'] });
@@ -70,5 +70,18 @@ describe('appendSkippedId — 스킵 누적', () => {
       date: '2026-05-08',
       ids: ['aboutMe:body', 'memory:painful'],
     });
+  });
+  it('같은 id 중복 스킵 → record 그대로 (dedup)', () => {
+    const rec = { date: '2026-05-08', ids: ['aboutMe:body'] };
+    const result = appendSkippedId(rec, 'aboutMe:body', '2026-05-08');
+    expect(result).toBe(rec); // 동일 참조 — 변경 없음
+  });
+  it('상한 50 초과 → 가장 오래된 것 drop', () => {
+    const ids = Array.from({ length: 50 }, (_, i) => `id:${i}`);
+    const rec = { date: '2026-05-08', ids };
+    const result = appendSkippedId(rec, 'id:new', '2026-05-08');
+    expect(result.ids.length).toBe(50);
+    expect(result.ids[0]).toBe('id:1'); // id:0 drop
+    expect(result.ids[49]).toBe('id:new');
   });
 });

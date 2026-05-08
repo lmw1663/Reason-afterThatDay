@@ -33,6 +33,14 @@ import type { Direction } from '@/store/useJournalStore';
 // AsyncStorage 키 — userId별 단일 record. 날짜가 오늘이면 누적, 다른 날짜면 어제 잔재로 사용.
 const SKIP_KEY = (userId: string) => `journal_queue_skipped_${userId}`;
 
+async function clearSkipRecord(userId: string): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(SKIP_KEY(userId));
+  } catch {
+    // silent
+  }
+}
+
 async function loadSkipRecord(userId: string): Promise<SkipRecord | null> {
   try {
     const raw = await AsyncStorage.getItem(SKIP_KEY(userId));
@@ -132,13 +140,21 @@ export function useJournalQueue(currentDirection: Direction): UseJournalQueueRes
   // 더블탭/연타 직렬화용 가드
   const submittingRef = useRef(false);
   const skipQueueRef = useRef<Promise<void>>(Promise.resolve());
+  // userId 변경 추적 — 이전 사용자 SkipRecord 정리 (디바이스 공유·재로그인 누수 차단)
+  const prevUserIdRef = useRef<string | null>(null);
 
   // 1) AsyncStorage에서 어제 스킵 로드 (P1-6: TTL 1일 — selectPriorityFromRecord 내부에서 처리)
+  // userId 변경 시 이전 사용자 record 정리 후 새 사용자 로드.
   useEffect(() => {
     if (!userId) {
       setSkipLoaded(true);
       return;
     }
+    const prevUserId = prevUserIdRef.current;
+    if (prevUserId && prevUserId !== userId) {
+      clearSkipRecord(prevUserId).catch(() => {/* silent */});
+    }
+    prevUserIdRef.current = userId;
     loadSkipRecord(userId).then((rec) => {
       setPrioritySkippedIds(selectPriorityFromRecord(rec, todayKstString()));
       setSkipLoaded(true);
@@ -215,22 +231,24 @@ export function useJournalQueue(currentDirection: Direction): UseJournalQueueRes
     if (submittingRef.current) return;
     submittingRef.current = true;
 
-    // skip 저장은 직렬화 — 더블탭 시 race 방지
+    // skip 저장 + 인덱스 진행 모두 chain 내부에서 직렬화. 다음 tick 더블탭이 들어와도
+    // chain에 직렬 추가되어 두 번째 호출의 setCurrentIndex가 *첫 호출 완료 후* 한 칸만 진행.
     const itemId = current.id;
     skipQueueRef.current = skipQueueRef.current.then(async () => {
-      const today = todayKstString();
-      const rec = await loadSkipRecord(userId);
-      const newRec = appendSkippedId(rec, itemId, today);
-      await saveSkipRecord(userId, newRec);
+      try {
+        const today = todayKstString();
+        const rec = await loadSkipRecord(userId);
+        const newRec = appendSkippedId(rec, itemId, today);
+        await saveSkipRecord(userId, newRec);
+      } finally {
+        setCurrentIndex((i) => Math.min(i + 1, queue.length));
+      }
     });
 
     try {
       await skipQueueRef.current;
     } finally {
-      setCurrentIndex((i) => Math.min(i + 1, queue.length));
-      setTimeout(() => {
-        submittingRef.current = false;
-      }, 0);
+      submittingRef.current = false;
     }
   }, [userId, current, queue.length]);
 

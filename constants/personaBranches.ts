@@ -405,19 +405,36 @@ export function isJournalProsConsBlocked(p: PersonaCode | null): boolean {
  *
  * 곡선 설계 — docs/journal-unified-queue.md 정책표:
  *  - default (P02·P04·P06·P08): 0~7=0.7 / 8~30=0.6 / 30+=0.5 (초기 단점 ↑, 후기 균형)
+ *    임상 근거:
+ *      · P02 회피형 — 단점 질문은 회피 깨기(emotional contact 자극) 통로. about-me 트랙에선
+ *        body/self_care 우선이 매트릭스 권장이지만, 일기 큐의 prosCons는 *질문 풀 비중*일 뿐
+ *        강제가 아님 → "다음에"로 회피 가능. 단점 70%는 표출 자극 의도.
+ *      · P06 반복 사이클 — 패턴 인식·행동 차단이 1차 목표. 단점 70%는 매달림 사이클의
+ *        근거를 외현화해 사이클 깨기에 기여.
+ *      · P04 갑작스러운 통보·P08 장기 권태 — 사실 정리·정상화 단계로 단점 강조 안전.
  *  - 분노 강(P10): 0~7=0.8 / 8~30=0.7 / 30+=0.6 (분노 표출 통로)
  *  - 죄책감·헌신·정상화(P05·P07·P09·P12·P15): 0~7=0.6 / 8~30=0.5 / 30+=0.4 (균형 ~ 장점 우세)
  *  - 균형 곡선(P03·P11·P18): 항상 0.5 (결정 트라우마 자극 회피)
  *  - Continuing Bonds(P17): 항상 0.3 (장점 보존 — 본인 결정 아닌 이별)
- *  - 차단(P01·P14·P16·P19·P20): 호출하지 말 것 (isJournalProsConsBlocked 선검사)
+ *  - 차단(P01·P14·P16·P19·P20): 호출하지 말 것 (isJournalProsConsBlocked 선검사).
+ *    fallback 0.5는 보호망일 뿐 — `__DEV__`에서 호출 위반 발생 시 console.warn으로 표면화.
  */
 export function getJournalProsConsRatio(
   p: PersonaCode | null,
   daysElapsed: number,
 ): number {
   // 차단 페르소나는 라우터 단계에서 풀 제거 — 본 함수에서 호출되면 안 됨.
-  // 그래도 호출되면 default 균형으로 fallback.
-  if (p !== null && JOURNAL_PROS_CONS_BLOCKED.includes(p)) return 0.5;
+  // 그래도 호출되면 default 균형으로 fallback. dev에서는 호출 위반 표면화.
+  if (p !== null && JOURNAL_PROS_CONS_BLOCKED.includes(p)) {
+    if (typeof __DEV__ !== 'undefined' && __DEV__) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[journal-queue] getJournalProsConsRatio called for blocked persona ${p}. ` +
+        `Caller must check isJournalProsConsBlocked first.`,
+      );
+    }
+    return 0.5;
+  }
 
   // 균형 곡선 — 결정 트라우마·강박 위험 페르소나
   if (p === 'P03' || p === 'P11' || p === 'P18') return 0.5;

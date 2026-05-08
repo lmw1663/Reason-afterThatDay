@@ -42,10 +42,14 @@ export function selectPriorityFromRecord(
   return new Set(record.ids);
 }
 
+/** 한 record에 누적 가능한 최대 ids 수 — 무한 누적 차단. 초과 시 가장 오래된 것부터 drop. */
+export const SKIP_RECORD_MAX_IDS = 50;
+
 /**
  * 새 스킵 항목을 record에 누적.
- * - record가 오늘이면 ids 끝에 push
- * - record가 어제(또는 미존재)면 새 record 생성
+ *  - record가 오늘이면 ids 끝에 push (dedup — 같은 id 중복 시 기존 위치 유지하고 추가 X)
+ *  - record가 어제(또는 미존재)면 새 record 생성
+ *  - 누적 ids 수가 `SKIP_RECORD_MAX_IDS`를 넘으면 가장 오래된 항목부터 잘라냄
  */
 export function appendSkippedId(
   current: SkipRecord | null,
@@ -53,7 +57,15 @@ export function appendSkippedId(
   today: string,
 ): SkipRecord {
   if (current && current.date === today) {
-    return { date: today, ids: [...current.ids, id] };
+    if (current.ids.includes(id)) {
+      // dedup — 같은 항목 반복 스킵 시 record는 그대로
+      return current;
+    }
+    const next = [...current.ids, id];
+    return {
+      date: today,
+      ids: next.length > SKIP_RECORD_MAX_IDS ? next.slice(-SKIP_RECORD_MAX_IDS) : next,
+    };
   }
   return { date: today, ids: [id] };
 }

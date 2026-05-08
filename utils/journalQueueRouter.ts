@@ -68,7 +68,7 @@ export interface BuildQueueArgs {
   seed: number;
 }
 
-/** about-me 14 카테고리 default 순서 (페르소나별 정렬은 `sortAboutMeCategories`로 보강). */
+/** about-me 10 카테고리 default 순서 (페르소나별 정렬은 `sortAboutMeCategories`로 보강). */
 const ABOUT_ME_DEFAULT_ORDER: readonly ReflectionCategory[] = [
   'self_love',
   'strengths',
@@ -189,6 +189,10 @@ export function buildQueueSequence(args: BuildQueueArgs): QueueItem[] {
   }
 
   // 4) ProsCons — 차단 페르소나·decisionLocked 통과 시
+  // `prosConsBlocked`만 R5 appliesGuard(부의 금기 추가 적용). `getJournalProsConsRatio`는
+  // **effective 페르소나만** 사용 — R5 정책상 부 페르소나는 *추가 차단*만 하고 *권장 비율*은
+  // 보강하지 않음. 예: effective=P03(균형 0.5) + overlay=P10(분노 0.8)일 때 차단은 안 되고
+  // 비율은 0.5 유지. 정책 SSOT: `personaResolver.ts:208-210` "R5 부의 권장 차단 원칙".
   const prosConsBlocked = appliesGuardLocal(
     persona,
     guardOverlayPersona,
