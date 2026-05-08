@@ -5,7 +5,8 @@
 // 톤 원칙 (CLAUDE.md "방향 변화 비난 금지"):
 //   · 변화에 대한 평가·비난 금지 — "왜 또"·"왜 자꾸"·"마음이 또 바뀐" 어휘 사용 금지
 //   · 가능성만 제시 — 사용자가 그대로 둬도, 새로 적어도 OK
-//   · 페르소나 P03(불안형)·P11(두려움형) 안전 카피 분기는 Phase D에서 추가
+//   · 페르소나 P03(불안형)·P11(두려움형) 안전 카피 분기는 Phase G(안전 게이트 통합)
+//     에서 추가 — Phase D 단계에선 일반 어휘로도 압박감 없는 톤 확보(opus 검증 PASS)
 
 import { Pressable, Text, View } from 'react-native';
 import { useQuestionStore } from '@/store/useQuestionStore';

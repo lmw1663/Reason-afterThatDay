@@ -41,6 +41,12 @@ create policy "anyone_can_read_followups" on public.question_followups
 -- 1) 분석에서 헤어진 이유 응답이 *바뀌면* → 다음 진입 시 "고칠 수 있어?" 후속
 -- 2) 일기 방향 변화 직후 24h 뒤 → 변화 진정성 체크
 -- 3) 솔직한 마음 답한 24h 뒤 → 두려움 체크 (catch/let_go 어느 쪽이든 두려움 점검)
+--
+-- 발화 채널 주의: child_id의 context 가 hook 호출 화면과 일치해야 발화함.
+-- 시드 #2/#3 는 child가 'compass' context — 현재 compass 화면(want/check)은
+-- useSmartQuestion 미호출이라 *발화 채널이 없음*. Phase F (또는 후속)에서 compass
+-- 진입 hook 추가 시 자동 활성화 예정. 시드 #1 (a_breakup_reason→a_fix_possible/analysis)
+-- 만 Phase D 단계에서 즉시 동작.
 insert into public.question_followups (parent_id, child_id, trigger_type, delay_hours, priority) values
   ('a_breakup_reason', 'a_fix_possible',  'answer_changed',  0, 9),
   ('j_direction_change', 'c_check_change', 'always',         24, 8),
