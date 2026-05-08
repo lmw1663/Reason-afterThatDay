@@ -7,6 +7,7 @@ import { InsightCard } from '@/components/ui/InsightCard';
 import { Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
+import { IntrusiveMemoryFab } from '@/components/IntrusiveMemoryFab';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { PersonaPriorityCard } from '@/components/PersonaPriorityCard';
 import { ContactUrgeChip } from '@/components/ContactUrgeChip';
@@ -328,22 +329,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* G-5: "갑자기 떠올랐어"는 돌발 상황 대응이라 *항상 접근 가능*해야 하지만,
-            평상 시엔 시각 무게가 작아야 함. 큰 카드 → inline chip으로 격하. */}
-        <View className="px-6 mb-6">
-          <Pressable
-            onPress={() => setShowIntrusiveModal(true)}
-            accessibilityRole="button"
-            accessibilityLabel="갑자기 떠올랐어"
-            hitSlop={8}
-            className="self-start rounded-full py-2 px-4 flex-row items-center gap-2 active:opacity-70"
-            style={{ backgroundColor: colors.overlayPurpleSoft }}
-          >
-            <Icon name="fog" size={14} color={colors.purple[400]} />
-            <Caption className="text-purple-400 font-semibold">갑자기 떠올랐어</Caption>
-          </Pressable>
-        </View>
-
         {/* G-6: 보조 카드 묶음.
             - AssessmentRecommendationCard: 조건부(D+7/14/30) — 권유 없으면 자체 null 반환
             - ContactUrgeChip: 페르소나 게이팅 — P14·P16·P17·P19·P20은 임상 안전상 미노출
@@ -356,6 +341,10 @@ export default function HomeScreen() {
         </View>
 
       </ScrollView>
+
+      {/* G-5(개정): "갑자기 떠올랐어"는 돌발 상황 대응 — ScrollView와 별개 layer의 FAB로
+          분리해 일기 CTA·보조 카드 시각 리듬을 흐리지 않으면서 어디서든 즉시 접근 가능. */}
+      <IntrusiveMemoryFab onPress={() => setShowIntrusiveModal(true)} />
     </ScreenWrapper>
   );
 }
