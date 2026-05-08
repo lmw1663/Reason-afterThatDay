@@ -11,6 +11,7 @@ import { BackHeader } from '@/components/ui/BackHeader';
 import { MoodChart } from '@/components/ui/MoodChart';
 import { BreathingGuide } from '@/components/BreathingGuide';
 import { Modal } from '@/components/ui/Modal';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -45,6 +46,7 @@ export default function CoolingDashboardScreen() {
   const [reflectionText, setReflectionText] = useState('');
   const [reflectionSaved, setReflectionSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [reflectionError, setReflectionError] = useState<string | null>(null);
 
   const coolingDay = requestedAt ? getCoolingDay(requestedAt, coolingDays) : 1;
 
@@ -90,6 +92,7 @@ export default function CoolingDashboardScreen() {
   async function handleSaveReflection() {
     if (!userId || !id || !reflectionText.trim()) return;
     setSaving(true);
+    setReflectionError(null);
     try {
       await saveCoolingReflection({
         userId,
@@ -100,7 +103,7 @@ export default function CoolingDashboardScreen() {
       });
       setReflectionSaved(true);
     } catch {
-      // 실패 시 UX 차단 없이 무시
+      setReflectionError('기록이 저장되지 않았어. 다시 시도해볼래?');
     } finally {
       setSaving(false);
     }
@@ -113,6 +116,11 @@ export default function CoolingDashboardScreen() {
 
   return (
     <ScreenWrapper>
+      <ErrorToast
+        visible={!!reflectionError}
+        message={reflectionError ?? ''}
+        onHide={() => setReflectionError(null)}
+      />
       {/* Day 1 호흡 모달 */}
       <Modal
         visible={breathingVisible}

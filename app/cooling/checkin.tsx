@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BackHeader } from '@/components/ui/BackHeader';
+import { ErrorToast } from '@/components/ui/ErrorToast';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { useCoolingStore } from '@/store/useCoolingStore';
 import { addCheckinResponse } from '@/api/graduation';
@@ -21,6 +22,7 @@ function getCoolingDay(requestedAt: string | null): number {
 export default function CoolingCheckinScreen() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { id, requestedAt } = useCoolingStore();
 
   const coolingDay = getCoolingDay(requestedAt);
@@ -30,6 +32,7 @@ export default function CoolingCheckinScreen() {
   async function handleSave() {
     if (!text.trim() || !id) return;
     setLoading(true);
+    setError(null);
     try {
       const checkinData = { text: text.trim(), date: formatDateStr(new Date()) };
       await addCheckinResponse(id, checkinData);
@@ -44,6 +47,8 @@ export default function CoolingCheckinScreen() {
         pathname: '/cooling/checkin/response' as never,
         params: { response: aiResponse, day: String(coolingDay) },
       });
+    } catch {
+      setError('저장이 안 됐어. 잠시 후 다시 시도해볼래?');
     } finally {
       setLoading(false);
     }
@@ -51,6 +56,11 @@ export default function CoolingCheckinScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <ErrorToast
+        visible={!!error}
+        message={error ?? ''}
+        onHide={() => setError(null)}
+      />
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
         <Caption className="mb-2">자율 체크인 · Day {coolingDay}</Caption>

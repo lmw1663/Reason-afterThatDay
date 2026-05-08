@@ -74,6 +74,7 @@ export default function CompassNeedleScreen() {
   }, []);
 
   async function retrySave() {
+    // userId 없을 땐 useEffect에서 saveError가 안 떠서 retry 자체가 도달 불가
     if (!userId) return;
     const { error } = await supabase.from('decision_history').insert({
       user_id: userId,

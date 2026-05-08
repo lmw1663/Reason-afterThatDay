@@ -32,6 +32,8 @@ export function ErrorToast({ message, visible, onHide, action }: Props) {
     try {
       await action.onPress();
       onHide();
+    } catch {
+      // 재시도 실패 — 토스트 유지해서 사용자가 다시 시도하거나 직접 닫게 함
     } finally {
       setRetrying(false);
     }
