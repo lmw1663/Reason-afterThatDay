@@ -1,6 +1,9 @@
 -- 035_knot_revisit_cron.sql
 -- F-9 후속 — 매듭 회상 의식 푸시 cron 등록
 --
+-- ⚠️ 운영 상태: 본 cron은 042_cron_vault_migration.sql에서 Vault 버전으로 재등록됨.
+--    마이그레이션 알파벳 순서상 042가 035 이후 적용되어 최종 정의는 042가 가진다.
+--
 -- 매일 KST 0시(UTC 15시) 실행 → supabase/functions/knot-revisit-cron 호출.
 -- knot_revisit_schedule.scheduled_at <= now() AND triggered_at IS NULL인 row를 푸시 발송.
 --

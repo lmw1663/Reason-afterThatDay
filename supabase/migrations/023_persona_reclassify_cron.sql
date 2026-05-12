@@ -1,6 +1,10 @@
 -- 023_persona_reclassify_cron.sql
 -- 페르소나 재분류 cron 등록 — C-1-4
 --
+-- ⚠️ 운영 상태: 본 cron은 042_cron_vault_migration.sql에서 Vault 버전으로 재등록됨.
+--    마이그레이션 알파벳 순서상 042가 023 이후 적용되어 최종 정의는 042가 가진다.
+--    본 파일은 *개발 환경에서 GUC 평문 동작 확인용* 이력으로 남긴다.
+--
 -- 매일 0시(서울 = UTC+9) 실행. supabase/functions/persona-reclassify-cron 호출.
 -- D+7/14/30/60/90 해당자 axes 시계열 갱신 (분류 자체는 클라이언트 위임 — onboarding_responses
 -- 테이블 신설 후 서버 분류 활성화 예정).
