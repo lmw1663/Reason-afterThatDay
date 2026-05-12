@@ -136,6 +136,50 @@ export async function signInWithProvider(provider: OAuthProvider): Promise<{ ses
   }
   const oldUserId = preSession.user.id;
 
+  // 보존할 데이터가 있는지 확인 — 없으면 linkIdentity를 건너뛰고 signInWithOAuth 직행.
+  // 이유: 재가입 사용자(refresh token 무효화 후 새 익명 user_id)가 linkIdentity로 가면
+  // 이미 다른 user에 같은 OAuth identity가 링크돼 있어 identity_already_exists로 폴백 →
+  // 브라우저가 두 번 열리며 iOS 프롬프트가 두 번 뜨는 UX 버그가 생긴다.
+  // breakup_date가 있으면 온보딩을 마친 사용자이므로 linkIdentity로 데이터 보존을 시도.
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('breakup_date')
+    .eq('id', oldUserId)
+    .maybeSingle();
+  const hasDataToPreserve = !!userRow?.breakup_date;
+
+  if (!hasDataToPreserve) {
+    console.log('[auth] no anon data to preserve — using signInWithOAuth (single prompt)');
+    await supabase.auth.signOut();
+    const { data: directData, error: directErr } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: REDIRECT_URL, skipBrowserRedirect: true },
+    });
+    if (directErr) throw directErr;
+    if (!directData?.url) throw new Error('OAuth URL을 받지 못했어');
+
+    const directResult = await WebBrowser.openAuthSessionAsync(directData.url, REDIRECT_URL);
+    if (directResult.type !== 'success') {
+      if (directResult.type === 'cancel' || directResult.type === 'dismiss') {
+        throw new Error('로그인을 취소했어');
+      }
+      throw new Error('로그인에 실패했어');
+    }
+    const directSession = await resolveCallbackUrl(directResult.url, 'direct');
+    if (!directSession) throw new Error('세션을 받지 못했어');
+
+    // 신규 OAuth 사용자라면 users 행이 아직 없을 수 있음 — 보장 차원에서 upsert
+    const directMeta = directSession.user.user_metadata as { sub?: string; provider_id?: string } | undefined;
+    const directProviderUserId = directMeta?.sub ?? directMeta?.provider_id ?? null;
+    const { error: directUpdateError } = await supabase
+      .from('users')
+      .update({ provider, provider_user_id: directProviderUserId })
+      .eq('id', directSession.user.id);
+    if (directUpdateError) console.warn('[auth] provider update failed (direct):', directUpdateError.message);
+
+    return { session: directSession };
+  }
+
   // 익명 세션 위에서 provider 연결 — 데이터 보존을 위해 linkIdentity 사용
   const { data, error } = await supabase.auth.linkIdentity({
     provider,
