@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
@@ -92,11 +94,12 @@ export default function RecordsScreen() {
             icon="pen"
             title="일기 모아보기"
             subtitle="오늘까지 적은 일기"
+            staggerIndex={0}
             onPress={() => router.push('/journal/history' as never)}
           />
         </View>
 
-        {/* 2x2 Grid — 동등한 위계의 4개 카드 */}
+        {/* 2x2 Grid — 동등한 위계의 4개 카드 (stagger 1~4) */}
         <View
           style={{
             flexDirection: 'row',
@@ -109,31 +112,38 @@ export default function RecordsScreen() {
             icon="archive"
             title="추억"
             subtitle="사진·메시지·장소"
+            staggerIndex={1}
             onPress={() => router.push('/memories' as never)}
           />
           <RecordGridItem
             icon="chart"
             title="회복의 결"
             subtitle="처음과 지금 비교"
+            staggerIndex={2}
             onPress={() => router.push('/recovery-trace' as never)}
           />
           <RecordGridItem
             icon="leaf"
             title="질문통"
             subtitle="골라 답해봐"
+            staggerIndex={3}
             onPress={() => router.push('/question-pool' as never)}
           />
           <RecordGridItem
             icon="message-circle"
             title="답한 질문"
             subtitle="자유 질문 모음"
+            staggerIndex={4}
             onPress={() => router.push('/answers' as never)}
           />
         </View>
 
         {/* Footer — 매듭의 흔적 (조건부, teal로 톤 분리) */}
         {hasKnotHistory && (
-          <RecordKnotBanner onPress={() => router.push('/knot/archive' as never)} />
+          <RecordKnotBanner
+            staggerIndex={5}
+            onPress={() => router.push('/knot/archive' as never)}
+          />
         )}
       </ScrollView>
     </ScreenWrapper>
@@ -144,45 +154,49 @@ interface RecordHeroProps {
   icon: IconName;
   title: string;
   subtitle: string;
+  staggerIndex: number;
   onPress: () => void;
 }
 
-function RecordHero({ icon, title, subtitle, onPress }: RecordHeroProps) {
+function RecordHero({ icon, title, subtitle, staggerIndex, onPress }: RecordHeroProps) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(127,119,221,0.18)',
-        padding: 20,
-        minHeight: 124,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 16,
-      }}
-    >
-      <View
+    <Animated.View style={enterStyle}>
+      <AnimatedPressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={title}
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          backgroundColor: colors.overlayPurpleSoft,
+          backgroundColor: colors.surface,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: 'rgba(127,119,221,0.18)',
+          padding: 20,
+          minHeight: 124,
+          flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 16,
         }}
       >
-        <Icon name={icon} size={26} color={colors.purple[400]} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
-        <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
-      </View>
-      <Icon name="chevron-right" size={20} color={colors.gray[600]} />
-    </AnimatedPressable>
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: colors.overlayPurpleSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name={icon} size={26} color={colors.purple[400]} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
+          <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
+        </View>
+        <Icon name="chevron-right" size={20} color={colors.gray[600]} />
+      </AnimatedPressable>
+    </Animated.View>
   );
 }
 
@@ -190,12 +204,16 @@ interface RecordGridProps {
   icon: IconName;
   title: string;
   subtitle: string;
+  staggerIndex: number;
   onPress: () => void;
 }
 
-function RecordGridItem({ icon, title, subtitle, onPress }: RecordGridProps) {
+function RecordGridItem({ icon, title, subtitle, staggerIndex, onPress }: RecordGridProps) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
   return (
-    <View style={{ width: '50%', paddingHorizontal: 6, marginBottom: 12 }}>
+    <Animated.View
+      style={[{ width: '50%', paddingHorizontal: 6, marginBottom: 12 }, enterStyle]}
+    >
       <AnimatedPressable
         onPress={onPress}
         accessibilityRole="button"
@@ -227,45 +245,48 @@ function RecordGridItem({ icon, title, subtitle, onPress }: RecordGridProps) {
           <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
         </View>
       </AnimatedPressable>
-    </View>
+    </Animated.View>
   );
 }
 
-function RecordKnotBanner({ onPress }: { onPress: () => void }) {
+function RecordKnotBanner({ staggerIndex, onPress }: { staggerIndex: number; onPress: () => void }) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel="매듭의 흔적"
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(29,158,117,0.22)',
-        padding: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        marginTop: 4,
-      }}
-    >
-      <View
+    <Animated.View style={enterStyle}>
+      <AnimatedPressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel="매듭의 흔적"
         style={{
-          width: 40,
-          height: 40,
+          backgroundColor: colors.surface,
           borderRadius: 20,
-          backgroundColor: colors.overlayTealSoft,
+          borderWidth: 1,
+          borderColor: 'rgba(29,158,117,0.22)',
+          padding: 16,
+          flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 14,
+          marginTop: 4,
         }}
       >
-        <Icon name="link" size={20} color={colors.teal[400]} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Body className="font-medium">매듭의 흔적</Body>
-        <Caption className="text-gray-500 mt-0.5">지나온 사이클들을 시간 순으로</Caption>
-      </View>
-      <Icon name="chevron-right" size={18} color={colors.gray[600]} />
-    </AnimatedPressable>
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: colors.overlayTealSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name="link" size={20} color={colors.teal[400]} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Body className="font-medium">매듭의 흔적</Body>
+          <Caption className="text-gray-500 mt-0.5">지나온 사이클들을 시간 순으로</Caption>
+        </View>
+        <Icon name="chevron-right" size={18} color={colors.gray[600]} />
+      </AnimatedPressable>
+    </Animated.View>
   );
 }

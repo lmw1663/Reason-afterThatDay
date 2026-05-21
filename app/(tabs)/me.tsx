@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { isAppLocked } from '@/api/safety';
@@ -96,17 +98,19 @@ export default function MeScreen() {
             icon="users"
             title="내 이야기"
             subtitle="장단점·욕구·정체성 정리"
+            staggerIndex={0}
             onPress={() => router.push('/about-me' as never)}
           />
         </View>
 
-        {/* Pair — 결정 트랙 두 카드 (게이트 보조라인 보존) */}
+        {/* Pair — 결정 트랙 두 카드 (게이트 보조라인 보존, stagger 1~2) */}
         <View className="gap-3">
           <MePairCard
             icon="search"
             title="관계 분석"
             subtitle={analysisSubtitle}
             disabled={!canEnterAnalysis}
+            staggerIndex={1}
             onPress={() => router.push('/analysis/pros-cons' as never)}
           />
           <MePairCard
@@ -114,17 +118,20 @@ export default function MeScreen() {
             title="오늘의 방향"
             subtitle={compassSubtitle}
             disabled={!canEnterCompass}
+            staggerIndex={2}
             onPress={() => router.push('/compass' as never)}
           />
         </View>
 
-        {/* X-1 PIPA 데이터 관리 — 항상 노출 (열람·반출·삭제 권리) */}
+        {/* X-1 PIPA 데이터 관리 — 항상 노출 (열람·반출·삭제 권리)
+            "설정" 캡션으로 시각 그룹이 분리되므로 stagger 시퀀스도 0부터 재시작. */}
         <View className="mt-6">
           <Caption className="text-gray-500 mb-2">설정</Caption>
           <MePairCard
             icon="shield"
             title="내 데이터 관리"
             subtitle="기록 보기 · 내보내기 · 삭제"
+            staggerIndex={0}
             onPress={() => router.push('/settings/data' as never)}
           />
         </View>
@@ -170,45 +177,49 @@ interface MeHeroProps {
   icon: IconName;
   title: string;
   subtitle: string;
+  staggerIndex: number;
   onPress: () => void;
 }
 
-function MeHero({ icon, title, subtitle, onPress }: MeHeroProps) {
+function MeHero({ icon, title, subtitle, staggerIndex, onPress }: MeHeroProps) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(127,119,221,0.18)',
-        padding: 20,
-        minHeight: 124,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 16,
-      }}
-    >
-      <View
+    <Animated.View style={enterStyle}>
+      <AnimatedPressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={title}
         style={{
-          width: 56,
-          height: 56,
-          borderRadius: 28,
-          backgroundColor: colors.overlayPurpleSoft,
+          backgroundColor: colors.surface,
+          borderRadius: 24,
+          borderWidth: 1,
+          borderColor: 'rgba(127,119,221,0.18)',
+          padding: 20,
+          minHeight: 124,
+          flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 16,
         }}
       >
-        <Icon name={icon} size={26} color={colors.purple[400]} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
-        <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
-      </View>
-      <Icon name="chevron-right" size={20} color={colors.gray[600]} />
-    </AnimatedPressable>
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 28,
+            backgroundColor: colors.overlayPurpleSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name={icon} size={26} color={colors.purple[400]} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
+          <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
+        </View>
+        <Icon name="chevron-right" size={20} color={colors.gray[600]} />
+      </AnimatedPressable>
+    </Animated.View>
   );
 }
 
@@ -216,47 +227,51 @@ interface MePairCardProps {
   icon: IconName;
   title: string;
   subtitle: string;
+  staggerIndex: number;
   onPress: () => void;
   disabled?: boolean;
 }
 
-function MePairCard({ icon, title, subtitle, onPress, disabled }: MePairCardProps) {
+function MePairCard({ icon, title, subtitle, staggerIndex, onPress, disabled }: MePairCardProps) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
   return (
-    <AnimatedPressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityState={{ disabled }}
-      disabled={disabled}
-      style={{
-        backgroundColor: colors.surface,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: colors.border,
-        padding: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        opacity: disabled ? 0.5 : 1,
-      }}
-    >
-      <View
+    <Animated.View style={enterStyle}>
+      <AnimatedPressable
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={title}
+        accessibilityState={{ disabled }}
+        disabled={disabled}
         style={{
-          width: 40,
-          height: 40,
+          backgroundColor: colors.surface,
           borderRadius: 20,
-          backgroundColor: colors.overlayPurpleSoft,
+          borderWidth: 1,
+          borderColor: colors.border,
+          padding: 16,
+          flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 14,
+          opacity: disabled ? 0.5 : 1,
         }}
       >
-        <Icon name={icon} size={20} color={colors.purple[400]} />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Body className="font-medium">{title}</Body>
-        <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
-      </View>
-      {!disabled && <Icon name="chevron-right" size={18} color={colors.gray[600]} />}
-    </AnimatedPressable>
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: colors.overlayPurpleSoft,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name={icon} size={20} color={colors.purple[400]} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Body className="font-medium">{title}</Body>
+          <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
+        </View>
+        {!disabled && <Icon name="chevron-right" size={18} color={colors.gray[600]} />}
+      </AnimatedPressable>
+    </Animated.View>
   );
 }
