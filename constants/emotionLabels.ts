@@ -1,4 +1,5 @@
 import type { PersonaCode } from '@/utils/personaClassifier';
+import type { IconName } from '@/components/ui/Icon';
 
 export const EMOTION_LABELS = [
   "분노", "배신감", "슬픔", "그리움",
@@ -10,6 +11,31 @@ export const EMOTION_LABELS = [
 ] as const;
 
 export type EmotionLabel = typeof EMOTION_LABELS[number];
+
+/**
+ * 감정 라벨 → 라인 아이콘 매핑 (EmotionPickerCard용).
+ *
+ * Pretendard + lucide의 일관된 다크 톤 시그니처를 유지하기 위해 이모지가 아닌
+ * lucide 아이콘으로 통일. 표현이 직관적인 매핑(분노=flame)부터 추상적인 매핑
+ * (자존감 흔들림=activity 심박, 허무=circle-dashed 점선 원)까지 다단계 표현.
+ */
+export const EMOTION_ICON: Record<EmotionLabel, IconName> = {
+  "분노":          "flame",
+  "배신감":        "heart-crack",
+  "슬픔":          "cloud-rain",
+  "그리움":        "moon",
+  "죄책감":        "scale",
+  "안도":          "leaf",
+  "자유로움":      "feather",
+  "외로움":        "sunset",
+  "충격":          "zap",
+  "멍함":          "cloud",
+  "자존감 흔들림": "activity",
+  "혼란":          "wind",
+  "허무":          "circle-dashed",
+  "공허":          "square",
+  "시들음":        "flower-2",
+};
 
 /**
  * 페르소나별 감정 라벨 정렬 — C-2-G-3a

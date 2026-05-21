@@ -1,4 +1,5 @@
 import {
+  Activity,
   Apple,
   Archive,
   Award,
@@ -13,14 +14,20 @@ import {
   CheckSquare,
   ChevronLeft,
   ChevronRight,
+  CircleDashed,
   ClipboardList,
+  Cloud,
   CloudFog,
+  CloudRain,
   Coffee,
   Compass,
   Feather,
+  Flame,
+  Flower2,
   Globe,
   GraduationCap,
   Heart,
+  HeartCrack,
   HeartHandshake,
   Home,
   Hourglass,
@@ -46,6 +53,8 @@ import {
   Shuffle,
   Smile,
   Sparkles,
+  Square,
+  Sunset,
   Thermometer,
   Trash2,
   TrendingUp,
@@ -54,6 +63,7 @@ import {
   Users,
   Wind,
   X,
+  Zap,
 } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 
@@ -146,6 +156,23 @@ const iconMap = {
   'check-square': CheckSquare,
   briefcase: Briefcase,
   calendar: Calendar,
+
+  // 감정 라벨 — EmotionPickerCard용 (15개)
+  flame:          Flame,         // 분노
+  'heart-crack':  HeartCrack,    // 배신감
+  'cloud-rain':   CloudRain,     // 슬픔
+  // moon (그리움)        ← 이미 위에 있음
+  // scale (죄책감)        ← 이미 위에 있음
+  // leaf (안도)           ← 이미 위에 있음
+  // feather (자유로움)    ← 이미 위에 있음
+  sunset:         Sunset,        // 외로움
+  zap:            Zap,           // 충격
+  cloud:          Cloud,         // 멍함
+  activity:       Activity,      // 자존감 흔들림 (심박)
+  // wind (혼란)           ← 이미 위에 있음
+  'circle-dashed': CircleDashed, // 허무 (점선 원 — 흐릿한 비어있음)
+  square:         Square,        // 공허 (속이 빈 사각형 — 점선 원과 모양 분리)
+  'flower-2':     Flower2,       // 시들음
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconMap;
