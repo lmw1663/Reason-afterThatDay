@@ -6,7 +6,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
-import { Pill } from '@/components/ui/Pill';
+import { EmotionPickerCard } from '@/components/ui/EmotionPickerCard';
 import { Modal } from '@/components/ui/Modal';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Caption, Heading, Body } from '@/components/ui/Typography';
@@ -200,20 +200,16 @@ export default function JournalMoodScreen() {
 
         <MoodSlider value={score} onChange={handleScoreChange} />
 
-        {/* 1.5단계: 감정 라벨 다중 선택 */}
+        {/* 1.5단계: 감정 라벨 다중 선택 — 3-col 격자 카드 (Pill 불규칙 wrap 한계 해소) */}
         <View className="mt-10 mb-2">
           <Body className="text-gray-300 mb-1">어떤 감정인지 골라봐</Body>
           <Caption className="text-gray-500 mb-4">여러 개 동시에 느껴도 돼</Caption>
-          <View className="flex-row flex-wrap gap-2">
-            {labelsForPersona.map((label) => (
-              <Pill
-                key={label}
-                label={label}
-                selected={emotionLabels.includes(label)}
-                onPress={() => toggleLabel(label)}
-              />
-            ))}
-          </View>
+          <EmotionPickerCard
+            emotions={labelsForPersona}
+            selected={emotionLabels}
+            onToggle={toggleLabel}
+            columns={3}
+          />
           {/* G-13: 감정 라벨 선택 후 피드백 — 정서적으로 가장 중요한 한 줄. Caption에서
               Body로 격상하고 보라 강조로 시각 무게 충분히 부여. */}
           {emotionLabels.length > 0 && (
