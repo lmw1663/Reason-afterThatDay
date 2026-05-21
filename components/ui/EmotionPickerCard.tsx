@@ -113,6 +113,8 @@ function EmotionCell({ label, selected, onPress }: CellProps) {
             textAlign: 'center',
           }}
           numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.85}
         >
           {label}
         </Text>
