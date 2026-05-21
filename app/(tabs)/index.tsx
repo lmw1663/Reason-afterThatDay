@@ -195,15 +195,25 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* G-3: D+N을 메인 헤딩으로 격상 — 이별 회복 앱의 핵심 컨텍스트.
-            "reason · 그날 이후"는 컨텍스트 caption으로 위에 작게 배치. */}
-        <View className="px-6 pt-14 pb-6">
-          <Caption className="text-gray-500 mb-1">reason · 그날 이후</Caption>
+            "reason · 그날 이후"는 컨텍스트 caption으로 위에 작게 배치.
+            Anz+ 잔액 디스플레이 패턴 — 핵심 수치 한 줄에 압도적인 위계로 노출. */}
+        <View className="px-6 pt-14 pb-8">
+          <Caption className="text-gray-500 mb-2">reason · 그날 이후</Caption>
           <View
             className="flex-row items-baseline gap-2"
             accessibilityRole="text"
             accessibilityLabel={`이별 후 ${daysElapsed}일 경과`}
           >
-            <Heading className="text-purple-400">D+{daysElapsed}</Heading>
+            <Text
+              className="text-purple-400 font-bold"
+              style={{ fontFamily: 'Pretendard', fontSize: 56, lineHeight: 60, letterSpacing: -1.5 }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+              allowFontScaling={false}
+            >
+              D+{daysElapsed}
+            </Text>
             <Caption className="text-gray-500">일째</Caption>
           </View>
           {/* DEV-ONLY: 페르소나 분류 결과 확인용 디버그 라벨. __DEV__ 가드로 production 자동 제거.
@@ -256,9 +266,14 @@ export default function HomeScreen() {
                     </Caption>
                   </View>
 
-                  {/* 감정 온도 */}
+                  {/* 감정 온도 — Apple Pay 카드 잔액 패턴: 핵심 수치를 크게, 단위는 baseline 보조 */}
                   <View className="flex-row items-baseline gap-1.5">
-                    <Text className="text-white text-2xl font-bold">{todayEntry.moodScore}</Text>
+                    <Text
+                      className="text-white font-bold"
+                      style={{ fontFamily: 'Pretendard', fontSize: 36, lineHeight: 40, letterSpacing: -0.8 }}
+                    >
+                      {todayEntry.moodScore}
+                    </Text>
                     <Caption className="text-gray-500">/ 10</Caption>
                   </View>
 
@@ -303,10 +318,16 @@ export default function HomeScreen() {
                     color={colors.white}
                   />
                   <View className="flex-1">
-                    <Text className="text-white text-lg font-bold">
+                    <Text
+                      className="text-white text-lg font-bold"
+                      style={{ fontFamily: 'Pretendard' }}
+                    >
                       {miniIsPrimary ? '오늘은 감정 온도만' : '오늘 일기 쓰기'}
                     </Text>
-                    <Text className="text-purple-50 text-sm opacity-80 mt-0.5">
+                    <Text
+                      className="text-purple-50 text-sm opacity-80 mt-0.5"
+                      style={{ fontFamily: 'Pretendard' }}
+                    >
                       {miniIsPrimary ? '힘든 날엔 이만큼이면 돼' : '4단계로 차근차근 풀어볼게'}
                     </Text>
                   </View>

@@ -30,7 +30,7 @@ export default function TabLayout() {
         },
         tabBarActiveTintColor: colors.purple[400],
         tabBarInactiveTintColor: colors.gray[600],
-        tabBarLabelStyle: { fontSize: 11 },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: 'Pretendard' },
       }}
     >
       <Tabs.Screen name="index"   options={{ title: '오늘', tabBarIcon: ({ color }) => <TabIcon name="home"    color={color} /> }} />

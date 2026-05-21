@@ -29,7 +29,15 @@
           "defaultChannel": "default"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/PretendardVariable.ttf"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
