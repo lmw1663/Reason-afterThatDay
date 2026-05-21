@@ -5,6 +5,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
+import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { isAppLocked } from '@/api/safety';
@@ -21,12 +22,14 @@ import { anonymizePersona } from '@/utils/telemetryHelpers';
 /**
  * [나] 탭 — A-3·A-5
  *
- * about-me 트랙 + 자기 통찰 도구의 통합 허브.
- * 분석·나침반·졸업 트랙은 모두 여기로 흡수 (졸업은 A-4에서 보류).
+ * 3개 동일 카드 단조로움 해소. "내 이야기"를 Hero로 격상(D+0부터 항상 활성,
+ * 정체성 정리의 시작점). 분석·나침반은 Pair로 묶고 게이트 보조라인은 보존.
  *
  * 게이트 정책:
- *  - D+7 baseline (기존 6-6) — D+7 미만이면 분석/나침반 카드 비활성. "아직 자신을 살피는 시간"
- *  - 페르소나별 게이트(P02=D+10, P04=D+14, P07=D+21, P13/P17=비활성)는 Phase C에서 적용
+ *  - D+7 baseline (기존 6-6) — 분석 트랙 baseline
+ *  - 페르소나별 나침반 게이트(P02=D+10, P04=D+14, P07=D+21, P13/P17 비활성)
+ *  - B-1 안전 잠금(C-SSRS 양성) 시 결정 트랙 차단
+ *  - C-2-G-6 페르소나 차단(P01·P14·P20 분석 자체 부적합)
  */
 const SELF_INSIGHT_GATE_DAYS = 7;
 
@@ -35,15 +38,12 @@ export default function MeScreen() {
   const personaPrimary = usePersonaStore(s => s.primary);
   const personaSecondary = usePersonaStore(s => s.secondary);
 
-  // C-3-H: 다중 페르소나 — 차단형 헬퍼는 secondary 금기도 검사, 게이트는 더 긴 일수 적용
   const resolved = resolvePersona(personaPrimary, personaSecondary);
 
-  // 분석은 baseline D+7. 나침반은 페르소나별 게이트 (C-2-G-4): P02=10, P04=14, P07=21.
   const insightUnlocked = daysElapsed >= SELF_INSIGHT_GATE_DAYS;
   const compassGateDays = longestGate(resolved, getCompassGateDays);
   const compassUnlocked = daysElapsed >= compassGateDays;
   const compassDisabled = appliesGuard(resolved, isCompassDisabledByPersona);
-  // C-2-G-6: P01·P14·P20은 분석 자체 부적합 (about-me로 우회)
   const analysisDisabled = appliesGuard(resolved, isAnalysisTrackBlockedByPersona);
 
   const insightDaysLeft = Math.max(0, SELF_INSIGHT_GATE_DAYS - daysElapsed);
@@ -51,18 +51,32 @@ export default function MeScreen() {
 
   useScreenView('me', { persona_category: anonymizePersona(resolved.effective) });
 
-  // B-1 안전 잠금 — C-SSRS urgent/high 양성 시 결정 트랙 차단
   const [decisionLocked, setDecisionLocked] = useState(false);
   useEffect(() => {
     if (!userId) return;
     isAppLocked(userId)
       .then(state => setDecisionLocked(state.decisionLocked))
-      .catch(() => {/* fail open — 잠금 조회 실패 시 보수적으로 unlocked */});
+      .catch(() => {/* fail open */});
   }, [userId]);
 
-  // 분석/나침반 진입 가능 여부
   const canEnterAnalysis = insightUnlocked && !decisionLocked && !analysisDisabled;
   const canEnterCompass = compassUnlocked && !decisionLocked && !compassDisabled;
+
+  const analysisSubtitle = decisionLocked
+    ? '안전 확인 후 다시 만나자'
+    : analysisDisabled
+      ? '지금은 내 이야기에 더 집중하자'
+      : insightUnlocked
+        ? '장단점·이유·역할 정리'
+        : `${insightDaysLeft}일 뒤 — 지금은 자신을 살피는 시간`;
+
+  const compassSubtitle = decisionLocked
+    ? '안전 확인 후 다시 만나자'
+    : compassDisabled
+      ? '지금은 결정보다 수용에 집중하자'
+      : compassUnlocked
+        ? '지금 마음이 어디를 향하는지'
+        : `${compassDaysLeft}일 뒤 — 결정보다 머무는 시간`;
 
   return (
     <ScreenWrapper>
@@ -76,44 +90,29 @@ export default function MeScreen() {
           관계를 통해 보였던 너의 모습과, 지금의 너를 천천히 들여다봐.
         </Body>
 
-        <View className="gap-3">
-          {/* 자기 이야기는 항상 노출 — D+0부터 안전 */}
-          <MeCard
+        {/* Hero — 내 이야기 (D+0부터 항상 활성, 정체성 정리의 시작점) */}
+        <View className="mb-3">
+          <MeHero
             icon="users"
             title="내 이야기"
             subtitle="장단점·욕구·정체성 정리"
             onPress={() => router.push('/about-me' as never)}
           />
+        </View>
 
-          {/* 분석 — D+7 baseline 게이트 + B-1 안전 잠금 + C-2-G-6 페르소나 차단 */}
-          <MeCard
+        {/* Pair — 결정 트랙 두 카드 (게이트 보조라인 보존) */}
+        <View className="gap-3">
+          <MePairCard
             icon="search"
             title="관계 분석"
-            subtitle={
-              decisionLocked
-                ? '안전 확인 후 다시 만나자'
-                : analysisDisabled
-                  ? '지금은 내 이야기에 더 집중하자'
-                  : insightUnlocked
-                    ? '장단점·이유·역할 정리'
-                    : `${insightDaysLeft}일 뒤 — 지금은 자신을 살피는 시간`
-            }
+            subtitle={analysisSubtitle}
             disabled={!canEnterAnalysis}
             onPress={() => router.push('/analysis/pros-cons' as never)}
           />
-          {/* 나침반 — 페르소나별 게이트 (C-2-G-4) + 안전 잠금 + P17 영구 비활성 */}
-          <MeCard
+          <MePairCard
             icon="compass"
             title="오늘의 방향"
-            subtitle={
-              decisionLocked
-                ? '안전 확인 후 다시 만나자'
-                : compassDisabled
-                  ? '지금은 결정보다 수용에 집중하자'
-                  : compassUnlocked
-                    ? '지금 마음이 어디를 향하는지'
-                    : `${compassDaysLeft}일 뒤 — 결정보다 머무는 시간`
-            }
+            subtitle={compassSubtitle}
             disabled={!canEnterCompass}
             onPress={() => router.push('/compass' as never)}
           />
@@ -122,7 +121,7 @@ export default function MeScreen() {
         {/* X-1 PIPA 데이터 관리 — 항상 노출 (열람·반출·삭제 권리) */}
         <View className="mt-6">
           <Caption className="text-gray-500 mb-2">설정</Caption>
-          <MeCard
+          <MePairCard
             icon="shield"
             title="내 데이터 관리"
             subtitle="기록 보기 · 내보내기 · 삭제"
@@ -167,7 +166,53 @@ export default function MeScreen() {
   );
 }
 
-interface MeCardProps {
+interface MeHeroProps {
+  icon: IconName;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+}
+
+function MeHero({ icon, title, subtitle, onPress }: MeHeroProps) {
+  return (
+    <AnimatedPressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      style={{
+        backgroundColor: colors.surface,
+        borderRadius: 24,
+        borderWidth: 1,
+        borderColor: 'rgba(127,119,221,0.18)',
+        padding: 20,
+        minHeight: 124,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+      }}
+    >
+      <View
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: 28,
+          backgroundColor: colors.overlayPurpleSoft,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icon name={icon} size={26} color={colors.purple[400]} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
+        <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
+      </View>
+      <Icon name="chevron-right" size={20} color={colors.gray[600]} />
+    </AnimatedPressable>
+  );
+}
+
+interface MePairCardProps {
   icon: IconName;
   title: string;
   subtitle: string;
@@ -175,25 +220,43 @@ interface MeCardProps {
   disabled?: boolean;
 }
 
-function MeCard({ icon, title, subtitle, onPress, disabled }: MeCardProps) {
+function MePairCard({ icon, title, subtitle, onPress, disabled }: MePairCardProps) {
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled }}
       disabled={disabled}
-      className="active:opacity-80"
-      style={{ opacity: disabled ? 0.5 : 1 }}
+      style={{
+        backgroundColor: colors.surface,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+        opacity: disabled ? 0.5 : 1,
+      }}
     >
-      <Card className="flex-row items-center gap-4 p-4">
-        <Icon name={icon} size={22} color={colors.purple[400]} />
-        <View className="flex-1">
-          <Body className="font-medium">{title}</Body>
-          <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
-        </View>
-        {!disabled ? <Icon name="chevron-right" size={18} color={colors.gray[600]} /> : null}
-      </Card>
-    </Pressable>
+      <View
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: colors.overlayPurpleSoft,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icon name={icon} size={20} color={colors.purple[400]} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Body className="font-medium">{title}</Body>
+        <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
+      </View>
+      {!disabled && <Icon name="chevron-right" size={18} color={colors.gray[600]} />}
+    </AnimatedPressable>
   );
 }
