@@ -27,6 +27,19 @@ export function isRawModeAllowed(p: PersonaCode | null): boolean {
   return p !== null && RAW_MODE_PERSONAS.includes(p);
 }
 
+/**
+ * 자극성 시각 효과(번개 flash 등) 비활성 페르소나.
+ *
+ * P10(분노 우세)에게 폭풍·번개 같은 시각 자극은 격앙·소진 트리거가 될 수 있음 —
+ * 매트릭스 §2 C3에 따라 WeatherScene의 LightningLayer를 끔. 추후 다른 분노/소진
+ * 페르소나가 추가되면 본 배열에 합치면 됨.
+ */
+const VISUAL_STIMULUS_BLOCKED_PERSONAS: PersonaCode[] = ['P10'];
+
+export function isVisualStimulusBlockedByPersona(p: PersonaCode | null): boolean {
+  return p !== null && VISUAL_STIMULUS_BLOCKED_PERSONAS.includes(p);
+}
+
 /** 감정 라벨에 "공허/멍함/시들음" 우선 노출 (매트릭스 §2 C3 P08) */
 const EMPTINESS_LABELS_PRIORITY: PersonaCode[] = ['P08'];
 

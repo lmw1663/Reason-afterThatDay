@@ -12,8 +12,11 @@ import { Caption, Heading } from '@/components/ui/Typography';
 import { colors } from '@/constants/colors';
 import { useJournalDraft, type JournalDraft } from '@/hooks/useJournalDraft';
 import { usePersonaStore } from '@/store/usePersonaStore';
-import { isRawModeAllowed } from '@/constants/personaBranches';
-import { resolvePersona } from '@/utils/personaResolver';
+import {
+  isRawModeAllowed,
+  isVisualStimulusBlockedByPersona,
+} from '@/constants/personaBranches';
+import { resolvePersona, appliesGuard } from '@/utils/personaResolver';
 import { useScreenView } from '@/hooks/useScreenView';
 import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { Icon } from '@/components/ui/Icon';
@@ -108,8 +111,9 @@ export default function JournalMoodScreen() {
       })
     : '';
 
-  // P10(분노)이면 번개 자극 회피 — disableLightning. C-3-H 다중 페르소나 시 secondary도 검사.
-  const disableLightning = primaryPersona === 'P10' || secondaryPersona === 'P10';
+  // 자극성 시각 효과 비활성 — 분노 우세 페르소나는 폭풍·번개가 격앙 트리거 가능.
+  // appliesGuard가 primary + secondary 둘 다 검사 (C-3-H 다중 페르소나 보존).
+  const disableLightning = appliesGuard(resolved, isVisualStimulusBlockedByPersona);
 
   // 가로 폭 — 화면 패딩 24*2 = 48 빼고
   const sceneWidth = Dimensions.get('window').width - 48;
