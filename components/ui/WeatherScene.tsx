@@ -145,7 +145,8 @@ function SkyBackground({
 }
 
 // ---------------------------------------------------------------------------
-// 해 + 광채 — score 7~10에서 fade in. 광채는 ambient 회전.
+// 해 + 광채 — 우측 화면 밖에서 score ↑ 따라 좌측(우상단)으로 슬라이드 진입.
+// 광채는 ambient 회전 (역시 슬라이드 동기).
 // ---------------------------------------------------------------------------
 
 function SunLayer({
@@ -167,25 +168,31 @@ function SunLayer({
     );
   }, [rotate]);
 
+  // 슬라이드 거리 — 화면 폭의 60% 만큼 좌측 밖에서 시작.
+  // 사용자 요구 "해가 왼쪽으로 이동" = 좌측 화면 밖→좌상단 정착 흐름.
+  const slideDistance = width * 0.6;
+
   const sunStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(t.value, [0.6, 0.78, 1], [0, 0.7, 1], 'clamp');
-    const scale = interpolate(t.value, [0.6, 1], [0.85, 1], 'clamp');
-    const ty = interpolate(t.value, [0.6, 1], [10, 0], 'clamp');
+    // score 1: tx = -slideDistance (좌측 밖), score 10: tx = 0 (좌상단 정착)
+    const tx = interpolate(t.value, [0, 1], [-slideDistance, 0], 'clamp');
+    const opacity = interpolate(t.value, [0, 0.4, 0.7, 1], [0, 0.3, 0.85, 1], 'clamp');
     return {
       opacity,
-      transform: [{ translateY: ty }, { scale }],
+      transform: [{ translateX: tx }],
     };
   });
 
   const rayStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(t.value, [0.75, 1], [0, 0.65], 'clamp');
+    const tx = interpolate(t.value, [0, 1], [-slideDistance, 0], 'clamp');
+    const opacity = interpolate(t.value, [0.4, 0.7, 1], [0, 0.45, 0.65], 'clamp');
     return {
       opacity,
-      transform: [{ rotate: `${rotate.value}deg` }],
+      transform: [{ translateX: tx }, { rotate: `${rotate.value}deg` }],
     };
   });
 
-  const sunCx = width - 56;
+  // 해 정착 위치 — 좌상단 (사용자 요구 "왼쪽" 진입 흐름)
+  const sunCx = 56;
   const sunCy = 56;
   const sunR = 26;
   const rayLen = 18;
@@ -279,6 +286,11 @@ interface CloudSpec {
   driftDuration: number;
   /** [stormColor, cloudyColor, sunnyColor] — score 0/0.5/1 시 색 */
   colors: [string, string, string];
+  /**
+   * true면 score 0~0.5에서만 visible (storm 밀도 ↑). score ↑ 시 오른쪽으로
+   * 슬라이드 아웃. false면 score 0~1 내내 노출되되 opacity만 옅어짐.
+   */
+  stormOnly: boolean;
 }
 
 function CloudsLayer({
@@ -288,12 +300,19 @@ function CloudsLayer({
   width: number;
   t: SharedValue<number>;
 }) {
+  // 6개 구름 — 폭풍 톤 색을 진회색(#3A3D48)으로 올려 검은 하늘에서도 보이게.
+  // storm 단계엔 모두 노출(밀도 ↑), score ↑ 따라 추가 구름(stormOnly=true) 4개가
+  // 옆으로 슬라이드 아웃되며 빠짐. 기본 구름 2개는 score 10까지 옅게 남음.
   const clouds: CloudSpec[] = useMemo(
     () => [
-      { baseX: 0.15, y: 28, scale: 1.0, driftDuration: 22000, colors: ['#1A1A20', '#5C5F6E', '#FFFFFF'] },
-      { baseX: 0.55, y: 18, scale: 1.3, driftDuration: 30000, colors: ['#15151B', '#6B6E7C', '#FFFFFF'] },
-      { baseX: 0.3, y: 70, scale: 0.85, driftDuration: 18000, colors: ['#202028', '#73768A', '#FAFAFF'] },
-      { baseX: 0.78, y: 88, scale: 0.9, driftDuration: 26000, colors: ['#1A1A22', '#5F6275', '#FFFFFF'] },
+      // 항상 노출되는 베이스 구름 2개 (sunny에서도 흰구름)
+      { baseX: 0.15, y: 28, scale: 1.0, driftDuration: 22000, colors: ['#3A3D48', '#6B6E7C', '#FFFFFF'], stormOnly: false },
+      { baseX: 0.78, y: 88, scale: 0.9, driftDuration: 26000, colors: ['#3F424E', '#73768A', '#FAFAFF'], stormOnly: false },
+      // storm 강조 구름 4개 (score 0~0.5 안에서만 visible)
+      { baseX: 0.55, y: 18, scale: 1.3, driftDuration: 30000, colors: ['#46495A', '#6B6E7C', '#FFFFFF'], stormOnly: true },
+      { baseX: 0.3,  y: 70, scale: 0.85, driftDuration: 18000, colors: ['#3D404B', '#73768A', '#FAFAFF'], stormOnly: true },
+      { baseX: 0.42, y: 110, scale: 0.95, driftDuration: 24000, colors: ['#42455A', '#6F7286', '#F8F8FF'], stormOnly: true },
+      { baseX: 0.88, y: 50, scale: 0.75, driftDuration: 20000, colors: ['#383B47', '#67697B', '#FFFFFF'], stormOnly: true },
     ],
     [],
   );
@@ -328,18 +347,22 @@ function Cloud({
     );
   }, [drift, spec.driftDuration]);
 
-  // 부모: opacity + transform (drift)
+  // 부모: opacity + transform (drift + score 슬라이드).
+  // stormOnly 구름은 score ↑ 시 오른쪽으로 슬라이드 아웃되며 빠짐.
+  // 베이스 구름은 위치 유지하고 opacity만 옅어짐 (score 10에서도 흰 구름 살짝).
   const containerStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      t.value,
-      [0, 0.3, 0.6, 0.85, 1],
-      [0.95, 0.9, 0.7, 0.4, 0.15],
-      'clamp',
-    );
-    const tx = interpolate(drift.value, [0, 1], [-width * 0.08, width * 0.08]);
+    const opacity = spec.stormOnly
+      ? interpolate(t.value, [0, 0.3, 0.5, 0.6], [1, 0.85, 0.3, 0], 'clamp')
+      : interpolate(t.value, [0, 0.4, 0.8, 1], [1, 0.95, 0.7, 0.45], 'clamp');
+    // score ↑ 슬라이드 (storm 구름만 오른쪽으로 빠짐)
+    const slideTx = spec.stormOnly
+      ? interpolate(t.value, [0, 0.5, 1], [0, width * 0.3, width * 0.8], 'clamp')
+      : 0;
+    // ambient drift (계속 좌우 흔들림)
+    const driftTx = interpolate(drift.value, [0, 1], [-width * 0.08, width * 0.08]);
     return {
       opacity,
-      transform: [{ translateX: tx }],
+      transform: [{ translateX: slideTx + driftTx }],
     };
   });
 
@@ -411,7 +434,8 @@ function Cloud({
 }
 
 // ---------------------------------------------------------------------------
-// 비 — score 0~0.25에서만 visible. 짧은 선들이 위→아래 loop.
+// 비 — score 1에서 정착(화면 가득), score ↑ 시 오른쪽으로 슬라이드 아웃.
+// 빗줄기는 위→아래 fall loop, layer 전체가 가로 이동.
 // ---------------------------------------------------------------------------
 
 function RainLayer({
@@ -423,9 +447,16 @@ function RainLayer({
   height: number;
   t: SharedValue<number>;
 }) {
-  const opacityStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(t.value, [0, 0.18, 0.3], [0.85, 0.7, 0], 'clamp'),
-  }));
+  const layerStyle = useAnimatedStyle(() => {
+    // score 0~0.5 사이에 화면 밖으로 슬라이드 아웃
+    const tx = interpolate(t.value, [0, 0.5], [0, width * 1.05], 'clamp');
+    // 슬라이드 아웃과 동기로 opacity도 살짝 줄여 멀어지는 인상
+    const opacity = interpolate(t.value, [0, 0.3, 0.5], [0.9, 0.5, 0], 'clamp');
+    return {
+      opacity,
+      transform: [{ translateX: tx }],
+    };
+  });
 
   const drops = useMemo(
     () =>
@@ -439,7 +470,7 @@ function RainLayer({
   return (
     <Animated.View
       pointerEvents="none"
-      style={[StyleSheet.absoluteFillObject, opacityStyle]}
+      style={[StyleSheet.absoluteFillObject, layerStyle]}
     >
       {drops.map((d, i) => (
         <Raindrop key={i} x={d.x} duration={d.dur} delay={d.delay} height={height} />
