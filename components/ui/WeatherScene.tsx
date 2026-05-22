@@ -5,7 +5,6 @@ import Animated, {
   type SharedValue,
   interpolate,
   interpolateColor,
-  useAnimatedProps,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -24,8 +23,6 @@ import Svg, {
   Stop,
 } from 'react-native-svg';
 import { motion } from '@/constants/motion';
-
-const AnimatedStop = Animated.createAnimatedComponent(Stop);
 
 interface Props {
   /** 감정 온도 1~10. 끊김 없이 보간되어 모든 레이어의 입력이 된다. */
@@ -85,8 +82,16 @@ export function WeatherScene({ score, width, height = 180, disableLightning = fa
 }
 
 // ---------------------------------------------------------------------------
-// 하늘 배경 — 그라데이션 두 stop이 score에 따라 색상 보간
+// 하늘 배경 — 3 layer(storm/cloudy/sunny) 정적 그라데이션을 score에 따라
+// opacity 보간으로 cross-fade. AnimatedStop이 react-native-svg의 host
+// instance를 못 잡는 호환성 이슈 회피.
 // ---------------------------------------------------------------------------
+
+interface SkyStage {
+  id: string;
+  topColor: string;
+  bottomColor: string;
+}
 
 function SkyBackground({
   width,
@@ -99,40 +104,43 @@ function SkyBackground({
   t: SharedValue<number>;
   uid: string;
 }) {
-  const topProps = useAnimatedProps(() => {
-    const c = interpolateColor(
-      t.value,
-      [0, 0.3, 0.7, 1],
-      ['#0F1320', '#2A2F3D', '#3D4E63', '#5A8AB8'],
-    );
-    return { stopColor: c };
-  });
-  const bottomProps = useAnimatedProps(() => {
-    const c = interpolateColor(
-      t.value,
-      [0, 0.3, 0.7, 1],
-      ['#1A1E2A', '#4A4E5C', '#7C8AA0', '#EBC8A6'],
-    );
-    return { stopColor: c };
-  });
+  const stages: SkyStage[] = [
+    { id: `storm-${uid}`,  topColor: '#0F1320', bottomColor: '#1A1E2A' },
+    { id: `cloudy-${uid}`, topColor: '#2A2F3D', bottomColor: '#5C6275' },
+    { id: `sunny-${uid}`,  topColor: '#5A8AB8', bottomColor: '#EBC8A6' },
+  ];
 
-  const skyId = `sky-${uid}`;
+  const stormStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(t.value, [0, 0.4, 0.6], [1, 0.4, 0], 'clamp'),
+  }));
+  const cloudyStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(t.value, [0, 0.3, 0.5, 0.85], [0, 0.7, 1, 0], 'clamp'),
+  }));
+  const sunnyStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(t.value, [0.5, 0.75, 1], [0, 0.6, 1], 'clamp'),
+  }));
+
+  const layerStyles = [stormStyle, cloudyStyle, sunnyStyle];
 
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={StyleSheet.absoluteFillObject}
-      pointerEvents="none"
-    >
-      <Defs>
-        <LinearGradient id={skyId} x1="0" y1="0" x2="0" y2="1">
-          <AnimatedStop offset="0" animatedProps={topProps} />
-          <AnimatedStop offset="1" animatedProps={bottomProps} />
-        </LinearGradient>
-      </Defs>
-      <Rect x={0} y={0} width={width} height={height} fill={`url(#${skyId})`} />
-    </Svg>
+    <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
+      {stages.map((stage, i) => (
+        <Animated.View
+          key={stage.id}
+          style={[StyleSheet.absoluteFillObject, layerStyles[i]]}
+        >
+          <Svg width={width} height={height}>
+            <Defs>
+              <LinearGradient id={stage.id} x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={stage.topColor} />
+                <Stop offset="1" stopColor={stage.bottomColor} />
+              </LinearGradient>
+            </Defs>
+            <Rect x={0} y={0} width={width} height={height} fill={`url(#${stage.id})`} />
+          </Svg>
+        </Animated.View>
+      ))}
+    </View>
   );
 }
 
