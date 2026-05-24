@@ -18,7 +18,7 @@ import { tabSlideDirection } from './tabSlideDirection';
  * 하단 탭바 — 커스텀 (레퍼런스 학습 기반 리뉴얼).
  *
  * 기존: Expo Router `Tabs` 기본 탭바(평면 + 상단 보더 + 11px 라벨). 구식·정적.
- * 변경: 화면에서 떠 있는 라운드 캡슐(floating capsule). 아이콘 + 하단 라벨 구성.
+ * 변경: 배경 박스 없이 화면 배경 위에 아이콘 + 하단 라벨만 얹는 미니멀 구성.
  *       활성 표시는 배경 알약 없이 *색*으로만 — 회색↔보라 크로스페이드(Reanimated spring).
  *
  * 레퍼런스 차용(`docs/design/PATTERNS.md`):
@@ -130,12 +130,12 @@ function TabItem({ icon, label, focused, onPress }: TabItemProps) {
     >
       {/* 비활성(회색) 묶음 */}
       <View style={styles.stack}>
-        <Icon name={icon} size={22} color={colors.gray[600]} strokeWidth={1.8} />
+        <Icon name={icon} size={27} color={colors.gray[600]} strokeWidth={1.8} />
         <Text style={[styles.label, { color: colors.gray[600] }]}>{label}</Text>
       </View>
       {/* 활성(보라) 묶음 — 정확히 겹쳐서 크로스페이드 */}
       <Animated.View style={[StyleSheet.absoluteFillObject, styles.stack, activeStyle]}>
-        <Icon name={icon} size={22} color={colors.purple[400]} strokeWidth={2.1} />
+        <Icon name={icon} size={27} color={colors.purple[400]} strokeWidth={2.1} />
         <Text style={[styles.label, { color: colors.purple[400] }]}>{label}</Text>
       </Animated.View>
     </AnimatedPressable>
@@ -144,25 +144,16 @@ function TabItem({ icon, label, focused, onPress }: TabItemProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.bg, // 화면 배경과 동일 → 캡슐만 떠 보임
+    backgroundColor: colors.bg, // 화면 배경과 동일 → 탭바가 배경에 자연스럽게 녹아듦
     paddingHorizontal: 16,
     paddingTop: 8,
   },
   capsule: {
+    // 배경 캡슐 제거 — 아이콘/라벨이 화면 배경 위에 바로 얹힘. 레이아웃 용도만 유지.
     flexDirection: 'row',
     alignItems: 'center',
     height: CAPSULE_H,
     paddingHorizontal: 8,
-    borderRadius: 28,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    // 다크 위 미세한 부양감
-    shadowColor: '#000',
-    shadowOpacity: 0.45,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 12,
   },
   itemTouchable: {
     flex: 1,
