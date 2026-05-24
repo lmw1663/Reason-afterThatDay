@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, TextInput, View } from 'react-native';
+import Animated from 'react-native-reanimated';
+import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { Body, Caption, Heading } from '@/components/ui/Typography';
-import { Card } from '@/components/ui/Card';
+import { Body, Caption, Display, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
+import { QuestionPoolCard } from '@/components/ui/QuestionPoolCard';
+import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { useQuestionStore, type Question } from '@/store/useQuestionStore';
+import type { PersonaCode } from '@/utils/personaClassifier';
 import {
   fetchAnsweredQuestions,
   upsertQuestionResponse,
@@ -18,25 +22,24 @@ import {
   getQuestionBooster,
   isQuestionBlocked,
 } from '@/constants/personaQuestionWeights';
+import { getKnotPolicy } from '@/utils/knotPolicy';
 import { useScreenView } from '@/hooks/useScreenView';
 
-// "질문통" — 사용자가 풀의 미답변 질문을 둘러보고 직접 골라서 답하는 화면.
+// "질문통" — 미답변 질문 풀에서 사용자가 골라 답하는 화면.
 //
-// 시그니처(사용자 결정):
-//  · 페르소나 booster 적용된 질문은 "너에게 맞춤" 섹션 상단 고정
-//  · 시스템 추천 점수 상위는 "추천" 배지
-//  · 그 외 일반 질문은 별도 섹션
+// 시각 위계:
+//  Hero(상위 1~2개 booster 최상위) → Tailored row → Standard row 3-tier.
+//  context별 색·아이콘 매핑(constants/questionContextTheme.ts) — 단조로움 해소.
 //
 // 정책:
-//  · 미답변(answered Map에 없는 것)만 노출
-//  · pros/cons 카테고리 제외 (분석 화면 별도 처리)
-//  · 페르소나 차단 질문(KNOT_FORBIDDEN 등) 제외
+//  · 미답변만 노출 / pros·cons 제외 / 페르소나 차단(KNOT_FORBIDDEN 등) 제외
+//  · 매듭 권유 비허용 페르소나(P03·P11·P16·P19)는 graduation 질문 hero 승격 금지
+//    (row 노출은 자발적 선택이라 절대 규칙상 허용)
 //  · is_active = false 제외
-//
-// 답변: 카드 탭 → 모달에서 free_text 입력 → 저장 → 카드 사라짐
 
 const HIDDEN_CATEGORIES = new Set(['pros', 'cons']);
 const TOP_RECOMMEND_COUNT = 3;
+const HERO_COUNT_WHEN_TAILORED = 2;
 
 interface SectionItem {
   question: Question;
@@ -44,11 +47,21 @@ interface SectionItem {
   baseScore: number;
 }
 
+/**
+ * graduation hero 가드 — 매듭 권유 비허용 페르소나는 graduation 질문을 hero로
+ * 승격 금지(시각적 권유로 오인 위험). row 노출은 자발적 선택이라 허용.
+ * knotPolicy.triggerAllowed가 SSOT.
+ */
+function isHeroEligible(q: Question, persona: PersonaCode | null): boolean {
+  if (!q.context.includes('graduation')) return true;
+  return getKnotPolicy(persona).triggerAllowed;
+}
+
 function buildSections(
   pool: Question[],
   answeredIds: Set<string>,
-  persona: string | null,
-): { tailored: SectionItem[]; others: SectionItem[] } {
+  persona: PersonaCode | null,
+): { hero: SectionItem[]; tailored: SectionItem[]; others: SectionItem[] } {
   const tailored: SectionItem[] = [];
   const others: SectionItem[] = [];
 
@@ -59,20 +72,38 @@ function buildSections(
     if (isQuestionBlocked(persona as never, q.id)) return;
 
     const booster = getQuestionBooster(persona as never, q.id);
-    const baseScore = q.weight + 5; // 모두 미답변이라 +5 적용
+    const baseScore = q.weight + 5;
     const item: SectionItem = { question: q, booster, baseScore };
 
     if (booster > 0) tailored.push(item);
     else others.push(item);
   });
 
-  // 점수 내림차순 정렬 (booster 포함)
   const sortByScore = (a: SectionItem, b: SectionItem) =>
     (b.baseScore + b.booster) - (a.baseScore + a.booster);
   tailored.sort(sortByScore);
   others.sort(sortByScore);
 
-  return { tailored, others };
+  // Hero 승격 — 상위 tailored에서 N개 splice (graduation hero 가드 적용)
+  const hero: SectionItem[] = [];
+  let i = 0;
+  while (hero.length < HERO_COUNT_WHEN_TAILORED && i < tailored.length) {
+    if (isHeroEligible(tailored[i].question, persona)) {
+      hero.push(tailored.splice(i, 1)[0]);
+    } else {
+      i += 1;
+    }
+  }
+
+  // tailored가 비었거나 hero가 0개면 others 중 weight≥9 1개를 hero로 fallback
+  if (hero.length === 0) {
+    const fallbackIdx = others.findIndex(
+      (it) => it.question.weight >= 9 && isHeroEligible(it.question, persona),
+    );
+    if (fallbackIdx >= 0) hero.push(...others.splice(fallbackIdx, 1));
+  }
+
+  return { hero, tailored, others };
 }
 
 export default function QuestionPoolScreen() {
@@ -102,20 +133,21 @@ export default function QuestionPoolScreen() {
         });
         setAnsweredIds(ids);
       })
-      .catch(() => {/* fail open — 빈 set */})
+      .catch(() => {/* fail open */})
       .finally(() => setLoading(false));
   }, [userId]);
 
-  const { tailored, others } = useMemo(
+  const { hero, tailored, others } = useMemo(
     () => buildSections(pool, answeredIds, personaPrimary),
     [pool, answeredIds, personaPrimary],
   );
 
-  // 일반 섹션 상위 N개에 "추천" 배지
   const recommendedIds = useMemo(
     () => new Set(others.slice(0, TOP_RECOMMEND_COUNT).map((i) => i.question.id)),
     [others],
   );
+
+  const totalRemaining = hero.length + tailored.length + others.length;
 
   function openAnswerModal(q: Question) {
     setActiveQuestion(q);
@@ -129,13 +161,9 @@ export default function QuestionPoolScreen() {
     setAnswerBoolean(null);
   }
 
-  // display_type별 응답값·유효성 분기.
-  // boolean → true|false, 그 외(choice w/o options 포함) → free_text fallback.
   function getResponseValue(): unknown | null {
     if (!activeQuestion) return null;
-    if (activeQuestion.displayType === 'boolean') {
-      return answerBoolean;
-    }
+    if (activeQuestion.displayType === 'boolean') return answerBoolean;
     const trimmed = answerText.trim();
     return trimmed.length > 0 ? trimmed : null;
   }
@@ -153,7 +181,6 @@ export default function QuestionPoolScreen() {
         responseValue: value,
         status: 'answered',
       });
-      // 로컬에서 답변 ID 추가 — 카드 즉시 사라짐
       setAnsweredIds((prev) => {
         const next = new Set(prev);
         next.add(activeQuestion.id);
@@ -161,53 +188,97 @@ export default function QuestionPoolScreen() {
       });
       closeAnswerModal();
     } catch {
-      // 저장 실패 시 모달 유지 — 사용자가 다시 시도
+      /* 저장 실패 시 모달 유지 */
     } finally {
       setSaving(false);
     }
   }
 
+  // stagger index — 카드+섹션 헤더 위→아래 누적
+  let staggerCursor = 0;
+  const nextStagger = () => staggerCursor++;
+
   return (
     <ScreenWrapper>
       <ScrollView
-        className="flex-1 px-6 pt-14"
-        contentContainerStyle={{ paddingBottom: 32 }}
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         <BackHeader />
-        <Heading className="mb-1">질문통</Heading>
-        <Caption className="text-gray-500 mb-6">
-          미리 준비된 질문 중에서 골라 답해봐. 답한 건 [내가 답한 질문]에 모여.
-        </Caption>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 4 }}>
+          <View style={{ flex: 1 }}>
+            <Caption className="mb-1">기록</Caption>
+            <Display className="mb-2">질문통</Display>
+          </View>
+          {!loading && totalRemaining > 0 && (
+            <View
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 999,
+                backgroundColor: colors.overlayPurpleSoft,
+                marginBottom: 8,
+              }}
+            >
+              <Caption
+                style={{
+                  color: colors.purple[400],
+                  fontSize: 12,
+                  fontWeight: '700',
+                }}
+              >
+                미답변 {totalRemaining}개
+              </Caption>
+            </View>
+          )}
+        </View>
+        <Body className="text-gray-400 mb-8">
+          준비된 질문 중에서 골라 답해봐. 답한 건 [답한 질문]에 모여.
+        </Body>
 
         {loading ? (
           <View className="py-12 items-center">
             <ActivityIndicator color={colors.purple[400]} />
           </View>
-        ) : tailored.length === 0 && others.length === 0 ? (
-          <Card className="p-5 items-start">
-            <Icon name="leaf" size={28} color={colors.purple[400]} />
-            <Body className="text-gray-200 font-semibold mt-3 mb-1">
-              지금은 새로 답할 질문이 없어
-            </Body>
-            <Caption className="text-gray-500 leading-5">
-              모든 질문에 답했거나 페르소나 가드로 잠긴 상태야.
-            </Caption>
-          </Card>
+        ) : totalRemaining === 0 ? (
+          <EmptyState />
         ) : (
           <>
+            {/* Hero */}
+            {hero.length > 0 && (
+              <View style={{ gap: 12, marginBottom: 28 }}>
+                {hero.map((item) => (
+                  <QuestionPoolCard
+                    key={item.question.id}
+                    question={item.question}
+                    variant="hero"
+                    recommended
+                    staggerIndex={nextStagger()}
+                    onPress={() => openAnswerModal(item.question)}
+                  />
+                ))}
+              </View>
+            )}
+
+            {/* 너에게 맞춤 */}
             {tailored.length > 0 && (
-              <View className="mb-6">
-                <View className="flex-row items-center gap-2 mb-3">
-                  <Icon name="leaf" size={16} color={colors.purple[400]} />
-                  <Caption className="text-purple-400 font-semibold">너에게 맞춤</Caption>
-                </View>
-                <View className="gap-3">
+              <View style={{ marginBottom: 28 }}>
+                <SectionHeader
+                  iconName="leaf"
+                  iconColor={colors.purple[400]}
+                  iconBg={colors.overlayPurpleSoft}
+                  title="너에게 맞춤"
+                  count={tailored.length}
+                  staggerIndex={nextStagger()}
+                />
+                <View style={{ gap: 12, marginTop: 14 }}>
                   {tailored.map((item) => (
-                    <QuestionCard
+                    <QuestionPoolCard
                       key={item.question.id}
                       question={item.question}
-                      tailored
+                      variant="tailored"
+                      staggerIndex={nextStagger()}
                       onPress={() => openAnswerModal(item.question)}
                     />
                   ))}
@@ -215,17 +286,25 @@ export default function QuestionPoolScreen() {
               </View>
             )}
 
+            {/* 더 깊이 가보기 */}
             {others.length > 0 && (
               <View>
-                <Caption className="text-gray-500 font-semibold mb-3">
-                  다른 질문
-                </Caption>
-                <View className="gap-3">
+                <SectionHeader
+                  iconName="search"
+                  iconColor={colors.amber[400]}
+                  iconBg={colors.overlayAmberSoft}
+                  title="더 깊이 가보기"
+                  count={others.length}
+                  staggerIndex={nextStagger()}
+                />
+                <View style={{ gap: 12, marginTop: 14 }}>
                   {others.map((item) => (
-                    <QuestionCard
+                    <QuestionPoolCard
                       key={item.question.id}
                       question={item.question}
+                      variant="standard"
                       recommended={recommendedIds.has(item.question.id)}
+                      staggerIndex={nextStagger()}
                       onPress={() => openAnswerModal(item.question)}
                     />
                   ))}
@@ -251,52 +330,114 @@ export default function QuestionPoolScreen() {
   );
 }
 
-interface QuestionCardProps {
-  question: Question;
-  tailored?: boolean;
-  recommended?: boolean;
-  onPress: () => void;
+// ---------------------------------------------------------------------------
+// SectionHeader — 24pt 원형 아이콘 + 18pt 제목 + 우측 카운트 caption.
+// records 패턴과 동일 언어로 시각 일관성.
+// ---------------------------------------------------------------------------
+
+interface SectionHeaderProps {
+  iconName: 'leaf' | 'search';
+  iconColor: string;
+  iconBg: string;
+  title: string;
+  count: number;
+  staggerIndex: number;
 }
 
-function QuestionCard({ question, tailored, recommended, onPress }: QuestionCardProps) {
+function SectionHeader({ iconName, iconColor, iconBg, title, count, staggerIndex }: SectionHeaderProps) {
+  const enterStyle = useStaggerEntrance(Math.min(staggerIndex, 8));
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={`${question.text} — 답하기`}
-      className="active:opacity-80"
+    <Animated.View
+      style={[
+        { flexDirection: 'row', alignItems: 'center', gap: 10 },
+        enterStyle,
+      ]}
     >
-      <Card className="p-4">
-        <View className="flex-row items-start gap-3">
-          <View className="flex-1">
-            {(tailored || recommended) && (
-              <View className="flex-row gap-2 mb-2">
-                {tailored && (
-                  <View
-                    className="rounded-full px-2 py-0.5"
-                    style={{ backgroundColor: colors.overlayPurpleSoft }}
-                  >
-                    <Caption className="text-purple-400 text-xs font-medium">너에게 맞춤</Caption>
-                  </View>
-                )}
-                {recommended && (
-                  <View
-                    className="rounded-full px-2 py-0.5"
-                    style={{ backgroundColor: colors.overlayTealSoft }}
-                  >
-                    <Caption className="text-teal-400 text-xs font-medium">추천</Caption>
-                  </View>
-                )}
-              </View>
-            )}
-            <Body className="text-gray-200 leading-relaxed">{question.text}</Body>
-          </View>
-          <Icon name="chevron-right" size={18} color={colors.gray[600]} />
-        </View>
-      </Card>
-    </Pressable>
+      <View
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 14,
+          backgroundColor: iconBg,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Icon name={iconName} size={14} color={iconColor} />
+      </View>
+      <Heading
+        style={{
+          fontSize: 18,
+          fontWeight: '700',
+          color: colors.white,
+        }}
+      >
+        {title}
+      </Heading>
+      <View style={{ flex: 1 }} />
+      <Caption style={{ color: colors.gray[600], fontSize: 12, fontWeight: '600' }}>
+        {count}
+      </Caption>
+    </Animated.View>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Empty state — 64pt Sparkles 원형 배지 + heading + CTA. 페르소나 가드 노출 X.
+// ---------------------------------------------------------------------------
+
+function EmptyState() {
+  return (
+    <View style={{ alignItems: 'center', paddingTop: 32, paddingBottom: 24 }}>
+      <View
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: colors.overlayPurpleSoft,
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 20,
+        }}
+      >
+        <Icon name="sparkles" size={28} color={colors.purple[400]} />
+      </View>
+      <Heading style={{ textAlign: 'center', marginBottom: 8 }}>
+        이번에 답할 질문은 다 봤어
+      </Heading>
+      <Body
+        style={{
+          textAlign: 'center',
+          color: colors.gray[400],
+          lineHeight: 22,
+          marginBottom: 24,
+          paddingHorizontal: 16,
+        }}
+      >
+        그동안 답한 질문은 [답한 질문]에 모여 있어.
+      </Body>
+      <View style={{ width: '100%', maxWidth: 320 }}>
+        <PrimaryButton
+          label="답한 질문 보러가기"
+          onPress={() => router.push('/answers' as never)}
+        />
+      </View>
+      <Pressable
+        onPress={() => router.replace('/(tabs)' as never)}
+        accessibilityRole="button"
+        accessibilityLabel="홈으로"
+        hitSlop={8}
+        className="active:opacity-60 mt-4"
+      >
+        <Caption style={{ color: colors.gray[600] }}>홈으로 ›</Caption>
+      </Pressable>
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AnswerModal — 기존 동작 그대로 (boolean / free_text 분기). 디자인 미변경.
+// ---------------------------------------------------------------------------
 
 interface AnswerModalProps {
   question: Question | null;
@@ -378,6 +519,7 @@ function AnswerModal({
               accessibilityLabel="답변 입력"
               className="text-white text-base leading-relaxed mb-4"
               style={{
+                fontFamily: 'Pretendard',
                 minHeight: 100,
                 backgroundColor: colors.bg,
                 borderWidth: 1,

@@ -21,6 +21,7 @@ const colors = {
   overlayGrayMuted: 'rgba(68,68,65,0.3)',
   overlayGrayStrong: 'rgba(68,68,65,0.4)',
   overlayTealSoft: 'rgba(29,158,117,0.1)',
+  overlayCoralSoft: 'rgba(216,90,48,0.1)',
   overlayAmberSoft: 'rgba(186,117,23,0.1)',
   overlayBackdropDark: 'rgba(14,14,18,0.85)',
 };
