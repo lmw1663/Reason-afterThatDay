@@ -26,9 +26,9 @@ export default function TabLayout() {
   return (
     <Tabs
       tabBar={(props) => <TabBar {...props} />}
-      // 'shift': 탭 전환 시 좌/우 방향을 인식해 화면이 옆으로 슬라이드 + 크로스페이드.
-      // 세로 fadeUp과 겹치지 않도록 각 탭 화면은 ScreenWrapper entrance="none".
-      screenOptions={{ headerShown: false, animation: 'shift' }}
+      // 탭 전환 슬라이드는 각 탭 화면의 ScreenWrapper entrance="slide"가 담당.
+      // (bottom-tabs animation:'shift'는 가장자리 탭이 빈 화면으로 남는 문제가 있어 미사용)
+      screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="records" />

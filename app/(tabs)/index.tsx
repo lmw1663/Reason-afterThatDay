@@ -177,7 +177,7 @@ export default function HomeScreen() {
   }, [userId]);
 
   return (
-    <ScreenWrapper entrance="none">
+    <ScreenWrapper entrance="slide">
       <IntrusiveMemoryModal
         visible={showIntrusiveModal}
         onClose={() => setShowIntrusiveModal(false)}

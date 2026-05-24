@@ -81,7 +81,7 @@ export default function MeScreen() {
         : `${compassDaysLeft}일 뒤 — 결정보다 머무는 시간`;
 
   return (
-    <ScreenWrapper entrance="none">
+    <ScreenWrapper entrance="slide">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 24 }}

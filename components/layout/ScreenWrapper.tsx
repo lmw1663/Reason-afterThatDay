@@ -20,11 +20,12 @@ interface Props {
    */
   keyboardAvoiding?: boolean;
   /**
-   * 진입 모션. 기본 'fadeUp'(opacity + translateY spring).
-   * 'none' — 화면 전환을 네비게이터가 담당할 때(예: 탭의 'shift' 가로 슬라이드)
-   *          세로 fadeUp과 이중으로 겹치지 않도록 끈다.
+   * 진입 모션 (focus마다 spring 재생).
+   *  - 'fadeUp' (기본): opacity + translateY(세로 8px) — 일반 화면
+   *  - 'slide'        : opacity + translateX(가로) — 탭 전환을 옆으로 슬라이드
+   *  - 'none'         : 모션 없음(정적)
    */
-  entrance?: 'fadeUp' | 'none';
+  entrance?: 'fadeUp' | 'slide' | 'none';
 }
 
 /**
@@ -43,23 +44,25 @@ export function ScreenWrapper({
   keyboardAvoiding = false,
   entrance = 'fadeUp',
 }: Props) {
-  const animate = entrance === 'fadeUp';
+  const slide = entrance === 'slide';
+  const animate = entrance === 'fadeUp' || slide;
+  const start = slide ? 28 : 8; // slide=가로 28px, fadeUp=세로 8px
   const opacity = useSharedValue(animate ? 0 : 1);
-  const translateY = useSharedValue(animate ? 8 : 0);
+  const offset = useSharedValue(animate ? start : 0);
 
   useFocusEffect(
     useCallback(() => {
       if (!animate) return;
       opacity.value = 0;
-      translateY.value = 8;
+      offset.value = start;
       opacity.value = withSpring(1, motion.spring.standard);
-      translateY.value = withSpring(0, motion.spring.standard);
-    }, [animate]),
+      offset.value = withSpring(0, motion.spring.standard);
+    }, [animate, start]),
   );
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
+    transform: slide ? [{ translateX: offset.value }] : [{ translateY: offset.value }],
   }));
 
   const animated = (

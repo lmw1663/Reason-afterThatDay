@@ -34,7 +34,7 @@ export default function KnotEntry() {
   }
 
   return (
-    <ScreenWrapper entrance="none">
+    <ScreenWrapper entrance="slide">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 32 }}
