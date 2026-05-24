@@ -37,6 +37,9 @@ export default function TabLayout() {
       {/* F-4 매듭 탭 — 권유 모달 승낙 시에만 동적 노출. 가장 오른쪽 위치. */}
       <Tabs.Screen name="knot" options={{ href: knotTabVisible ? '/knot' : null }} />
 
+      {/* UI 실험실 — __DEV__ 전용 트렌디 시범 탭. 프로덕션에선 라우트·탭 모두 비노출. */}
+      <Tabs.Screen name="ui-lab" options={{ href: __DEV__ ? '/ui-lab' : null }} />
+
       {/* 기존 탭 — 탭바에서 숨김, URL은 A-4·A-5에서 정리. */}
       <Tabs.Screen name="analysis"   options={{ href: null }} />
       <Tabs.Screen name="compass"    options={{ href: null }} />
