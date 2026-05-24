@@ -56,7 +56,7 @@ export default function RecordsScreen() {
   }, [userId, showIntrusiveTrend]);
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper entrance="none">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 24 }}

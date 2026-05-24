@@ -177,7 +177,7 @@ export default function HomeScreen() {
   }, [userId]);
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper entrance="none">
       <IntrusiveMemoryModal
         visible={showIntrusiveModal}
         onClose={() => setShowIntrusiveModal(false)}
@@ -353,7 +353,7 @@ export default function HomeScreen() {
         {/* G-6: 보조 카드 묶음.
             - AssessmentRecommendationCard: 조건부(D+7/14/30) — 권유 없으면 자체 null 반환
             - ContactUrgeChip: 페르소나 게이팅 — P14·P16·P17·P19·P20은 임상 안전상 미노출
-              (자세한 근거: docs/persona-contact-urge-policy.md)
+              (자세한 근거: docs/policy/persona-contact-urge-policy.md)
             두 카드의 px·간격을 통일해 *하나의 묶음*으로 시각 인식되게. 매일 같은 자리에
             같은 종류가 있어야 학습이 됨 (Predictable layout). */}
         <View className="px-6 mb-6 gap-2">

@@ -19,6 +19,12 @@ interface Props {
    * 기본값: false (불필요한 레이아웃 비용 회피)
    */
   keyboardAvoiding?: boolean;
+  /**
+   * 진입 모션. 기본 'fadeUp'(opacity + translateY spring).
+   * 'none' — 화면 전환을 네비게이터가 담당할 때(예: 탭의 'shift' 가로 슬라이드)
+   *          세로 fadeUp과 이중으로 겹치지 않도록 끈다.
+   */
+  entrance?: 'fadeUp' | 'none';
 }
 
 /**
@@ -30,17 +36,25 @@ interface Props {
  * useFocusEffect로 매 포커스마다 리셋·재실행 — tabs 보존(detach) 상황에서도
  * 탭 전환 시 fadeUp이 항상 보이도록.
  */
-export function ScreenWrapper({ children, safeArea = true, style, keyboardAvoiding = false }: Props) {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(8);
+export function ScreenWrapper({
+  children,
+  safeArea = true,
+  style,
+  keyboardAvoiding = false,
+  entrance = 'fadeUp',
+}: Props) {
+  const animate = entrance === 'fadeUp';
+  const opacity = useSharedValue(animate ? 0 : 1);
+  const translateY = useSharedValue(animate ? 8 : 0);
 
   useFocusEffect(
     useCallback(() => {
+      if (!animate) return;
       opacity.value = 0;
       translateY.value = 8;
       opacity.value = withSpring(1, motion.spring.standard);
       translateY.value = withSpring(0, motion.spring.standard);
-    }, []),
+    }, [animate]),
   );
 
   const animatedStyle = useAnimatedStyle(() => ({
