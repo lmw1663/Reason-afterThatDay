@@ -12,6 +12,7 @@ import { Icon, type IconName } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { motion } from '@/constants/motion';
 import { useKnotStore } from '@/store/useKnotStore';
+import { tabSlideDirection } from './tabSlideDirection';
 
 /**
  * 하단 탭바 — 커스텀 (레퍼런스 학습 기반 리뉴얼).
@@ -73,6 +74,9 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
               canPreventDefault: true,
             });
             if (!focused && !event.defaultPrevented) {
+              // 이동 방향 기록 → 새 화면이 오른쪽(+)/왼쪽(-) 어디서 슬라이드할지 결정.
+              // TAB_CONFIG 시각 순서 = state.routes 선언 순서라 인덱스 비교로 방향 산출.
+              tabSlideDirection.set(routeIndex - state.index);
               navigation.navigate(route.name);
             }
           };

@@ -9,6 +9,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { motion } from '@/constants/motion';
+import { tabSlideDirection } from './tabSlideDirection';
+
+const SLIDE_OFFSET = 28; // 가로 슬라이드 시작 거리 (px)
+const FADEUP_OFFSET = 8; // 세로 fadeUp 시작 거리 (px)
 
 interface Props {
   children: React.ReactNode;
@@ -46,18 +50,20 @@ export function ScreenWrapper({
 }: Props) {
   const slide = entrance === 'slide';
   const animate = entrance === 'fadeUp' || slide;
-  const start = slide ? 28 : 8; // slide=가로 28px, fadeUp=세로 8px
   const opacity = useSharedValue(animate ? 0 : 1);
-  const offset = useSharedValue(animate ? start : 0);
+  const offset = useSharedValue(animate ? (slide ? SLIDE_OFFSET : FADEUP_OFFSET) : 0);
 
   useFocusEffect(
     useCallback(() => {
       if (!animate) return;
+      // slide: focus 시점에 방향을 읽어 좌/우 결정 (TabBar가 navigate 직전에 set).
+      //  방향 +1 → 시작점 +28(오른쪽)에서 좌로 들어옴, -1 → -28(왼쪽)에서 우로 들어옴.
+      const start = slide ? SLIDE_OFFSET * tabSlideDirection.get() : FADEUP_OFFSET;
       opacity.value = 0;
       offset.value = start;
       opacity.value = withSpring(1, motion.spring.standard);
       offset.value = withSpring(0, motion.spring.standard);
-    }, [animate, start]),
+    }, [animate, slide]),
   );
 
   const animatedStyle = useAnimatedStyle(() => ({
