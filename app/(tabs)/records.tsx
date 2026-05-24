@@ -182,13 +182,11 @@ function RecordHero({ icon, title, subtitle, staggerIndex, onPress }: RecordHero
           style={{
             width: 56,
             height: 56,
-            borderRadius: 28,
-            backgroundColor: colors.overlayPurpleSoft,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Icon name={icon} size={26} color={colors.purple[400]} />
+          <Icon name={icon} size={34} color={colors.purple[400]} />
         </View>
         <View style={{ flex: 1 }}>
           <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
@@ -232,13 +230,11 @@ function RecordGridItem({ icon, title, subtitle, staggerIndex, onPress }: Record
           style={{
             width: 40,
             height: 40,
-            borderRadius: 20,
-            backgroundColor: colors.overlayPurpleSoft,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Icon name={icon} size={20} color={colors.purple[400]} />
+          <Icon name={icon} size={28} color={colors.purple[400]} />
         </View>
         <View style={{ marginTop: 16 }}>
           <Body style={{ fontSize: 15, fontWeight: '600' }}>{title}</Body>
@@ -273,13 +269,11 @@ function RecordKnotBanner({ staggerIndex, onPress }: { staggerIndex: number; onP
           style={{
             width: 40,
             height: 40,
-            borderRadius: 20,
-            backgroundColor: colors.overlayTealSoft,
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Icon name="link" size={20} color={colors.teal[400]} />
+          <Icon name="link" size={28} color={colors.teal[400]} />
         </View>
         <View style={{ flex: 1 }}>
           <Body className="font-medium">매듭의 흔적</Body>
