@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
-  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
+  type SharedValue,
   withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,8 +18,9 @@ import { useKnotStore } from '@/store/useKnotStore';
  * 하단 탭바 — 커스텀 (레퍼런스 학습 기반 리뉴얼).
  *
  * 기존: Expo Router `Tabs` 기본 탭바(평면 + 상단 보더 + 11px 라벨). 구식·정적.
- * 변경: 화면에서 떠 있는 라운드 캡슐(floating capsule). 아이콘 전용 — 활성 탭만
- *       보라 원형 하이라이트 + 살짝 커지는 pop. 누름·전환은 Reanimated spring.
+ * 변경: 화면에서 떠 있는 라운드 캡슐(floating capsule). 아이콘 전용 — 활성 표시는
+ *       탭 사이를 *미끄러져 이동*하는 단일 보라 알약(sliding pill)으로 통일.
+ *       아이콘 색은 알약 위치에 맞춰 회색↔보라 크로스페이드. 전부 Reanimated spring.
  *
  * 레퍼런스 차용(`docs/design/PATTERNS.md`):
  *  - Anz+   : floating + soft shadow, 활성 강조(원형 아이콘 배경)
@@ -50,6 +51,10 @@ const TAB_CONFIG: readonly TabDef[] = [
   { name: 'knot', a11yLabel: '매듭', icon: 'link' }, // 동적 — knotTabVisible 시에만
 ] as const;
 
+const CAPSULE_PADDING = 8; // 캡슐 좌우 안쪽 여백
+const PILL_W = 64; // 슬라이딩 알약 너비 (원형 44 → 가로로 넓힘)
+const PILL_H = 44;
+
 export function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const knotTabVisible = useKnotStore((s) => s.knotTabVisible);
@@ -58,36 +63,72 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
     if (t.name === 'knot' && !knotTabVisible) return false;
     return state.routes.some((r) => r.name === t.name);
   });
+  const count = items.length;
+
+  // items 중 현재 활성 탭의 인덱스. 숨김 하위 라우트(compass 등)에 있으면 -1.
+  const activeIndex = items.findIndex(
+    (t) => state.index === state.routes.findIndex((r) => r.name === t.name),
+  );
+
+  // 트랙(아이템들이 깔리는 영역) 실측 폭 → 아이템 폭 = 트랙폭 / 개수
+  const [trackW, setTrackW] = useState(0);
+  const itemW = trackW > 0 && count > 0 ? trackW / count : 0;
+
+  // 활성 인덱스를 spring으로 추종 — 알약이 탭 사이를 미끄러져 이동
+  const pos = useSharedValue(Math.max(activeIndex, 0));
+  useEffect(() => {
+    if (activeIndex >= 0) pos.value = withSpring(activeIndex, motion.spring.standard);
+  }, [activeIndex, pos]);
+
+  const pillStyle = useAnimatedStyle(() => {
+    const center = (pos.value + 0.5) * itemW; // 활성 탭 중심 x
+    return {
+      width: PILL_W,
+      transform: [{ translateX: center - PILL_W / 2 }],
+      // 폭 측정 전이거나 활성 탭이 없으면 숨김
+      opacity: itemW > 0 && activeIndex >= 0 ? 1 : 0,
+    };
+  });
 
   return (
     <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={styles.capsule}>
-        {items.map((t) => {
-          const routeIndex = state.routes.findIndex((r) => r.name === t.name);
-          const route = state.routes[routeIndex];
-          const focused = state.index === routeIndex;
+        <View
+          style={styles.track}
+          onLayout={(e) => setTrackW(e.nativeEvent.layout.width)}
+        >
+          {/* 미끄러지는 활성 알약 — 아이콘들 뒤에 깔림 */}
+          <Animated.View style={[styles.pill, pillStyle]} />
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!focused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+          {items.map((t, i) => {
+            const routeIndex = state.routes.findIndex((r) => r.name === t.name);
+            const route = state.routes[routeIndex];
+            const focused = state.index === routeIndex;
 
-          return (
-            <TabItem
-              key={route.key}
-              icon={t.icon}
-              a11yLabel={t.a11yLabel}
-              focused={focused}
-              onPress={onPress}
-            />
-          );
-        })}
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!focused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
+
+            return (
+              <TabItem
+                key={route.key}
+                icon={t.icon}
+                a11yLabel={t.a11yLabel}
+                index={i}
+                pos={pos}
+                focused={focused}
+                onPress={onPress}
+              />
+            );
+          })}
+        </View>
       </View>
     </View>
   );
@@ -96,6 +137,8 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
 interface TabItemProps {
   icon: IconName;
   a11yLabel: string;
+  index: number;
+  pos: SharedValue<number>;
   focused: boolean;
   onPress: () => void;
 }
@@ -103,24 +146,14 @@ interface TabItemProps {
 /**
  * 단일 탭 (아이콘 전용).
  *
- * progress(0→1) spring으로: ① 보라 원형 배경 페이드 ② 칩 살짝 커짐(0.9→1.0).
- * 비활성은 그레이 아이콘 + 투명 배경.
+ * 회색 아이콘 위에 보라 아이콘을 겹쳐두고, 알약 위치(pos)와의 거리로 보라 opacity를
+ * 크로스페이드 — 알약이 도착하는 흐름과 색 전환이 동기화된다.
  */
-function TabItem({ icon, a11yLabel, focused, onPress }: TabItemProps) {
-  const progress = useSharedValue(focused ? 1 : 0);
-
-  useEffect(() => {
-    progress.value = withSpring(focused ? 1 : 0, motion.spring.standard);
-  }, [focused, progress]);
-
-  const chipStyle = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(
-      progress.value,
-      [0, 1],
-      ['rgba(127,119,221,0)', colors.overlayPurpleSoft],
-    ),
-    transform: [{ scale: 0.9 + progress.value * 0.1 }],
-  }));
+function TabItem({ icon, a11yLabel, index, pos, focused, onPress }: TabItemProps) {
+  const activeStyle = useAnimatedStyle(() => {
+    const d = Math.abs(pos.value - index);
+    return { opacity: Math.max(0, 1 - d) }; // 중심에서 1, 한 칸 벗어나면 0
+  });
 
   return (
     <AnimatedPressable
@@ -132,14 +165,12 @@ function TabItem({ icon, a11yLabel, focused, onPress }: TabItemProps) {
       pressScale={0.9}
       style={styles.itemTouchable}
     >
-      <Animated.View style={[styles.chip, chipStyle]}>
-        <Icon
-          name={icon}
-          size={24}
-          color={focused ? colors.purple[400] : colors.gray[600]}
-          strokeWidth={focused ? 2.1 : 1.8}
-        />
-      </Animated.View>
+      <View style={styles.iconBox}>
+        <Icon name={icon} size={24} color={colors.gray[600]} strokeWidth={1.8} />
+        <Animated.View style={[StyleSheet.absoluteFillObject, styles.iconBox, activeStyle]}>
+          <Icon name={icon} size={24} color={colors.purple[400]} strokeWidth={2.1} />
+        </Animated.View>
+      </View>
     </AnimatedPressable>
   );
 }
@@ -151,11 +182,8 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   capsule: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
     height: 60,
-    paddingHorizontal: 8,
+    paddingHorizontal: CAPSULE_PADDING,
     borderRadius: 26,
     backgroundColor: colors.surface,
     borderWidth: 1,
@@ -167,13 +195,26 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 12,
   },
-  itemTouchable: {
-    borderRadius: 22,
+  track: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  chip: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  pill: {
+    position: 'absolute',
+    height: PILL_H,
+    top: (60 - PILL_H) / 2,
+    left: 0,
+    borderRadius: PILL_H / 2,
+    backgroundColor: colors.overlayPurpleSoft,
+  },
+  itemTouchable: {
+    flex: 1,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconBox: {
     alignItems: 'center',
     justifyContent: 'center',
   },
