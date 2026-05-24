@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Redirect } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, {
   Defs,
   LinearGradient as SvgLinearGradient,
@@ -7,223 +9,245 @@ import Svg, {
   Rect,
   Stop,
 } from 'react-native-svg';
-import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
-import { Body, Caption, Display, Heading } from '@/components/ui/Typography';
+import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 
 /**
- * UI 실험실 — __DEV__ 전용 트렌디 방향 시범 화면.
+ * UI 실험실 — __DEV__ 전용. 트렌디 방향 3종을 각각 "오늘 탭" 풀스크린 목업으로 시범.
  *
- * "단색이라 지루하다"는 피드백에 대해, 검색·학습한 2025~2026 트렌드 3종을
- * 한 화면에 모아 비교용으로 렌더. 실제 앱 화면엔 영향 없음.
- *  ① 영역별 액센트 컬러 — 이미 정의된 teal/blue/coral/amber 팔레트를 맥락별로
- *  ② 앰비언트 그라데이션 글로우 — SVG radial orb로 다크 위 깊이감
- *  ③ 글래스 / 반투명(Liquid Glass) — LinearGradient 배경 + BlurView
+ * 상단 선택기로 전환:
+ *  ① 컬러   — 카드마다 다른 액센트(보라/teal/blue/amber). 단색 탈피 + 시스템 유지.
+ *  ② 글로우 — 화면 전체에 SVG radial orb. 다크 위 깊이감, 차분함 유지.
+ *  ③ 글래스 — 화면 전체 컬러 그라데이션 + 반투명 패널(유리 흉내).
  *
- * production 빌드에서는 즉시 홈으로 redirect (앱 노출 금지). 패턴은 dev/cooling-preview.tsx 참조.
+ * 모두 react-native-svg만 사용(네이티브 리빌드 불필요). production은 즉시 redirect.
  */
 
-interface AccentDef {
-  label: string;
-  sub: string;
+type Variant = 'accent' | 'glow' | 'glass';
+
+const VARIANTS: { key: Variant; label: string }[] = [
+  { key: 'accent', label: '① 컬러' },
+  { key: 'glow', label: '② 글로우' },
+  { key: 'glass', label: '③ 글래스' },
+];
+
+interface CardSpec {
   icon: IconName;
+  title: string;
+  sub: string;
   accent: string;
-  soft: string; // 아이콘 칩 배경 (저알파)
-  rim: string; // 카드 테두리 (중알파)
+  rim: string; // accent 테두리 (저알파)
 }
 
-const ACCENTS: readonly AccentDef[] = [
-  { label: '오늘', sub: '홈·일기', icon: 'home', accent: colors.purple[400], soft: 'rgba(127,119,221,0.14)', rim: 'rgba(127,119,221,0.40)' },
-  { label: '기록', sub: '네가 걸어온 길', icon: 'book', accent: colors.teal[400], soft: 'rgba(29,158,117,0.14)', rim: 'rgba(29,158,117,0.40)' },
-  { label: '나', sub: '관계·방향', icon: 'smile', accent: colors.blue[400], soft: 'rgba(91,143,232,0.14)', rim: 'rgba(91,143,232,0.40)' },
-  { label: '매듭', sub: '사이클의 챕터', icon: 'link', accent: colors.amber[400], soft: 'rgba(186,117,23,0.16)', rim: 'rgba(186,117,23,0.42)' },
+const CARDS: readonly CardSpec[] = [
+  { icon: 'pen', title: '오늘 일기 쓰기', sub: '오늘의 마음을 한 줄 남겨봐', accent: colors.purple[400], rim: 'rgba(127,119,221,0.45)' },
+  { icon: 'leaf', title: '오늘의 질문', sub: '골라서 답해보는 한 가지', accent: colors.teal[400], rim: 'rgba(29,158,117,0.45)' },
+  { icon: 'thermometer', title: '마음 날씨', sub: '요즘 감정 흐름 들여다보기', accent: colors.blue[400], rim: 'rgba(91,143,232,0.45)' },
+  { icon: 'sparkles', title: '오늘의 한마디', sub: '너에게 건네는 한 문장', accent: colors.amber[400], rim: 'rgba(186,117,23,0.5)' },
 ];
 
 export default function UiLabScreen() {
   if (!__DEV__) {
     return <Redirect href="/(tabs)" />;
   }
+  return <UiLab />;
+}
+
+function UiLab() {
+  const [variant, setVariant] = useState<Variant>('accent');
+  const insets = useSafeAreaInsets();
+  const onGradient = variant === 'glass';
 
   return (
-    <ScreenWrapper entrance="slide">
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 40 }}
-      >
-        <Caption className="mb-2">개발 전용</Caption>
-        <Display className="mb-2">UI 실험실</Display>
-        <Body className="text-gray-400 mb-8">트렌디 방향 3종 시범 — 마음에 드는 걸 골라줘.</Body>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      {variant === 'glow' && <GlowBackground />}
+      {variant === 'glass' && <GlassBackground />}
 
-        {/* ① 영역별 액센트 컬러 */}
-        <Heading className="mb-1">① 영역별 액센트 컬러</Heading>
-        <Caption className="text-gray-500 mb-4">
-          이미 정의돼 안 쓰던 팔레트를 영역별로 — 단색 탈피 + 시스템 일관성.
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          paddingTop: insets.top + 72,
+          paddingHorizontal: 24,
+          paddingBottom: 40,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 홈 헤더 — D+N */}
+        <Caption style={onGradient ? { color: 'rgba(255,255,255,0.7)' } : undefined}>
+          5월 24일 일요일
         </Caption>
-        <View style={styles.grid}>
-          {ACCENTS.map((a) => (
-            <View key={a.label} style={styles.gridCell}>
-              <View style={[styles.accentCard, { borderColor: a.rim }]}>
-                <View style={[styles.accentChip, { backgroundColor: a.soft }]}>
-                  <Icon name={a.icon} size={28} color={a.accent} />
-                </View>
-                <Body style={{ fontSize: 18, fontWeight: '700', color: a.accent }}>{a.label}</Body>
-                <Caption className="text-gray-500 mt-1" style={{ fontSize: 13 }}>{a.sub}</Caption>
-              </View>
-            </View>
+        <Display style={{ fontSize: 56, marginTop: 4, color: colors.white }}>D+217</Display>
+        <Body
+          className="mt-2"
+          style={{ fontSize: 16, color: onGradient ? 'rgba(255,255,255,0.85)' : colors.gray[400] }}
+        >
+          천천히, 너의 속도로 걸어가고 있어.
+        </Body>
+
+        {/* 카드 묶음 */}
+        <View style={{ marginTop: 28, gap: 14 }}>
+          {CARDS.map((c, i) => (
+            <MockCard key={c.title} spec={c} variant={variant} hero={i === 0} />
           ))}
         </View>
-
-        {/* ② 앰비언트 그라데이션 글로우 */}
-        <Heading className="mt-8 mb-1">② 앰비언트 글로우</Heading>
-        <Caption className="text-gray-500 mb-4">
-          히어로/홈 뒤에 은은한 컬러 오브 — 다크 위 깊이감, 차분함 유지.
-        </Caption>
-        <View style={styles.glowCard}>
-          <Svg style={StyleSheet.absoluteFill}>
-            <Defs>
-              <RadialGradient id="orbA" cx="28%" cy="22%" r="60%">
-                <Stop offset="0" stopColor={colors.purple[400]} stopOpacity={0.55} />
-                <Stop offset="1" stopColor={colors.purple[400]} stopOpacity={0} />
-              </RadialGradient>
-              <RadialGradient id="orbB" cx="82%" cy="95%" r="60%">
-                <Stop offset="0" stopColor={colors.teal[400]} stopOpacity={0.45} />
-                <Stop offset="1" stopColor={colors.teal[400]} stopOpacity={0} />
-              </RadialGradient>
-            </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" fill="url(#orbA)" />
-            <Rect x="0" y="0" width="100%" height="100%" fill="url(#orbB)" />
-          </Svg>
-          <Caption className="text-gray-400" style={{ fontSize: 14 }}>함께한 날을 세는 중</Caption>
-          <Display style={{ fontSize: 56, marginTop: 6 }}>D+217</Display>
-          <Body className="text-gray-300 mt-2" style={{ fontSize: 16 }}>천천히, 너의 속도로 걸어가고 있어.</Body>
-        </View>
-
-        {/* ③ 글래스 / 반투명 (Liquid Glass) */}
-        <Heading className="mt-8 mb-1">③ 글래스 (Liquid Glass)</Heading>
-        <Caption className="text-gray-500 mb-4">
-          반투명 유리 위 컬러가 비침 — iOS 26 미감. (Android는 빌드에 따라 약하게 보일 수 있음)
-        </Caption>
-        <View style={styles.glassBackdrop}>
-          {/* 컬러 배경 (SVG LinearGradient) */}
-          <Svg style={StyleSheet.absoluteFill}>
-            <Defs>
-              <SvgLinearGradient id="glassBg" x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0" stopColor={colors.purple[600]} />
-                <Stop offset="0.5" stopColor={colors.blue[600]} />
-                <Stop offset="1" stopColor={colors.teal[600]} />
-              </SvgLinearGradient>
-            </Defs>
-            <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassBg)" />
-          </Svg>
-          {/* 반투명 패널 — 배경 컬러가 비쳐 보임 (네이티브 blur 없이 흉내) */}
-          <View style={styles.glassPanel}>
-            <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
-              <Defs>
-                <SvgLinearGradient id="glassSheen" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.18} />
-                  <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
-                </SvgLinearGradient>
-              </Defs>
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassSheen)" />
-            </Svg>
-            <View style={styles.glassRow}>
-              <View style={styles.glassIcon}>
-                <Icon name="sparkles" size={26} color={colors.white} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Body style={{ color: colors.white, fontWeight: '700', fontSize: 18 }}>오늘의 한마디</Body>
-                <Caption style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }} className="mt-1">
-                  반투명 패널 너머로 컬러가 비쳐.
-                </Caption>
-              </View>
-            </View>
-            <View style={styles.glassPill}>
-              <Body style={{ color: colors.white, fontSize: 15, fontWeight: '600' }}>열어보기</Body>
-            </View>
-          </View>
-        </View>
-
-        <Caption className="text-gray-600 mt-8 text-center">
-          이 화면은 개발 빌드에서만 보여 · 실제 앱엔 영향 없음
-        </Caption>
       </ScrollView>
-    </ScreenWrapper>
+
+      {/* 상단 변형 선택기 (고정) */}
+      <View style={[styles.switcherWrap, { top: insets.top + 10 }]}>
+        <View style={styles.switcher}>
+          {VARIANTS.map((v) => {
+            const active = v.key === variant;
+            return (
+              <Pressable
+                key={v.key}
+                onPress={() => setVariant(v.key)}
+                accessibilityRole="button"
+                style={[styles.switchPill, active && styles.switchPillActive]}
+              >
+                <Text style={[styles.switchText, active && styles.switchTextActive]}>{v.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+/** ② 화면 전체 앰비언트 글로우 — 보라·blue·teal orb 3개 */
+function GlowBackground() {
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <RadialGradient id="glow1" cx="18%" cy="10%" r="55%">
+          <Stop offset="0" stopColor={colors.purple[400]} stopOpacity={0.5} />
+          <Stop offset="1" stopColor={colors.purple[400]} stopOpacity={0} />
+        </RadialGradient>
+        <RadialGradient id="glow2" cx="95%" cy="38%" r="50%">
+          <Stop offset="0" stopColor={colors.blue[400]} stopOpacity={0.38} />
+          <Stop offset="1" stopColor={colors.blue[400]} stopOpacity={0} />
+        </RadialGradient>
+        <RadialGradient id="glow3" cx="28%" cy="92%" r="55%">
+          <Stop offset="0" stopColor={colors.teal[400]} stopOpacity={0.4} />
+          <Stop offset="1" stopColor={colors.teal[400]} stopOpacity={0} />
+        </RadialGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill="url(#glow1)" />
+      <Rect x="0" y="0" width="100%" height="100%" fill="url(#glow2)" />
+      <Rect x="0" y="0" width="100%" height="100%" fill="url(#glow3)" />
+    </Svg>
+  );
+}
+
+/** ③ 화면 전체 컬러 그라데이션 (유리 배경) */
+function GlassBackground() {
+  return (
+    <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Defs>
+        <SvgLinearGradient id="glassFull" x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0" stopColor={colors.purple[800]} />
+          <Stop offset="0.5" stopColor={colors.blue[800]} />
+          <Stop offset="1" stopColor={colors.teal[800]} />
+        </SvgLinearGradient>
+      </Defs>
+      <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassFull)" />
+    </Svg>
+  );
+}
+
+function MockCard({ spec, variant, hero }: { spec: CardSpec; variant: Variant; hero: boolean }) {
+  const iconSize = hero ? 34 : 28;
+
+  // 변형별 카드 스타일
+  const cardStyle =
+    variant === 'accent'
+      ? { backgroundColor: colors.surface, borderColor: spec.rim }
+      : variant === 'glow'
+        ? { backgroundColor: 'rgba(26,26,34,0.66)', borderColor: colors.border }
+        : { backgroundColor: 'rgba(255,255,255,0.10)', borderColor: 'rgba(255,255,255,0.22)' };
+
+  const iconColor = variant === 'glass' ? colors.white : spec.accent;
+  const titleColor = variant === 'accent' ? spec.accent : colors.white;
+  const subColor = variant === 'glass' ? 'rgba(255,255,255,0.75)' : colors.gray[400];
+
+  return (
+    <View
+      style={[
+        styles.card,
+        cardStyle,
+        hero && { minHeight: 116 },
+      ]}
+    >
+      {/* 글래스: 패널 위 흰 시언 */}
+      {variant === 'glass' && (
+        <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Defs>
+            <SvgLinearGradient id={`sheen-${spec.title}`} x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.14} />
+              <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+            </SvgLinearGradient>
+          </Defs>
+          <Rect x="0" y="0" width="100%" height="100%" fill={`url(#sheen-${spec.title})`} />
+        </Svg>
+      )}
+
+      <Icon name={spec.icon} size={iconSize} color={iconColor} />
+      <View style={{ flex: 1 }}>
+        <Body style={{ fontSize: hero ? 18 : 16, fontWeight: '700', color: titleColor }}>
+          {spec.title}
+        </Body>
+        <Caption style={{ marginTop: 3, fontSize: 13, color: subColor }}>{spec.sub}</Caption>
+      </View>
+      <Icon
+        name="chevron-right"
+        size={20}
+        color={variant === 'glass' ? 'rgba(255,255,255,0.6)' : colors.gray[600]}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -6,
-  },
-  gridCell: {
-    width: '50%',
-    paddingHorizontal: 6,
-    marginBottom: 12,
-  },
-  accentCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 18,
-    minHeight: 148,
-    justifyContent: 'space-between',
-  },
-  accentChip: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  glowCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 28,
-    minHeight: 200,
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  glassBackdrop: {
-    borderRadius: 30,
-    padding: 16,
-    minHeight: 190,
-    overflow: 'hidden',
-  },
-  glassPanel: {
-    flex: 1,
-    borderRadius: 22,
-    padding: 22,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.20)',
-    backgroundColor: 'rgba(18,18,26,0.42)',
-    justifyContent: 'center',
-  },
-  glassRow: {
+  card: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
-    marginBottom: 22,
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 18,
+    minHeight: 84,
+    overflow: 'hidden',
   },
-  glassIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  switcherWrap: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.20)',
   },
-  glassPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+  switcher: {
+    flexDirection: 'row',
+    padding: 4,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.24)',
+    backgroundColor: 'rgba(14,14,18,0.7)',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  switchPill: {
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 999,
+  },
+  switchPillActive: {
+    backgroundColor: colors.purple[400],
+  },
+  switchText: {
+    fontFamily: 'Pretendard',
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.gray[400],
+  },
+  switchTextActive: {
+    color: colors.white,
   },
 });
