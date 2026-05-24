@@ -1,8 +1,12 @@
 import { Redirect } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, {
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  RadialGradient,
+  Rect,
+  Stop,
+} from 'react-native-svg';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display, Heading } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
@@ -61,10 +65,10 @@ export default function UiLabScreen() {
             <View key={a.label} style={styles.gridCell}>
               <View style={[styles.accentCard, { borderColor: a.rim }]}>
                 <View style={[styles.accentChip, { backgroundColor: a.soft }]}>
-                  <Icon name={a.icon} size={22} color={a.accent} />
+                  <Icon name={a.icon} size={28} color={a.accent} />
                 </View>
-                <Body style={{ fontSize: 15, fontWeight: '700', color: a.accent }}>{a.label}</Body>
-                <Caption className="text-gray-500 mt-0.5">{a.sub}</Caption>
+                <Body style={{ fontSize: 18, fontWeight: '700', color: a.accent }}>{a.label}</Body>
+                <Caption className="text-gray-500 mt-1" style={{ fontSize: 13 }}>{a.sub}</Caption>
               </View>
             </View>
           ))}
@@ -90,9 +94,9 @@ export default function UiLabScreen() {
             <Rect x="0" y="0" width="100%" height="100%" fill="url(#orbA)" />
             <Rect x="0" y="0" width="100%" height="100%" fill="url(#orbB)" />
           </Svg>
-          <Caption className="text-gray-400">함께한 날을 세는 중</Caption>
-          <Display style={{ fontSize: 44, marginTop: 4 }}>D+217</Display>
-          <Body className="text-gray-300 mt-1">천천히, 너의 속도로 걸어가고 있어.</Body>
+          <Caption className="text-gray-400" style={{ fontSize: 14 }}>함께한 날을 세는 중</Caption>
+          <Display style={{ fontSize: 56, marginTop: 6 }}>D+217</Display>
+          <Body className="text-gray-300 mt-2" style={{ fontSize: 16 }}>천천히, 너의 속도로 걸어가고 있어.</Body>
         </View>
 
         {/* ③ 글래스 / 반투명 (Liquid Glass) */}
@@ -100,34 +104,45 @@ export default function UiLabScreen() {
         <Caption className="text-gray-500 mb-4">
           반투명 유리 위 컬러가 비침 — iOS 26 미감. (Android는 빌드에 따라 약하게 보일 수 있음)
         </Caption>
-        <LinearGradient
-          colors={[colors.purple[600], colors.blue[600], colors.teal[600]]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.glassBackdrop}
-        >
-          <BlurView
-            intensity={32}
-            tint="dark"
-            experimentalBlurMethod="dimezisBlurView"
-            style={styles.glassPanel}
-          >
+        <View style={styles.glassBackdrop}>
+          {/* 컬러 배경 (SVG LinearGradient) */}
+          <Svg style={StyleSheet.absoluteFill}>
+            <Defs>
+              <SvgLinearGradient id="glassBg" x1="0" y1="0" x2="1" y2="1">
+                <Stop offset="0" stopColor={colors.purple[600]} />
+                <Stop offset="0.5" stopColor={colors.blue[600]} />
+                <Stop offset="1" stopColor={colors.teal[600]} />
+              </SvgLinearGradient>
+            </Defs>
+            <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassBg)" />
+          </Svg>
+          {/* 반투명 패널 — 배경 컬러가 비쳐 보임 (네이티브 blur 없이 흉내) */}
+          <View style={styles.glassPanel}>
+            <Svg style={StyleSheet.absoluteFill} pointerEvents="none">
+              <Defs>
+                <SvgLinearGradient id="glassSheen" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.18} />
+                  <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+                </SvgLinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#glassSheen)" />
+            </Svg>
             <View style={styles.glassRow}>
               <View style={styles.glassIcon}>
-                <Icon name="sparkles" size={20} color={colors.white} />
+                <Icon name="sparkles" size={26} color={colors.white} />
               </View>
               <View style={{ flex: 1 }}>
-                <Body style={{ color: colors.white, fontWeight: '700' }}>오늘의 한마디</Body>
-                <Caption style={{ color: 'rgba(255,255,255,0.75)' }} className="mt-0.5">
-                  유리 너머로 컬러가 은은히 비쳐.
+                <Body style={{ color: colors.white, fontWeight: '700', fontSize: 18 }}>오늘의 한마디</Body>
+                <Caption style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }} className="mt-1">
+                  반투명 패널 너머로 컬러가 비쳐.
                 </Caption>
               </View>
             </View>
             <View style={styles.glassPill}>
-              <Body style={{ color: colors.white, fontSize: 13, fontWeight: '600' }}>열어보기</Body>
+              <Body style={{ color: colors.white, fontSize: 15, fontWeight: '600' }}>열어보기</Body>
             </View>
-          </BlurView>
-        </LinearGradient>
+          </View>
+        </View>
 
         <Caption className="text-gray-600 mt-8 text-center">
           이 화면은 개발 빌드에서만 보여 · 실제 앱엔 영향 없음
@@ -150,60 +165,65 @@ const styles = StyleSheet.create({
   },
   accentCard: {
     backgroundColor: colors.surface,
-    borderRadius: 20,
+    borderRadius: 22,
     borderWidth: 1,
-    padding: 16,
-    minHeight: 116,
+    padding: 18,
+    minHeight: 148,
     justifyContent: 'space-between',
   },
   accentChip: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
   glowCard: {
     backgroundColor: colors.surface,
-    borderRadius: 28,
+    borderRadius: 30,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 24,
-    minHeight: 150,
+    padding: 28,
+    minHeight: 200,
     justifyContent: 'center',
     overflow: 'hidden',
   },
   glassBackdrop: {
-    borderRadius: 28,
-    padding: 14,
+    borderRadius: 30,
+    padding: 16,
+    minHeight: 190,
+    overflow: 'hidden',
   },
   glassPanel: {
-    borderRadius: 20,
-    padding: 18,
+    flex: 1,
+    borderRadius: 22,
+    padding: 22,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.18)',
+    borderColor: 'rgba(255,255,255,0.20)',
+    backgroundColor: 'rgba(18,18,26,0.42)',
+    justifyContent: 'center',
   },
   glassRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    marginBottom: 16,
+    gap: 16,
+    marginBottom: 22,
   },
   glassIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
+    backgroundColor: 'rgba(255,255,255,0.20)',
   },
   glassPill: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 16,
-    paddingVertical: 9,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.22)',
+    backgroundColor: 'rgba(255,255,255,0.24)',
   },
 });
