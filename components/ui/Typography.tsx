@@ -1,4 +1,5 @@
 import { Text as RNText, TextProps, TextStyle } from 'react-native';
+import { colors } from '@/constants/colors';
 
 /**
  * 4단계 텍스트 위계 토큰.
@@ -57,6 +58,34 @@ export function Body({ className = '', children, style, ...rest }: Props) {
       {children}
     </RNText>
   );
+}
+
+/**
+ * `*강조*` 표기를 브랜드 컬러 인라인 스팬으로 렌더링한다.
+ *
+ * 질문 프롬프트("오늘 떠오른 상대의 *장점* 한 가지가 있다면?")처럼 한 단어를
+ * 도드라지게 하려고 별표로 감싼 문자열을 받는다. 마크다운 렌더러를 따로 두지 않고,
+ * `<Heading>` 등 Text 컴포넌트의 children으로 바로 넣을 수 있도록 노드 배열을 반환한다.
+ *
+ * 사용: <Heading>{renderEmphasis('상대의 *장점* 한 가지')}</Heading>
+ * 접근성 라벨 등 평문이 필요하면 stripEmphasis()로 별표만 제거한다.
+ */
+export function renderEmphasis(text: string): React.ReactNode[] {
+  return text.split(/(\*[^*]+\*)/g).map((part, i) => {
+    if (part.length > 2 && part.startsWith('*') && part.endsWith('*')) {
+      return (
+        <RNText key={i} style={{ color: colors.purple[400] }}>
+          {part.slice(1, -1)}
+        </RNText>
+      );
+    }
+    return part;
+  });
+}
+
+/** `*강조*` 표기에서 별표만 제거해 평문으로 만든다 (접근성 라벨 등). */
+export function stripEmphasis(text: string): string {
+  return text.replace(/\*([^*]+)\*/g, '$1');
 }
 
 interface CaptionProps extends Props {

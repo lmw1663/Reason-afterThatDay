@@ -205,7 +205,7 @@ export default function HomeScreen() {
             accessibilityLabel={`이별 후 ${daysElapsed}일 경과`}
           >
             <Text
-              className="text-purple-400 font-bold"
+              className="text-white font-bold"
               style={{ fontFamily: 'Pretendard', fontSize: 56, lineHeight: 60, letterSpacing: -1.5 }}
               numberOfLines={1}
               adjustsFontSizeToFit

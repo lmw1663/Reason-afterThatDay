@@ -3,7 +3,7 @@ import { BackHandler, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Body, Caption, Heading, renderEmphasis } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
@@ -119,7 +119,7 @@ export default function KnotPromptScreen() {
         <Heading className="mb-6">{copy.title}</Heading>
 
         <Card variant="subtle" accent="purple" className="mb-6">
-          <Body className="text-gray-100 leading-relaxed">{copy.body}</Body>
+          <Body className="text-gray-100 leading-relaxed">{renderEmphasis(copy.body)}</Body>
         </Card>
 
         <Card className="mb-6">

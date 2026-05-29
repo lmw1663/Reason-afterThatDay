@@ -4,7 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { Caption, Heading } from '@/components/ui/Typography';
+import { Caption, Heading, renderEmphasis, stripEmphasis } from '@/components/ui/Typography';
 import { useJournalQueue } from '@/hooks/useJournalQueue';
 import { useQuestionStore } from '@/store/useQuestionStore';
 import type {
@@ -168,7 +168,7 @@ export default function JournalQuestionScreen() {
         <BackHeader />
         <Caption className="mb-2">이별 일기</Caption>
 
-        <Heading className="mb-6 leading-snug">{header}</Heading>
+        <Heading className="mb-6 leading-snug">{renderEmphasis(header)}</Heading>
 
         <TextInput
           value={text}
@@ -177,7 +177,7 @@ export default function JournalQuestionScreen() {
           placeholderTextColor={colors.gray[600]}
           multiline
           autoFocus
-          accessibilityLabel={header}
+          accessibilityLabel={stripEmphasis(header)}
           className="text-white text-base leading-relaxed"
           style={{ minHeight: 160 }}
         />
