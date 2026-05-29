@@ -39,7 +39,7 @@ export function InsightCard({ title, body, tag, accent = 'purple' }: Props) {
             style={{
               fontFamily: 'Pretendard',
               color: a.tag,
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: '600',
               letterSpacing: 0.2,
             }}
@@ -60,7 +60,7 @@ export function InsightCard({ title, body, tag, accent = 'purple' }: Props) {
       )}
       <Text
         className="text-gray-300"
-        style={{ fontFamily: 'Pretendard', fontSize: 15, lineHeight: 26 }}
+        style={{ fontFamily: 'Pretendard', fontSize: 16.5, lineHeight: 28 }}
       >
         {body}
       </Text>

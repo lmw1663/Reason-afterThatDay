@@ -190,12 +190,6 @@ describe('sanitizePayload — EventKind별 allowlist', () => {
     });
   });
 
-  it('contact_urge_reported: 모든 키 제거 (allowlist 빈 배열)', () => {
-    expect(
-      sanitizePayload('contact_urge_reported', { count: 5, persona: 'P10' }),
-    ).toEqual({});
-  });
-
   it('experiment_assigned: experiment_id·variant만 통과', () => {
     expect(
       sanitizePayload('experiment_assigned', {

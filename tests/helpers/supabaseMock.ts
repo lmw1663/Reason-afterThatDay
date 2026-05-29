@@ -3,7 +3,7 @@ import { vi, type Mock } from 'vitest';
 /**
  * Supabase query chain mock 표준 헬퍼.
  *
- * 4개 API 테스트 파일(contactUrges/journalRawMode/processingSuspension/telemetry)에
+ * API 테스트 파일(journalRawMode/processingSuspension/telemetry 등)에
  * 동일한 mock chain 빌더가 중복 정의되어 있던 것을 단일화. 호출 측은 vi.mock으로
  * '@/api/supabase'를 stub한 뒤 본 모듈의 chain 빌더를 적용하면 된다.
  *

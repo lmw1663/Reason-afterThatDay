@@ -69,7 +69,7 @@ export function WeatherScene({ score, width, height = 180, disableLightning = fa
         height,
         borderRadius: 24,
         overflow: 'hidden',
-        backgroundColor: '#0E0E12',
+        backgroundColor: '#15141B',
       }}
     >
       <SkyBackground width={width} height={height} t={t} uid={uid} />

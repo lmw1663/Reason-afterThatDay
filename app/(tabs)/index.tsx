@@ -250,45 +250,45 @@ export default function HomeScreen() {
               onPress={() => router.push('/journal/today')}
               accessibilityRole="button"
               accessibilityLabel="오늘 일기 이어쓰기 또는 수정하기"
-              className="active:opacity-80 rounded-2xl p-4"
-              style={{ backgroundColor: colors.surface }}
+              className="active:opacity-80 rounded-2xl p-5"
+              style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
             >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1">
-                  {/* 완료 배지 */}
-                  <View
-                    className="flex-row items-center self-start gap-1 rounded-full px-2 py-0.5 mb-2"
-                    style={{ backgroundColor: colors.overlayPurpleSoft }}
+              {/* 상단: 완료 라벨(체크) + 이어쓰기 — 군더더기 문장 대신 체크로 상태 압축 */}
+              <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-row items-center gap-1.5">
+                  <Icon name="check" size={13} color={colors.purple[400]} strokeWidth={2.5} />
+                  <Caption style={{ color: colors.purple[400], fontSize: 12, fontWeight: '600' }}>
+                    오늘 감정 온도
+                  </Caption>
+                </View>
+                <View className="flex-row items-center gap-1">
+                  <Caption className="text-gray-400">이어쓰기</Caption>
+                  <Icon name="chevron-right" size={16} color={colors.gray[400]} />
+                </View>
+              </View>
+
+              {/* 하단: 큰 수치(Apple Pay 잔액 패턴) + 방향 pill 칩 */}
+              <View className="flex-row items-end justify-between">
+                <View className="flex-row items-baseline gap-1.5">
+                  <Text
+                    className="text-white font-bold"
+                    style={{ fontFamily: 'Pretendard', fontSize: 40, lineHeight: 44, letterSpacing: -1 }}
                   >
-                    <Icon name="check" size={11} color={colors.purple[400]} strokeWidth={2.5} />
-                    <Caption style={{ color: colors.purple[400], fontSize: 11, fontWeight: '600' }}>
-                      오늘 일기 작성 완료
-                    </Caption>
-                  </View>
-
-                  {/* 감정 온도 — Apple Pay 카드 잔액 패턴: 핵심 수치를 크게, 단위는 baseline 보조 */}
-                  <View className="flex-row items-baseline gap-1.5">
-                    <Text
-                      className="text-white font-bold"
-                      style={{ fontFamily: 'Pretendard', fontSize: 36, lineHeight: 40, letterSpacing: -0.8 }}
-                    >
-                      {todayEntry.moodScore}
-                    </Text>
-                    <Caption className="text-gray-500">/ 10</Caption>
-                  </View>
-
-                  <Caption className="text-gray-400 mt-1">
+                    {todayEntry.moodScore}
+                  </Text>
+                  <Caption className="text-gray-500" style={{ fontSize: 15 }}>/ 10</Caption>
+                </View>
+                <View
+                  className="rounded-full px-3 py-1 mb-1"
+                  style={{ backgroundColor: colors.overlayPurpleSoft }}
+                >
+                  <Caption style={{ color: colors.purple[400], fontSize: 12, fontWeight: '600' }}>
                     {
                       todayEntry.direction === 'catch' ? '잡고 싶어'
                       : todayEntry.direction === 'let_go' ? '보내고 싶어'
                       : '아직 모르겠어'
                     }
                   </Caption>
-                </View>
-
-                <View className="flex-row items-center gap-1">
-                  <Caption className="text-gray-500">이어쓰기</Caption>
-                  <Icon name="chevron-right" size={18} color={colors.gray[400]} />
                 </View>
               </View>
             </Pressable>
@@ -312,11 +312,16 @@ export default function HomeScreen() {
                 style={{ backgroundColor: colors.purple[600] }}
               >
                 <View className="flex-row items-center gap-3">
-                  <Icon
-                    name={miniIsPrimary ? 'thermometer' : 'pen'}
-                    size={24}
-                    color={colors.white}
-                  />
+                  <View
+                    className="rounded-full p-2.5"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}
+                  >
+                    <Icon
+                      name={miniIsPrimary ? 'thermometer' : 'pen'}
+                      size={20}
+                      color={colors.white}
+                    />
+                  </View>
                   <View className="flex-1">
                     <Text
                       className="text-white text-lg font-bold"
@@ -328,7 +333,7 @@ export default function HomeScreen() {
                       className="text-purple-50 text-sm opacity-80 mt-0.5"
                       style={{ fontFamily: 'Pretendard' }}
                     >
-                      {miniIsPrimary ? '힘든 날엔 이만큼이면 돼' : '4단계로 차근차근 풀어볼게'}
+                      {miniIsPrimary ? '힘든 날엔 이만큼이면 돼' : '감정·방향까지 4단계'}
                     </Text>
                   </View>
                   <Icon name="chevron-right" size={20} color={colors.white} />

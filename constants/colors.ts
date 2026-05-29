@@ -18,9 +18,12 @@ export const colors = {
   gray:   { 50: '#F1EFE8', 400: '#A8A6A0', 600: '#5F5E5A', 800: '#444441' },
   white: '#FFFFFF',
   black: '#000000',
-  bg: '#0E0E12',
-  surface: '#1A1A22',
-  border: '#2C2C38',
+  // 순흑(#000)·near-black(#0E0E12)은 OLED에서 halation·답답함을 유발 → Material/2025
+  // 가이드대로 살짝 들어올린 "편안한 다크"로 변경. 브랜드 보라(#7F77DD) 틴트를 미세하게
+  // 유지(hue~255°)해 카드(surface)와 통일감. bg↔surface 명도차는 elevation 위해 보존.
+  bg: '#15141B',
+  surface: '#201E2A',
+  border: '#34313F',
   overlayPurpleSoft:   'rgba(127,119,221,0.1)',
   overlayPurpleWeak:   'rgba(127,119,221,0.08)',
   overlayGrayMuted:    'rgba(68,68,65,0.3)',
@@ -28,5 +31,5 @@ export const colors = {
   overlayTealSoft:     'rgba(29,158,117,0.1)',
   overlayCoralSoft:    'rgba(216,90,48,0.1)',
   overlayAmberSoft:    'rgba(186,117,23,0.1)',
-  overlayBackdropDark: 'rgba(14,14,18,0.85)',
+  overlayBackdropDark: 'rgba(21,20,27,0.85)',
 } as const;

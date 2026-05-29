@@ -13,9 +13,9 @@ const colors = {
   gray:   { 50: '#F1EFE8', 400: '#A8A6A0', 600: '#5F5E5A', 800: '#444441' },
   white: '#FFFFFF',
   black: '#000000',
-  bg: '#0E0E12',
-  surface: '#1A1A22',
-  border: '#2C2C38',
+  bg: '#15141B',
+  surface: '#201E2A',
+  border: '#34313F',
   overlayPurpleSoft: 'rgba(127,119,221,0.1)',
   overlayPurpleWeak: 'rgba(127,119,221,0.08)',
   overlayGrayMuted: 'rgba(68,68,65,0.3)',
@@ -23,7 +23,7 @@ const colors = {
   overlayTealSoft: 'rgba(29,158,117,0.1)',
   overlayCoralSoft: 'rgba(216,90,48,0.1)',
   overlayAmberSoft: 'rgba(186,117,23,0.1)',
-  overlayBackdropDark: 'rgba(14,14,18,0.85)',
+  overlayBackdropDark: 'rgba(21,20,27,0.85)',
 };
 
 module.exports = { colors };

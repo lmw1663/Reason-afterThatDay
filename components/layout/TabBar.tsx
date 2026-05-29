@@ -48,7 +48,6 @@ const TAB_CONFIG: readonly TabDef[] = [
   { name: 'records', label: '기록', icon: 'book' },
   { name: 'me', label: '나', icon: 'smile' },
   { name: 'knot', label: '매듭', icon: 'link' }, // 동적 — knotTabVisible 시에만
-  { name: 'ui-lab', label: '실험실', icon: 'sparkles', dev: true }, // __DEV__ 전용 데모
 ] as const;
 
 const CAPSULE_H = 72; // 아이콘 + 하단 라벨을 담도록 세로 확장
