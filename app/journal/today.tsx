@@ -5,8 +5,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { MoodSlider } from '@/components/ui/MoodSlider';
-import { AffectionSlider } from '@/components/ui/AffectionSlider';
-import { DirectionPicker } from '@/components/ui/DirectionPicker';
+import { MoodMatrixPicker } from '@/components/ui/MoodMatrixPicker';
 import { Pill } from '@/components/ui/Pill';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Card } from '@/components/ui/Card';
@@ -30,6 +29,7 @@ export default function TodayJournalEditScreen() {
   const [loading, setLoading] = useState(!todayEntry);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
 
   const [moodScore, setMoodScore] = useState(todayEntry?.moodScore ?? 5);
   const [emotionLabels, setEmotionLabels] = useState<string[]>(todayEntry?.moodLabel ?? []);
@@ -128,6 +128,7 @@ export default function TodayJournalEditScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        scrollEnabled={scrollEnabled}
       >
         <BackHeader />
         <Heading className="mb-1">오늘 일기 이어쓰기</Heading>
@@ -183,18 +184,19 @@ export default function TodayJournalEditScreen() {
           ))}
         </View>
 
-        {/* 방향 */}
+        {/* 마음 — 방향 × 상대를 향한 마음 */}
         <View className="mb-8">
-          <Body className="text-gray-300 mb-3">방향</Body>
-          <DirectionPicker value={direction} onChange={setDirection} />
+          <Body className="text-gray-300 mb-3">지금 마음은 어느 쪽이야?</Body>
+          <MoodMatrixPicker
+            initial={{ direction, affectionLevel }}
+            onChange={(r) => {
+              if (!r) return;
+              setDirection(r.direction);
+              setAffectionLevel(r.affectionLevel);
+            }}
+            onActiveChange={(a) => setScrollEnabled(!a)}
+          />
         </View>
-
-        {direction !== 'undecided' && (
-          <View className="mb-8">
-            <Body className="text-gray-300 mb-4">지금 상대를 어떻게 느껴?</Body>
-            <AffectionSlider value={affectionLevel} onChange={setAffectionLevel} />
-          </View>
-        )}
 
         {/* 자유 메모 */}
         <View className="mb-8">

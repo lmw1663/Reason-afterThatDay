@@ -32,7 +32,6 @@ export interface MoodMatrixResult {
 
 const PAD_RADIUS = 24;
 const THUMB = 34;
-const SIDE_LABEL_W = 52;
 const UNDECIDED_BAND = 0.24; // 중앙 ±12% 폭 = 모르겠어
 const A11Y_STEP = 0.1; // VoiceOver 액션당 이동량
 
@@ -53,10 +52,17 @@ function deriveResult(x: number, y: number): MoodMatrixResult {
   };
 }
 
+// 편집 화면 초기값 — { direction, affectionLevel } → 패드 좌표 역산
+function resultToPos(r: MoodMatrixResult): { x: number; y: number } {
+  const x = r.direction === 'let_go' ? 0.22 : r.direction === 'catch' ? 0.78 : 0.5;
+  return { x, y: clamp01(1 - r.affectionLevel / 10) };
+}
+
+// 사분면(=방향×애정)별 시그니처 색 — 4색 구분
 function accentFor({ direction, affectionLevel }: MoodMatrixResult): string {
   if (direction === 'undecided') return colors.gray[400];
-  if (direction === 'catch') return affectionLevel <= 3 ? colors.coral[400] : colors.purple[400];
-  return colors.teal[400];
+  if (direction === 'catch') return affectionLevel < 5 ? colors.coral[400] : colors.purple[400];
+  return affectionLevel < 5 ? colors.amber[400] : colors.teal[400];
 }
 
 function readingLines(r: MoodMatrixResult): [string, string] {
@@ -69,6 +75,10 @@ function readingLines(r: MoodMatrixResult): [string, string] {
 
 interface Props {
   onChange: (result: MoodMatrixResult | null) => void;
+  /** 활성(드래그 중) 상태 변화 — 부모 ScrollView 스크롤 잠금용 */
+  onActiveChange?: (active: boolean) => void;
+  /** 편집 화면용 초기값 — 주면 해당 위치에서 시작하고 선택된 상태로 표시 */
+  initial?: MoodMatrixResult | null;
   prevDirection?: Direction | null;
   changePrefix?: string;
   changeSuffix?: string;
@@ -76,18 +86,22 @@ interface Props {
 
 export function MoodMatrixPicker({
   onChange,
+  onActiveChange,
+  initial = null,
   prevDirection = null,
   changePrefix,
   changeSuffix,
 }: Props) {
   const [padSize, setPadSize] = useState(0);
-  const [pos, setPos] = useState({ x: 0.5, y: 0.5 });
-  const [touched, setTouched] = useState(false);
+  const [pos, setPos] = useState(() => (initial ? resultToPos(initial) : { x: 0.5, y: 0.5 }));
+  const [touched, setTouched] = useState(!!initial);
   const [active, setActive] = useState(false);
 
-  const touchedRef = useRef(false);
+  const touchedRef = useRef(!!initial);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const onActiveChangeRef = useRef(onActiveChange);
+  onActiveChangeRef.current = onActiveChange;
 
   const result = deriveResult(pos.x, pos.y);
   const accent = accentFor(result);
@@ -105,6 +119,10 @@ export function MoodMatrixPicker({
       }
       onChangeRef.current(deriveResult(nx, ny));
     };
+    const end = () => {
+      setActive(false);
+      onActiveChangeRef.current?.(false);
+    };
     return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
@@ -112,11 +130,12 @@ export function MoodMatrixPicker({
       onShouldBlockNativeResponder: () => true,
       onPanResponderGrant: (e) => {
         setActive(true);
+        onActiveChangeRef.current?.(true);
         handle(e);
       },
       onPanResponderMove: handle,
-      onPanResponderRelease: () => setActive(false),
-      onPanResponderTerminate: () => setActive(false),
+      onPanResponderRelease: end,
+      onPanResponderTerminate: end,
     });
   }, [padSize]);
 
@@ -136,20 +155,21 @@ export function MoodMatrixPicker({
     onChangeRef.current(deriveResult(nx, ny));
   }
 
+  const thumbScale = active ? 1.18 : 1;
   const thumbLeft = pos.x * padSize - THUMB / 2;
   const thumbTop = pos.y * padSize - THUMB / 2;
-  const thumbScale = active ? 1.18 : 1;
+  const glowSize = THUMB * thumbScale + 16;
 
   return (
     <View>
-      {touched && (
-        <ChangeIndicator
-          prev={prevDirection}
-          current={result.direction}
-          prefix={changePrefix}
-          suffix={changeSuffix}
-        />
-      )}
+      {/* 어제와의 변화 — 어떤 선택이든(또는 미선택이든) 항상 상단 노출 */}
+      <ChangeIndicator
+        prev={prevDirection}
+        current={result.direction}
+        prefix={changePrefix}
+        suffix={changeSuffix}
+        alwaysShow
+      />
 
       {/* 현재 읽기 — 끌면 실시간으로 바뀜 */}
       <View style={{ alignItems: 'center', marginBottom: 14, minHeight: 52 }}>
@@ -167,159 +187,141 @@ export function MoodMatrixPicker({
         )}
       </View>
 
-      {/* 상단 축 라벨 */}
-      <Text style={axisLabelStyle()}>좋아</Text>
-
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={[sideLabelStyle(), { textAlign: 'right', paddingRight: 8 }]}>보내고{'\n'}싶어</Text>
-
-        <View
-          onLayout={onPadLayout}
-          {...panResponder.panHandlers}
-          accessibilityRole="adjustable"
-          accessibilityLabel={
-            touched ? `${line1}, ${line2}` : '마음 위치 선택 패드. 끌어서 위치를 정해봐'
+      <View
+        onLayout={onPadLayout}
+        {...panResponder.panHandlers}
+        accessibilityRole="adjustable"
+        accessibilityLabel={
+          touched ? `${line1}, ${line2}` : '마음 위치 선택 패드. 끌어서 위치를 정해봐'
+        }
+        accessibilityActions={[
+          { name: 'decrement', label: '보내고 싶어 쪽으로' },
+          { name: 'increment', label: '잡고 싶어 쪽으로' },
+          { name: 'up', label: '좋은 마음 쪽으로' },
+          { name: 'down', label: '미운 마음 쪽으로' },
+        ]}
+        onAccessibilityAction={(e) => {
+          switch (e.nativeEvent.actionName) {
+            case 'decrement':
+              nudge(-A11Y_STEP, 0);
+              break;
+            case 'increment':
+              nudge(A11Y_STEP, 0);
+              break;
+            case 'up':
+              nudge(0, -A11Y_STEP);
+              break;
+            case 'down':
+              nudge(0, A11Y_STEP);
+              break;
           }
-          accessibilityActions={[
-            { name: 'decrement', label: '보내고 싶어 쪽으로' },
-            { name: 'increment', label: '잡고 싶어 쪽으로' },
-            { name: 'up', label: '좋은 마음 쪽으로' },
-            { name: 'down', label: '미운 마음 쪽으로' },
-          ]}
-          onAccessibilityAction={(e) => {
-            switch (e.nativeEvent.actionName) {
-              case 'decrement':
-                nudge(-A11Y_STEP, 0);
-                break;
-              case 'increment':
-                nudge(A11Y_STEP, 0);
-                break;
-              case 'up':
-                nudge(0, -A11Y_STEP);
-                break;
-              case 'down':
-                nudge(0, A11Y_STEP);
-                break;
-            }
-          }}
+        }}
+        style={{
+          aspectRatio: 1,
+          borderRadius: PAD_RADIUS,
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: colors.surface,
+          overflow: 'hidden',
+        }}
+      >
+        {/* 사분면 틴트 — 4색 구분 */}
+        <Quadrant top left color={colors.overlayTealSoft} />
+        <Quadrant top right color={colors.overlayPurpleSoft} />
+        <Quadrant bottom left color={colors.overlayAmberSoft} />
+        <Quadrant bottom right color={colors.overlayCoralSoft} />
+
+        {/* 중앙 모르겠어 밴드 */}
+        <View
+          pointerEvents="none"
           style={{
-            width: padSize > 0 ? padSize : undefined,
-            aspectRatio: 1,
-            flex: padSize > 0 ? undefined : 1,
-            borderRadius: PAD_RADIUS,
-            borderWidth: 1,
-            borderColor: colors.border,
-            backgroundColor: colors.surface,
-            overflow: 'hidden',
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${(0.5 - UNDECIDED_BAND / 2) * 100}%`,
+            width: `${UNDECIDED_BAND * 100}%`,
+            backgroundColor: colors.overlayGrayMuted,
+          }}
+        />
+
+        {/* 십자 가이드 */}
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, backgroundColor: colors.border }}
+        />
+        <View
+          pointerEvents="none"
+          style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, backgroundColor: colors.border }}
+        />
+
+        {/* 사분면 라벨 */}
+        <QuadrantLabel position="tl" lines={['좋은데', '보내고 싶어']} />
+        <QuadrantLabel position="tr" lines={['잡고 싶고', '좋아']} />
+        <QuadrantLabel position="bl" lines={['밉고', '보내고 싶어']} />
+        <QuadrantLabel position="br" lines={['미운데', '잡고 싶어']} />
+
+        {/* 중앙 '모르겠어' 라벨 */}
+        <Text
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: 8,
+            left: 0,
+            right: 0,
+            textAlign: 'center',
+            fontSize: 11,
+            color: colors.gray[400],
           }}
         >
-          {/* 사분면 틴트 */}
-          <Quadrant top left color={colors.overlayTealSoft} />
-          <Quadrant top right color={colors.overlayPurpleSoft} />
-          <Quadrant bottom left color={colors.overlayTealSoft} />
-          <Quadrant bottom right color={colors.overlayCoralSoft} />
+          모르겠어
+        </Text>
 
-          {/* 중앙 모르겠어 밴드 */}
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: `${(0.5 - UNDECIDED_BAND / 2) * 100}%`,
-              width: `${UNDECIDED_BAND * 100}%`,
-              backgroundColor: colors.overlayGrayMuted,
-            }}
-          />
-
-          {/* 십자 가이드 */}
-          <View
-            pointerEvents="none"
-            style={{ position: 'absolute', left: 0, right: 0, top: '50%', height: 1, backgroundColor: colors.border }}
-          />
-          <View
-            pointerEvents="none"
-            style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, backgroundColor: colors.border }}
-          />
-
-          {/* 중앙 '모르겠어' 힌트 */}
-          {!touched && (
-            <Text
-              pointerEvents="none"
-              style={{
-                position: 'absolute',
-                bottom: 10,
-                alignSelf: 'center',
-                left: 0,
-                right: 0,
-                textAlign: 'center',
-                fontSize: 11,
-                color: colors.gray[600],
-              }}
-            >
-              가운데 = 모르겠어
-            </Text>
-          )}
-
-          {/* thumb */}
-          {padSize > 0 && (
-            <>
-              {touched && (
-                <View
-                  pointerEvents="none"
-                  style={{
-                    position: 'absolute',
-                    left: pos.x * padSize - (THUMB * thumbScale + 16) / 2,
-                    top: pos.y * padSize - (THUMB * thumbScale + 16) / 2,
-                    width: THUMB * thumbScale + 16,
-                    height: THUMB * thumbScale + 16,
-                    borderRadius: (THUMB * thumbScale + 16) / 2,
-                    backgroundColor: accent,
-                    opacity: 0.18,
-                  }}
-                />
-              )}
+        {/* thumb */}
+        {padSize > 0 && (
+          <>
+            {touched && (
               <View
                 pointerEvents="none"
                 style={{
                   position: 'absolute',
-                  left: thumbLeft,
-                  top: thumbTop,
-                  width: THUMB,
-                  height: THUMB,
-                  borderRadius: THUMB / 2,
-                  transform: [{ scale: thumbScale }],
-                  backgroundColor: colors.white,
-                  borderWidth: 3,
-                  borderColor: accent,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: '#000',
-                  shadowOpacity: 0.35,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 3 },
-                  elevation: 6,
-                  opacity: touched ? 1 : 0.55,
+                  left: pos.x * padSize - glowSize / 2,
+                  top: pos.y * padSize - glowSize / 2,
+                  width: glowSize,
+                  height: glowSize,
+                  borderRadius: glowSize / 2,
+                  backgroundColor: accent,
+                  opacity: 0.18,
                 }}
-              >
-                <View
-                  style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: accent,
-                  }}
-                />
-              </View>
-            </>
-          )}
-        </View>
-
-        <Text style={[sideLabelStyle(), { textAlign: 'left', paddingLeft: 8 }]}>잡고{'\n'}싶어</Text>
+              />
+            )}
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: thumbLeft,
+                top: thumbTop,
+                width: THUMB,
+                height: THUMB,
+                borderRadius: THUMB / 2,
+                transform: [{ scale: thumbScale }],
+                backgroundColor: colors.white,
+                borderWidth: 3,
+                borderColor: accent,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOpacity: 0.35,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 3 },
+                elevation: 6,
+                opacity: touched ? 1 : 0.55,
+              }}
+            >
+              <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: accent }} />
+            </View>
+          </>
+        )}
       </View>
-
-      {/* 하단 축 라벨 */}
-      <Text style={axisLabelStyle()}>미워</Text>
     </View>
   );
 }
@@ -354,20 +356,29 @@ function Quadrant({
   );
 }
 
-function axisLabelStyle() {
-  return {
-    textAlign: 'center' as const,
-    fontSize: 13,
-    color: colors.gray[400],
-    marginVertical: 6,
-  };
-}
-
-function sideLabelStyle() {
-  return {
-    width: SIDE_LABEL_W,
-    fontSize: 13,
-    lineHeight: 17,
-    color: colors.gray[400],
-  };
+function QuadrantLabel({
+  position,
+  lines,
+}: {
+  position: 'tl' | 'tr' | 'bl' | 'br';
+  lines: [string, string];
+}) {
+  const isRight = position === 'tr' || position === 'br';
+  const isBottom = position === 'bl' || position === 'br';
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: 'absolute',
+        top: isBottom ? undefined : 28,
+        bottom: isBottom ? 14 : undefined,
+        left: isRight ? undefined : 14,
+        right: isRight ? 14 : undefined,
+        alignItems: isRight ? 'flex-end' : 'flex-start',
+      }}
+    >
+      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[400] }}>{lines[0]}</Text>
+      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[400] }}>{lines[1]}</Text>
+    </View>
+  );
 }

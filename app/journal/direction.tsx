@@ -23,6 +23,7 @@ export default function JournalDirectionScreen() {
   const lastDirection = entries[0]?.direction ?? null;
 
   const [pick, setPick] = useState<MoodMatrixResult | null>(null);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
 
   function handleNext() {
     if (!pick) return;
@@ -42,6 +43,7 @@ export default function JournalDirectionScreen() {
         className="flex-1 px-6 pt-14"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 16 }}
+        scrollEnabled={scrollEnabled}
       >
         <BackHeader />
         <Caption className="mb-2">이별 일기 · 2 / 4</Caption>
@@ -52,6 +54,7 @@ export default function JournalDirectionScreen() {
 
         <MoodMatrixPicker
           onChange={setPick}
+          onActiveChange={(a) => setScrollEnabled(!a)}
           prevDirection={lastDirection}
         />
       </ScrollView>
