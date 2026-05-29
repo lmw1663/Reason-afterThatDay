@@ -5,8 +5,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import {
   MoodMatrixPicker,
-  MOOD_MATRIX_MAP,
-  type MoodMatrixValue,
+  type MoodMatrixResult,
 } from '@/components/ui/MoodMatrixPicker';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
@@ -23,14 +22,17 @@ export default function JournalDirectionScreen() {
   const { entries } = useJournalStore();
   const lastDirection = entries[0]?.direction ?? null;
 
-  const [pick, setPick] = useState<MoodMatrixValue | null>(null);
+  const [pick, setPick] = useState<MoodMatrixResult | null>(null);
 
   function handleNext() {
     if (!pick) return;
-    const { direction, affectionLevel } = MOOD_MATRIX_MAP[pick];
     router.push({
       pathname: '/journal/question',
-      params: { ...params, direction, affectionLevel: String(affectionLevel) },
+      params: {
+        ...params,
+        direction: pick.direction,
+        affectionLevel: String(pick.affectionLevel),
+      },
     });
   }
 
@@ -49,7 +51,6 @@ export default function JournalDirectionScreen() {
         </Body>
 
         <MoodMatrixPicker
-          value={pick}
           onChange={setPick}
           prevDirection={lastDirection}
         />
