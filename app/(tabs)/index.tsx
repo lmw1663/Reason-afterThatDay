@@ -10,11 +10,9 @@ import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { IntrusiveMemoryFab } from '@/components/IntrusiveMemoryFab';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { PersonaPriorityCard } from '@/components/PersonaPriorityCard';
-import { ContactUrgeChip } from '@/components/ContactUrgeChip';
 import { AssessmentRecommendationCard } from '@/components/AssessmentRecommendationCard';
 import { usePersonaStore } from '@/store/usePersonaStore';
-import { isMiniJournalFirst, isContactUrgeChipBlocked } from '@/constants/personaBranches';
-import { resolvePersona, appliesGuard } from '@/utils/personaResolver';
+import { isMiniJournalFirst } from '@/constants/personaBranches';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
@@ -38,9 +36,6 @@ export default function HomeScreen() {
   const personaSecondary = usePersonaStore(s => s.secondary);
   // C-2-G-3a: 회피형 페르소나면 일기 미니 모드를 primary 시각으로 강조 (매트릭스 §2 C3).
   const miniIsPrimary = isMiniJournalFirst(personaPrimary);
-  // G-6: 연락 충동 보고 칩 — P14·P16·P17·P19·P20은 임상 안전상 미노출.
-  const resolvedPersona = resolvePersona(personaPrimary, personaSecondary);
-  const contactUrgeChipBlocked = appliesGuard(resolvedPersona, isContactUrgeChipBlocked);
   const [dailyQuote, setDailyQuote] = useState<string>('');
   const [showIntrusiveModal, setShowIntrusiveModal] = useState(false);
   const [safetyAlert, setSafetyAlert] = useState<'consecutive_low' | 'late_night' | null>(null);
@@ -355,15 +350,10 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* G-6: 보조 카드 묶음.
-            - AssessmentRecommendationCard: 조건부(D+7/14/30) — 권유 없으면 자체 null 반환
-            - ContactUrgeChip: 페르소나 게이팅 — P14·P16·P17·P19·P20은 임상 안전상 미노출
-              (자세한 근거: docs/policy/persona-contact-urge-policy.md)
-            두 카드의 px·간격을 통일해 *하나의 묶음*으로 시각 인식되게. 매일 같은 자리에
-            같은 종류가 있어야 학습이 됨 (Predictable layout). */}
+        {/* 보조 카드 — AssessmentRecommendationCard: 조건부(D+7/14/30), 권유 없으면 자체 null 반환.
+            매일 같은 자리에 같은 종류가 있어야 학습이 됨 (Predictable layout). */}
         <View className="px-6 mb-6 gap-2">
           <AssessmentRecommendationCard />
-          {!contactUrgeChipBlocked && <ContactUrgeChip />}
         </View>
 
       </ScrollView>
