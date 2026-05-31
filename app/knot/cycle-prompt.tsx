@@ -121,7 +121,7 @@ export default function KnotCyclePromptScreen() {
     <ScreenWrapper>
       <Stack.Screen options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">D+{daysElapsed}</Caption>
+        <Caption className="mb-2 text-white">D+{daysElapsed}</Caption>
         <Heading className="mb-6">다시 일기를 쓰러 왔구나</Heading>
 
         <Card variant="subtle" accent="purple" className="mb-6">

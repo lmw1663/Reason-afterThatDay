@@ -115,7 +115,7 @@ export default function KnotPromptScreen() {
     <ScreenWrapper>
       <Stack.Screen options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">D+{daysElapsed}</Caption>
+        <Caption className="mb-2 text-white">D+{daysElapsed}</Caption>
         <Heading className="mb-6">{copy.title}</Heading>
 
         <Card variant="subtle" accent="purple" className="mb-6">
