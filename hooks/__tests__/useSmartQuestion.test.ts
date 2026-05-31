@@ -7,6 +7,8 @@ import {
   isInCooldown,
   selectDirectionChange,
   selectDirectionSteady,
+  seededUnitInterval,
+  DIRECTION_REMINDER_CHANCE,
   scoreCandidate,
   selectByGeneralScore,
   selectAnswerChangedFollowUp,
@@ -83,17 +85,51 @@ describe('selectDirectionChange', () => {
 // ------------------------------------------------------------
 describe('selectDirectionSteady', () => {
   it('3개 미만 → null', () => {
-    expect(selectDirectionSteady(POOL, ['catch', 'catch'], 'catch')).toBeNull();
+    expect(selectDirectionSteady(['catch', 'catch'], 'catch', 0)).toBeNull();
   });
-  it('3개 모두 같은 방향 → j_direction_steady', () => {
-    const q = selectDirectionSteady(POOL, ['catch', 'catch', 'catch'], 'catch');
+  it('3개 모두 같은 방향 + roll<확률 → 상기 질문 발화', () => {
+    const q = selectDirectionSteady(['catch', 'catch', 'catch'], 'catch', 0);
     expect(q?.id).toBe('j_direction_steady');
   });
   it('하나라도 다르면 null', () => {
-    expect(selectDirectionSteady(POOL, ['catch', 'let_go', 'catch'], 'catch')).toBeNull();
+    expect(selectDirectionSteady(['catch', 'let_go', 'catch'], 'catch', 0)).toBeNull();
   });
   it('현재 방향과 다른 3연속도 null (현재 vs 누적이 일치해야 함)', () => {
-    expect(selectDirectionSteady(POOL, ['catch', 'catch', 'catch'], 'let_go')).toBeNull();
+    expect(selectDirectionSteady(['catch', 'catch', 'catch'], 'let_go', 0)).toBeNull();
+  });
+
+  // "가끔" — roll 이 확률 이상이면 후보여도 안 뜸 ('무조건' 아님)
+  it('roll >= 확률 → 후보지만 미발화 (null)', () => {
+    expect(selectDirectionSteady(['catch', 'catch', 'catch'], 'catch', DIRECTION_REMINDER_CHANCE)).toBeNull();
+    expect(selectDirectionSteady(['catch', 'catch', 'catch'], 'catch', 0.99)).toBeNull();
+  });
+
+  // 문구에 저번 답(방향 라벨)을 *명시* + "생각이 좀 바뀌었어?" 재확인
+  it('문구에 저번 방향 라벨을 박아 상기 + 변화 질문 포함', () => {
+    expect(selectDirectionSteady(['let_go', 'let_go', 'let_go'], 'let_go', 0)?.text)
+      .toBe("저번에 '보내고 싶어'라고 했어. 오늘도 그 마음이야, 아니면 생각이 좀 바뀌었어?");
+    expect(selectDirectionSteady(['catch', 'catch', 'catch'], 'catch', 0)?.text)
+      .toContain("'잡고 싶어'");
+    expect(selectDirectionSteady(['undecided', 'undecided', 'undecided'], 'undecided', 0)?.text)
+      .toContain("'아직 모르겠어'");
+  });
+});
+
+// ------------------------------------------------------------
+// seededUnitInterval — 결정론적 [0,1) 시드
+// ------------------------------------------------------------
+describe('seededUnitInterval', () => {
+  it('같은 시드 → 같은 값 (결정론)', () => {
+    expect(seededUnitInterval('2026-05-31:catch')).toBe(seededUnitInterval('2026-05-31:catch'));
+  });
+  it('다른 시드 → (대개) 다른 값, 항상 [0,1)', () => {
+    const a = seededUnitInterval('2026-05-31:catch');
+    const b = seededUnitInterval('2026-06-01:catch');
+    expect(a).not.toBe(b);
+    for (const v of [a, b]) {
+      expect(v).toBeGreaterThanOrEqual(0);
+      expect(v).toBeLessThan(1);
+    }
   });
 });
 

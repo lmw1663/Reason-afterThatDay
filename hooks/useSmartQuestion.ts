@@ -10,7 +10,7 @@
 //   2. selectAnswerChangedFollowUp — 부모 응답이 *바뀌면* 자식 질문 (Phase D)
 //   3. selectScheduledFollowUp     — 부모 응답 후 N시간 경과 (Phase D)
 //   4. selectScheduledRevisit      — 같은 질문을 D+N 에 *다시 묻기* (Phase E)
-//   5. selectDirectionSteady       — 3일 연속 같은 방향
+//   5. selectDirectionSteady       — 3일 연속 같은 방향 → *가끔* 저번 답 상기·재확인
 //   6. selectByGeneralScore        — 컨텍스트 매칭 + 페르소나 부스터/차단 + 쿨다운
 //
 // 후속(2·3) 발화 상한: 하루 1개. 이미 오늘 후속 자식 질문에 답한 사용자에게는
@@ -50,13 +50,28 @@ const DIRECTION_CHANGE_FALLBACK: Question = {
   weight: 10,
 };
 
-const DIRECTION_STEADY_FALLBACK: Question = {
-  id: 'j_direction_steady',
-  text: '이 마음이 꽤 단단해 보여. 어디서 온 걸까?',
-  context: ['journal'],
-  isActive: true,
-  weight: 8,
+// 방향 라벨 — 사용자 노출 문구. 상기 질문에 "저번에 고른 답"을 그대로 박아 명시.
+const DIRECTION_LABELS: Record<Direction, string> = {
+  catch: '잡고 싶어',
+  let_go: '보내고 싶어',
+  undecided: '아직 모르겠어',
 };
+
+// 같은 답이 이어질 때 "저번엔 이렇게 답했는데 오늘은 생각이 바뀌었어?" 상기 질문의
+// *발화 확률*. 1.0이면 매번('무조건'), 0이면 안 뜸. 0.5 → 후보가 된 날 중 절반쯤.
+// reminderRoll 을 결정론적 *일일* 시드로 주입하므로 같은 날엔 렌더마다 안 바뀌고,
+// 날이 바뀌면 다시 추첨 → 한 번 떴다고 끝이 아니라 이후에도 *다시 뜰 가능성*을 열어둠.
+export const DIRECTION_REMINDER_CHANCE = 0.5;
+
+// FNV-1a 32bit → [0,1). 순수·결정론적 (테스트 가능, 런타임 Math.random 비의존).
+export function seededUnitInterval(seed: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return ((h >>> 0) % 100000) / 100000;
+}
 
 export const COOLDOWN_MS = 72 * 60 * 60 * 1000; // 72시간
 const HOUR_MS = 60 * 60 * 1000;
@@ -271,15 +286,32 @@ export function selectScheduledRevisit(
   return candidates[0].question;
 }
 
-// 5) 3일 연속 동일 방향
+// 5) 같은 방향이 이어질 때 — *가끔* 저번 답을 상기시키며 "생각이 바뀌었어?" 재확인.
+//
+// 발화 조건:
+//   · 3연속 동일 방향(누적 == 현재)이면 *후보* 자격
+//   · reminderRoll < DIRECTION_REMINDER_CHANCE 일 때만 실제 발화
+//     → '무조건'이 아니라 가능성으로 열어둠 (CLAUDE.md "단정 금지" 톤). roll 은
+//       결정론적 일일 시드라 같은 날엔 안정적, 날이 바뀌면 다시 뜰 수 있음.
+//
+// 문구는 저번에 고른 방향 라벨을 직접 박아 *명시적* 상기. 방향 변화에 대한
+// 비난/판단 없이 "바뀌었다면 그래도 괜찮다"는 가능성 제시 톤 유지.
 export function selectDirectionSteady(
-  pool: Question[],
   recentDirections: Direction[],
   currentDirection: Direction,
+  reminderRoll: number = 0,
 ): Question | null {
   if (recentDirections.length < 3) return null;
   if (!recentDirections.slice(0, 3).every((d) => d === currentDirection)) return null;
-  return pickFromPool(pool, 'j_direction_steady', DIRECTION_STEADY_FALLBACK);
+  if (reminderRoll >= DIRECTION_REMINDER_CHANCE) return null;
+  const label = DIRECTION_LABELS[currentDirection];
+  return {
+    id: 'j_direction_steady',
+    text: `저번에 '${label}'라고 했어. 오늘도 그 마음이야, 아니면 생각이 좀 바뀌었어?`,
+    context: ['journal'],
+    isActive: true,
+    weight: 8,
+  };
 }
 
 export function scoreCandidate(
@@ -357,6 +389,8 @@ export interface SelectSmartQuestionArgs {
   prevDirection: Direction | null;
   recentDirections: Direction[];
   persona: PersonaCode | null;
+  // 같은 답 상기 질문 추첨값 [0,1). 결정론적 일일 시드 권장. 생략 시 0(=항상 후보).
+  reminderRoll?: number;
   now?: number;
 }
 
@@ -364,7 +398,7 @@ export function selectSmartQuestion(args: SelectSmartQuestionArgs): SmartQuestio
   const {
     pool, followups, answered, context,
     currentDirection, prevDirection, recentDirections,
-    persona, now = Date.now(),
+    persona, reminderRoll = 0, now = Date.now(),
   } = args;
 
   const followUpAlreadyToday = countTodayFollowUpAnswers(followups, answered, now) >= 1;
@@ -387,7 +421,7 @@ export function selectSmartQuestion(args: SelectSmartQuestionArgs): SmartQuestio
   }
 
   // 5
-  const directionSteady = selectDirectionSteady(pool, recentDirections, currentDirection);
+  const directionSteady = selectDirectionSteady(recentDirections, currentDirection, reminderRoll);
   if (directionSteady) return { question: directionSteady, source: 'direction_steady' };
 
   // 6
@@ -408,6 +442,12 @@ export function useSmartQuestion(
   const { entries } = useJournalStore();
   const personaPrimary = usePersonaStore((s) => s.primary);
 
+  // 상기 질문 추첨 — KST 날짜 + 방향 시드. 같은 날엔 안정적(렌더마다 동일),
+  // 날이 바뀌면 다시 추첨돼 "또 뜰 수 있는" 가능성을 유지.
+  const now = Date.now();
+  const kstDay = new Date(now + KST_OFFSET_MS).toISOString().slice(0, 10);
+  const reminderRoll = seededUnitInterval(`${kstDay}:${currentDirection}`);
+
   return selectSmartQuestion({
     pool,
     followups,
@@ -417,5 +457,7 @@ export function useSmartQuestion(
     prevDirection: entries[1]?.direction ?? null,
     recentDirections: entries.slice(0, 3).map((e) => e.direction),
     persona: personaPrimary,
+    reminderRoll,
+    now,
   });
 }
