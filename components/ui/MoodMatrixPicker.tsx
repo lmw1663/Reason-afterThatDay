@@ -58,19 +58,44 @@ function resultToPos(r: MoodMatrixResult): { x: number; y: number } {
   return { x, y: clamp01(1 - r.affectionLevel / 10) };
 }
 
-// 사분면(=방향×애정)별 시그니처 색 — 4색 구분
-function accentFor({ direction, affectionLevel }: MoodMatrixResult): string {
-  if (direction === 'undecided') return colors.gray[400];
-  if (direction === 'catch') return affectionLevel < 5 ? colors.coral[400] : colors.purple[400];
-  return affectionLevel < 5 ? colors.amber[400] : colors.teal[400];
+// 사분면 = 방향(가로) × 애정(세로). 라벨·읽기 문구·색의 단일 출처(SSOT).
+type QuadKey = 'tl' | 'tr' | 'bl' | 'br' | 'undecided';
+
+const QUAD_PHRASE: Record<QuadKey, [string, string]> = {
+  tl: ['좋은데', '보내고 싶어'],
+  tr: ['잡고 싶고', '좋아'],
+  bl: ['밉고', '보내고 싶어'],
+  br: ['미운데', '잡고 싶어'],
+  undecided: ['아직 잘 모르겠어', '어느 쪽인지 모르겠어'],
+};
+
+// 시그니처 색 RGB (rgba 조합용) — teal / purple / amber / coral
+const QUAD_RGB: Record<Exclude<QuadKey, 'undecided'>, string> = {
+  tl: '29,158,117', // teal
+  tr: '127,119,221', // purple
+  bl: '186,117,23', // amber
+  br: '216,90,48', // coral
+};
+
+function quadrantOf({ direction, affectionLevel }: MoodMatrixResult): QuadKey {
+  if (direction === 'undecided') return 'undecided';
+  const love = affectionLevel >= 5;
+  if (direction === 'catch') return love ? 'tr' : 'br';
+  return love ? 'tl' : 'bl';
+}
+
+function accentFor(r: MoodMatrixResult): string {
+  const q = quadrantOf(r);
+  return q === 'undecided' ? colors.gray[400] : `rgb(${QUAD_RGB[q]})`;
 }
 
 function readingLines(r: MoodMatrixResult): [string, string] {
-  if (r.direction === 'undecided') return ['아직 잘 모르겠어', '어느 쪽인지 모르겠어'];
-  const dir = r.direction === 'catch' ? '잡고 싶어' : '보내고 싶어';
-  const aff =
-    r.affectionLevel >= 7 ? '여전히 좋아' : r.affectionLevel <= 3 ? '밉기도 해' : '마음이 반반이야';
-  return [dir, aff];
+  return QUAD_PHRASE[quadrantOf(r)];
+}
+
+// 사분면 채움색. 선택된 사분면은 진하게, 나머지는 은은하게 — 평소에도 4색이 또렷이 구분되도록.
+function quadFill(key: Exclude<QuadKey, 'undecided'>, active: QuadKey | null): string {
+  return `rgba(${QUAD_RGB[key]},${active === key ? 0.46 : 0.22})`;
 }
 
 interface Props {
@@ -106,6 +131,8 @@ export function MoodMatrixPicker({
   const result = deriveResult(pos.x, pos.y);
   const accent = accentFor(result);
   const [line1, line2] = readingLines(result);
+  // 선택된(=thumb가 올라간) 사분면만 강조. 미터치/모르겠어면 강조 없음.
+  const activeQuad = touched ? quadrantOf(result) : null;
 
   const panResponder = useMemo(() => {
     const handle = (e: GestureResponderEvent) => {
@@ -178,7 +205,9 @@ export function MoodMatrixPicker({
             <Text style={{ fontSize: 22, fontWeight: '700', color: accent, letterSpacing: -0.3 }}>
               {line1}
             </Text>
-            <Text style={{ fontSize: 14, color: colors.gray[400], marginTop: 3 }}>{line2}</Text>
+            <Text style={{ fontSize: 15, fontWeight: '600', color: colors.gray[50], marginTop: 3 }}>
+              {line2}
+            </Text>
           </>
         ) : (
           <Text style={{ fontSize: 15, color: colors.gray[400], marginTop: 12 }}>
@@ -225,11 +254,11 @@ export function MoodMatrixPicker({
           overflow: 'hidden',
         }}
       >
-        {/* 사분면 틴트 — 4색 구분 */}
-        <Quadrant top left color={colors.overlayTealSoft} />
-        <Quadrant top right color={colors.overlayPurpleSoft} />
-        <Quadrant bottom left color={colors.overlayAmberSoft} />
-        <Quadrant bottom right color={colors.overlayCoralSoft} />
+        {/* 사분면 틴트 — 4색 구분, 선택 사분면 진하게 */}
+        <Quadrant top left color={quadFill('tl', activeQuad)} />
+        <Quadrant top right color={quadFill('tr', activeQuad)} />
+        <Quadrant bottom left color={quadFill('bl', activeQuad)} />
+        <Quadrant bottom right color={quadFill('br', activeQuad)} />
 
         {/* 중앙 모르겠어 밴드 */}
         <View
@@ -255,10 +284,10 @@ export function MoodMatrixPicker({
         />
 
         {/* 사분면 라벨 */}
-        <QuadrantLabel position="tl" lines={['좋은데', '보내고 싶어']} />
-        <QuadrantLabel position="tr" lines={['잡고 싶고', '좋아']} />
-        <QuadrantLabel position="bl" lines={['밉고', '보내고 싶어']} />
-        <QuadrantLabel position="br" lines={['미운데', '잡고 싶어']} />
+        <QuadrantLabel position="tl" active={activeQuad === 'tl'} />
+        <QuadrantLabel position="tr" active={activeQuad === 'tr'} />
+        <QuadrantLabel position="bl" active={activeQuad === 'bl'} />
+        <QuadrantLabel position="br" active={activeQuad === 'br'} />
 
         {/* 중앙 '모르겠어' 라벨 */}
         <Text
@@ -270,7 +299,8 @@ export function MoodMatrixPicker({
             right: 0,
             textAlign: 'center',
             fontSize: 11,
-            color: colors.gray[400],
+            fontWeight: '600',
+            color: activeQuad === null && touched ? colors.white : 'rgba(255,255,255,0.55)',
           }}
         >
           모르겠어
@@ -358,13 +388,20 @@ function Quadrant({
 
 function QuadrantLabel({
   position,
-  lines,
+  active,
 }: {
-  position: 'tl' | 'tr' | 'bl' | 'br';
-  lines: [string, string];
+  position: Exclude<QuadKey, 'undecided'>;
+  active: boolean;
 }) {
   const isRight = position === 'tr' || position === 'br';
   const isBottom = position === 'bl' || position === 'br';
+  const [a, b] = QUAD_PHRASE[position];
+  const color = active ? colors.white : 'rgba(255,255,255,0.85)';
+  const labelStyle = {
+    fontSize: 13,
+    fontWeight: (active ? '700' : '600') as '700' | '600',
+    color,
+  };
   return (
     <View
       pointerEvents="none"
@@ -377,8 +414,8 @@ function QuadrantLabel({
         alignItems: isRight ? 'flex-end' : 'flex-start',
       }}
     >
-      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[400] }}>{lines[0]}</Text>
-      <Text style={{ fontSize: 13, fontWeight: '600', color: colors.gray[400] }}>{lines[1]}</Text>
+      <Text style={labelStyle}>{a}</Text>
+      <Text style={labelStyle}>{b}</Text>
     </View>
   );
 }
