@@ -42,6 +42,7 @@ import {
   Pause,
   PauseCircle,
   PenLine,
+  Phone,
   Pin,
   Plus,
   Puzzle,
@@ -106,6 +107,9 @@ const iconMap = {
   hourglass: Hourglass,
   'bell-off': BellOff,
   bell: Bell,
+
+  // 위기 자원 — 전화 걸기 (bell은 알림 의미라 통화 액션에 오용 금지)
+  phone: Phone,
   undo: Undo2,
   save: Save,
 

@@ -93,6 +93,7 @@ export function EmotionalCheckModal({ type, visible, onClose }: EmotionalCheckMo
     <Modal
       visible={visible}
       onClose={onClose}
+      variant="crisis"
       title={config.title}
       description={config.description}
       primaryLabel={config.primaryLabel}
@@ -223,6 +224,7 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
     <Modal
       visible={visible}
       onClose={onClose}
+      variant="crisis"
       title={undefined}
       description={undefined}
       dismissable={dismissable}
@@ -321,7 +323,7 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
               className="active:opacity-70 mb-4"
             >
               <Card variant="warning" className="p-4 flex-row items-center justify-center gap-2">
-                <Icon name="bell" size={18} color={colors.coral[400]} />
+                <Icon name="phone" size={18} color={colors.coral[400]} />
                 <Body className="font-bold" style={{ color: colors.coral[400] }}>
                   응급 {externalEmergency} 바로 전화
                 </Body>
@@ -340,7 +342,7 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
                     accessibilityLabel={`${h.name} 전화 걸기 ${h.number}`}
                     className="active:opacity-70 flex-row items-center gap-2"
                   >
-                    <Icon name="bell" size={16} color={colors.purple[400]} />
+                    <Icon name="phone" size={16} color={colors.purple[400]} />
                     <Body className="text-purple-400 font-bold">{h.number}</Body>
                   </Pressable>
                 )}
@@ -364,7 +366,7 @@ function CrisisScreenFlow({ visible, onClose }: { visible: boolean; onClose: () 
                         accessibilityLabel={`${h.name} 전화 걸기 ${h.number}`}
                         className="active:opacity-70 flex-row items-center gap-2"
                       >
-                        <Icon name="bell" size={16} color={colors.purple[400]} />
+                        <Icon name="phone" size={16} color={colors.purple[400]} />
                         <Body className="text-purple-400 font-bold">{h.number}</Body>
                       </Pressable>
                     )}

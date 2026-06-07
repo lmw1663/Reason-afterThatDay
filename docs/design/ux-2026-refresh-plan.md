@@ -73,8 +73,8 @@
 - [ ] 0-3 spacing/radius/elevation 토큰 표준화
 
 ### Tier 1 — UX 정확성 🟠 (신뢰·안전)
-- [ ] 1-1 일기 흐름 ProgressDots/번호 정합화 (나침반 수준 단일 체계)
-- [ ] 1-2 위기 모달 전용 시각 variant (coral 헤더 아이콘·솔리드·햅틱, 본문 반말 유지)
+- [x] 1-1 일기 흐름 ProgressDots/번호 정합화 (나침반 수준 단일 체계)
+- [x] 1-2 위기 모달 전용 시각 variant (coral 헤더 아이콘·솔리드·햅틱, 본문 반말 유지) — Modal `variant="crisis"` + expo-haptics Warning + 전화 아이콘 bell→phone 정정
 
 ### Tier 2 — 레퍼런스식 고급감 🟢
 - [ ] 2-1 D+N 영웅 숫자 강화 (Anz+)
