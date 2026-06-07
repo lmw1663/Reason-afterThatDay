@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { Card } from '@/components/ui/Card';
@@ -29,6 +29,8 @@ export default function KnotArchiveScreen() {
   const pool = useQuestionStore((s) => s.pool);
   const [rows, setRows] = useState<KnotArchiveRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Tier 2-4: Apple Pay Wallet 카드 스택 — 한 번에 한 사이클만 펼침. 기본 = 최신.
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   // Phase J — 사이클 타임라인 화면 *상단*에 노출할 회복 서사 시계열.
   // 사이클 경계와 무관하게 reason 카테고리 답변 흐름을 한눈에 — "여러 매듭에 걸쳐
   // 마음이 어떻게 흘러왔는지" 시각화. 변화 없으면 (1건 또는 같은 값) 미렌더.
@@ -40,7 +42,10 @@ export default function KnotArchiveScreen() {
       return;
     }
     fetchKnotArchives(userId)
-      .then(setRows)
+      .then((r) => {
+        setRows(r);
+        setExpandedId(r[0]?.id ?? null); // 최신 사이클 기본 펼침
+      })
       .catch((e: Error) => setError(e.message));
   }, [userId]);
 
@@ -98,10 +103,19 @@ export default function KnotArchiveScreen() {
           </Card>
         )}
 
+        {/* Tier 2-4: 카드 스택 적층 (Apple Pay Wallet) — 사이클이 차곡차곡 쌓인 누적 은유.
+            펼친 카드는 L2 서피스로 들어올리고, 접힌 카드는 헤더 띠만 보이며 살짝 겹침.
+            "끝이 아닌 챕터" 규칙과 1:1 — 이전 사이클도 사라지지 않고 더미 아래 보존. */}
         {rows !== null && rows.length > 0 && (
-          <View className="gap-3">
-            {rows.map((row) => (
-              <ArchiveCard key={row.id} row={row} />
+          <View>
+            {rows.map((row, idx) => (
+              <ArchiveCard
+                key={row.id}
+                row={row}
+                expanded={expandedId === row.id}
+                stacked={idx > 0}
+                onToggle={() => setExpandedId((cur) => (cur === row.id ? null : row.id))}
+              />
             ))}
           </View>
         )}
@@ -110,7 +124,18 @@ export default function KnotArchiveScreen() {
   );
 }
 
-function ArchiveCard({ row }: { row: KnotArchiveRow }) {
+function ArchiveCard({
+  row,
+  expanded,
+  stacked,
+  onToggle,
+}: {
+  row: KnotArchiveRow;
+  expanded: boolean;
+  /** 첫 카드가 아니면 위 카드 하단에 살짝 겹침 — Wallet처럼 아래(과거) 카드가 위 카드 끝단을 가리는 적층 */
+  stacked: boolean;
+  onToggle: () => void;
+}) {
   const journalCount = (row.summary.journal_count as number) ?? 0;
   const moodAvg = row.summary.mood_avg as number | null;
   const coolingDays = (row.summary.cooling_days as number) ?? null;
@@ -120,26 +145,51 @@ function ArchiveCard({ row }: { row: KnotArchiveRow }) {
     day: 'numeric',
   });
 
+  // Pressable은 단일 a11y 노드라 자식 텍스트가 label에 병합되지 않음 —
+  // 펼침 시 상세(일기 수/유예/온도)를 label에 직접 합성해야 스크린리더가 읽는다.
+  const headerLabel = `사이클 ${row.cycleIndex}, ${archivedDate}, ${row.knotLabel}`;
+  const detailLabel =
+    `${headerLabel}, 일기 ${journalCount}개, ` +
+    (coolingDays != null ? `${coolingDays}일 유예` : '유예 정보 없음') +
+    (moodAvg != null ? `, 평균 감정 온도 ${moodAvg.toFixed(1)}도` : '');
+
   return (
-    <Card className="p-4">
-      <View className="flex-row items-center gap-2 mb-2">
-        <Icon name="link" size={18} color={colors.purple[400]} />
+    <Pressable
+      onPress={onToggle}
+      accessibilityRole="button"
+      accessibilityState={{ expanded }}
+      accessibilityLabel={expanded ? detailLabel : headerLabel}
+      accessibilityHint={expanded ? '접으려면 두 번 탭해' : '자세히 보려면 두 번 탭해'}
+      className="active:opacity-80 rounded-2xl p-4"
+      style={{
+        // 펼침 = 더미에서 들어올린 L2 (zIndex로 아래 카드 위에 떠 보임), 접힘 = 더미 속 L1
+        backgroundColor: expanded ? colors.surfaceElevated : colors.surface,
+        borderWidth: 1,
+        borderColor: expanded ? colors.borderPurpleSoft : colors.border,
+        marginTop: stacked ? -6 : 0,
+        zIndex: expanded ? 1 : 0,
+      }}
+    >
+      <View className="flex-row items-center gap-2">
+        <Icon name="link" size={18} color={expanded ? colors.purple[400] : colors.gray[500]} />
         <Body className="font-medium">사이클 {row.cycleIndex}</Body>
+        <Caption className="text-gray-500">· {archivedDate}</Caption>
         <View className="ml-auto">
           <Caption className="text-gray-500">{row.knotLabel}</Caption>
         </View>
       </View>
-      <Caption className="text-gray-500 mb-3">{archivedDate}</Caption>
-      <View className="gap-1.5">
-        <Caption className="text-gray-400">
-          일기 {journalCount}개 · {coolingDays != null ? `${coolingDays}일 유예` : '유예 정보 없음'}
-        </Caption>
-        {moodAvg != null && (
+      {expanded && (
+        <View className="gap-1.5 mt-3">
           <Caption className="text-gray-400">
-            평균 감정 온도 {moodAvg.toFixed(1)}°
+            일기 {journalCount}개 · {coolingDays != null ? `${coolingDays}일 유예` : '유예 정보 없음'}
           </Caption>
-        )}
-      </View>
-    </Card>
+          {moodAvg != null && (
+            <Caption className="text-gray-400">
+              평균 감정 온도 {moodAvg.toFixed(1)}°
+            </Caption>
+          )}
+        </View>
+      )}
+    </Pressable>
   );
 }
