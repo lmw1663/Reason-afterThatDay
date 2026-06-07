@@ -12,6 +12,7 @@
 import { View } from 'react-native';
 import { Body, Caption } from './Typography';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { defaultPreviousAnswerFormatter } from './answerFormatters';
 
 export interface FirstVsLatestEntry {
@@ -45,7 +46,7 @@ export function FirstVsLatestCard({
       className={className}
       style={{
         padding: 16,
-        borderRadius: 16,
+        borderRadius: radius.md,
         backgroundColor: colors.surface,
         borderWidth: 1,
         borderColor: colors.purple[600],

@@ -7,6 +7,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { PHYSICAL_SIGNALS, PHYSICAL_SIGNAL_LABELS } from '@/constants/emotionLabels';
 import { useJournalDraft, type JournalDraft } from '@/hooks/useJournalDraft';
 import { usePersonaStore } from '@/store/usePersonaStore';
@@ -110,7 +111,7 @@ export default function JournalPhysicalScreen() {
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  borderRadius: 16,
+                  borderRadius: radius.md,
                   borderWidth: 1,
                   borderColor: checked ? colors.purple[400] : colors.border,
                   backgroundColor: checked ? colors.overlayPurpleSoft : colors.surface,

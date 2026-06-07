@@ -8,6 +8,7 @@ import Animated, {
 import { AnimatedPressable } from './AnimatedPressable';
 import { Icon } from './Icon';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { motion } from '@/constants/motion';
 import { EMOTION_ICON, type EmotionLabel } from '@/constants/emotionLabels';
 
@@ -88,7 +89,7 @@ function EmotionCell({ label, selected, onPress }: CellProps) {
         pressScale={0.96}
         style={{
           height: 76,
-          borderRadius: 16,
+          borderRadius: radius.md,
           borderWidth: 1,
           borderColor: selected ? accent : colors.border,
           backgroundColor: selected ? colors.overlayPurpleSoft : colors.surface,

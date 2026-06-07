@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { colors } from '@/constants/colors';
+import { elevation } from '@/constants/layout';
 import { ChangeIndicator } from './ChangeIndicator';
 import type { Direction } from '@/store/useJournalStore';
 
@@ -339,11 +340,7 @@ export function MoodMatrixPicker({
                 borderColor: accent,
                 alignItems: 'center',
                 justifyContent: 'center',
-                shadowColor: '#000',
-                shadowOpacity: 0.35,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 3 },
-                elevation: 6,
+                ...elevation.thumb,
                 opacity: touched ? 1 : 0.55,
               }}
             >

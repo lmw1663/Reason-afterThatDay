@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { useUserStore } from '@/store/useUserStore';
 import { isAppLocked } from '@/api/safety';
 import { usePersonaStore } from '@/store/usePersonaStore';
@@ -191,7 +192,7 @@ function MeHero({ icon, title, subtitle, staggerIndex, onPress }: MeHeroProps) {
         accessibilityLabel={title}
         style={{
           backgroundColor: colors.surface,
-          borderRadius: 24,
+          borderRadius: radius.xl,
           borderWidth: 1,
           borderColor: colors.borderPurpleSoft,
           padding: 20,
@@ -242,7 +243,7 @@ function MePairCard({ icon, title, subtitle, staggerIndex, onPress, disabled }: 
         disabled={disabled}
         style={{
           backgroundColor: colors.surface,
-          borderRadius: 20,
+          borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: colors.border,
           padding: 16,

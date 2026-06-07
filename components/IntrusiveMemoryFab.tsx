@@ -2,6 +2,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { Caption } from './ui/Typography';
 import { Icon } from './ui/Icon';
 import { colors } from '@/constants/colors';
+import { elevation } from '@/constants/layout';
 
 interface Props {
   onPress: () => void;
@@ -52,10 +53,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.purple[400],
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    ...elevation.floating,
   },
 });

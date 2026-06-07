@@ -10,6 +10,7 @@ import { Icon } from '@/components/ui/Icon';
 import { QuestionPoolCard } from '@/components/ui/QuestionPoolCard';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { useQuestionStore, type Question } from '@/store/useQuestionStore';
@@ -216,7 +217,7 @@ export default function QuestionPoolScreen() {
               style={{
                 paddingHorizontal: 12,
                 paddingVertical: 6,
-                borderRadius: 999,
+                borderRadius: radius.pill,
                 backgroundColor: colors.overlayPurpleSoft,
                 marginBottom: 8,
               }}
@@ -524,7 +525,7 @@ function AnswerModal({
                 backgroundColor: colors.bg,
                 borderWidth: 1,
                 borderColor: colors.border,
-                borderRadius: 12,
+                borderRadius: radius.sm,
                 padding: 12,
               }}
             />

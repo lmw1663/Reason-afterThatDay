@@ -5,6 +5,7 @@ import { Body, Caption } from './Typography';
 import { Icon } from './Icon';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { getContextTheme } from '@/constants/questionContextTheme';
 import type { Question } from '@/store/useQuestionStore';
 
@@ -41,7 +42,7 @@ export function QuestionPoolCard({ question, variant, recommended, staggerIndex,
           accessibilityLabel={`${theme.label} — ${question.text} — 답하기`}
           style={{
             backgroundColor: colors.surface,
-            borderRadius: 24,
+            borderRadius: radius.xl,
             borderWidth: 1,
             borderColor: colors.borderPurpleSoft,
             padding: 20,
@@ -94,7 +95,7 @@ export function QuestionPoolCard({ question, variant, recommended, staggerIndex,
                   marginTop: 12,
                   paddingHorizontal: 10,
                   paddingVertical: 4,
-                  borderRadius: 999,
+                  borderRadius: radius.pill,
                   backgroundColor: theme.bgOverlay,
                 }}
               >
@@ -126,7 +127,7 @@ export function QuestionPoolCard({ question, variant, recommended, staggerIndex,
           accessibilityLabel={`${theme.label} — ${question.text} — 답하기`}
           style={{
             backgroundColor: colors.surface,
-            borderRadius: 20,
+            borderRadius: radius.lg,
             borderWidth: 1,
             borderColor: colors.border,
             paddingVertical: 16,
@@ -154,7 +155,7 @@ export function QuestionPoolCard({ question, variant, recommended, staggerIndex,
             style={{
               width: 40,
               height: 40,
-              borderRadius: 20,
+              borderRadius: radius.pill, // 원형 배지 — 기하값(40/2)이라 카드 radius 토큰과 분리
               backgroundColor: theme.bgOverlay,
               alignItems: 'center',
               justifyContent: 'center',

@@ -8,6 +8,7 @@ import { Body, Caption, Heading } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { useUserStore } from '@/store/useUserStore';
 import {
   getRecoveryTrace,
@@ -283,7 +284,7 @@ function TraceLine({ series, accentColor }: { series: TimePoint[]; accentColor: 
           propsForDots: { r: '3.5', strokeWidth: '2', stroke: accentColor },
         }}
         bezier
-        style={{ borderRadius: 12, marginLeft: -16 }}
+        style={{ borderRadius: radius.sm, marginLeft: -16 }}
       />
     </View>
   );

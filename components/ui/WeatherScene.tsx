@@ -22,6 +22,7 @@ import Svg, {
   Rect,
   Stop,
 } from 'react-native-svg';
+import { radius } from '@/constants/layout';
 import { motion } from '@/constants/motion';
 
 interface Props {
@@ -67,7 +68,7 @@ export function WeatherScene({ score, width, height = 180, disableLightning = fa
       style={{
         width,
         height,
-        borderRadius: 24,
+        borderRadius: radius.xl,
         overflow: 'hidden',
         backgroundColor: '#15141B',
       }}

@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { Icon, type IconName } from './Icon';
 
 interface Props {
@@ -21,7 +22,7 @@ export function ChoiceButton({ label, sublabel, selected = false, onPress, icon 
       accessibilityLabel={sublabel ? `${label}, ${sublabel}` : label}
       accessibilityState={{ selected }}
       style={{
-        borderRadius: 16,
+        borderRadius: radius.md,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,

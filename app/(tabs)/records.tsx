@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
@@ -168,7 +169,7 @@ function RecordHero({ icon, title, subtitle, staggerIndex, onPress }: RecordHero
         accessibilityLabel={title}
         style={{
           backgroundColor: colors.surface,
-          borderRadius: 24,
+          borderRadius: radius.xl,
           borderWidth: 1,
           borderColor: colors.borderPurpleSoft,
           padding: 20,
@@ -218,7 +219,7 @@ function RecordGridItem({ icon, title, subtitle, staggerIndex, onPress }: Record
         accessibilityLabel={title}
         style={{
           backgroundColor: colors.surface,
-          borderRadius: 20,
+          borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: colors.border,
           padding: 16,
@@ -255,7 +256,7 @@ function RecordKnotBanner({ staggerIndex, onPress }: { staggerIndex: number; onP
         accessibilityLabel="매듭의 흔적"
         style={{
           backgroundColor: colors.surface,
-          borderRadius: 20,
+          borderRadius: radius.lg,
           borderWidth: 1,
           borderColor: colors.borderTealSoft,
           padding: 16,

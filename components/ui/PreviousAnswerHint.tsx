@@ -12,6 +12,7 @@ import { Pressable, Text, View } from 'react-native';
 import { useQuestionStore } from '@/store/useQuestionStore';
 import { Caption } from './Typography';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 import { defaultPreviousAnswerFormatter } from './answerFormatters';
 
 export { defaultPreviousAnswerFormatter };
@@ -69,7 +70,7 @@ export function PreviousAnswerHint({
     );
     const cardStyle = {
       padding: 12,
-      borderRadius: 12,
+      borderRadius: radius.sm,
       backgroundColor: colors.surface,
       borderWidth: 1,
       borderColor: colors.purple[600],

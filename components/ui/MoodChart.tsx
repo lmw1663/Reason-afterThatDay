@@ -1,6 +1,7 @@
 import { Dimensions, View, Text } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 
 interface Props {
   moodScores: number[]; // 최신순, 최대 7개
@@ -42,7 +43,7 @@ export function MoodChart({ moodScores, label }: Props) {
           propsForDots: { r: '4', strokeWidth: '2', stroke: colors.teal[400] },
         }}
         bezier
-        style={{ borderRadius: 16 }}
+        style={{ borderRadius: radius.md }}
       />
     </View>
   );
