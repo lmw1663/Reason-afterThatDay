@@ -17,11 +17,17 @@ export interface ContextTheme {
   bgOverlay: string;
 }
 
+// 색은 *단일 브랜드 보라* 하나로 통일 (PATTERNS.md "컬러 절제 — 1 액센트", 최신
+// 다크모드 앱들의 모노톤+단일 액센트 관례). context 구분은 색이 아니라 distinct한
+// 아이콘(pen/compass/link/search)·라벨이 담당 — 4색 샐러드의 촌스러움 제거.
+const ACCENT = colors.purple[400];
+const ACCENT_BG = colors.overlayPurpleSoft;
+
 export const CONTEXT_THEME: Record<QuestionContext, ContextTheme> = {
-  journal:    { label: '이별 일기', icon: 'pen',     accentColor: colors.purple[400], bgOverlay: colors.overlayPurpleSoft },
-  compass:    { label: '나침반',   icon: 'compass', accentColor: colors.teal[400],   bgOverlay: colors.overlayTealSoft   },
-  graduation: { label: '매듭',     icon: 'link',    accentColor: colors.coral[400],  bgOverlay: colors.overlayCoralSoft  },
-  analysis:   { label: '돌아보기', icon: 'search',  accentColor: colors.amber[400],  bgOverlay: colors.overlayAmberSoft  },
+  journal:    { label: '이별 일기', icon: 'pen',     accentColor: ACCENT, bgOverlay: ACCENT_BG },
+  compass:    { label: '나침반',   icon: 'compass', accentColor: ACCENT, bgOverlay: ACCENT_BG },
+  graduation: { label: '매듭',     icon: 'link',    accentColor: ACCENT, bgOverlay: ACCENT_BG },
+  analysis:   { label: '돌아보기', icon: 'search',  accentColor: ACCENT, bgOverlay: ACCENT_BG },
 };
 
 /**

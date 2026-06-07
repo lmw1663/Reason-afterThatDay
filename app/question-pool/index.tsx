@@ -291,8 +291,8 @@ export default function QuestionPoolScreen() {
               <View>
                 <SectionHeader
                   iconName="search"
-                  iconColor={colors.amber[400]}
-                  iconBg={colors.overlayAmberSoft}
+                  iconColor={colors.purple[400]}
+                  iconBg={colors.overlayPurpleSoft}
                   title="더 깊이 가보기"
                   count={others.length}
                   staggerIndex={nextStagger()}
