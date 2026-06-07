@@ -30,7 +30,7 @@ import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { trackEvent } from '@/api/telemetry';
 
 export default function HomeScreen() {
-  const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
+  const { daysElapsed, breakupDate, userId, refreshDaysElapsed } = useUserStore();
   const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
   const personaPrimary = usePersonaStore(s => s.primary);
   const personaSecondary = usePersonaStore(s => s.secondary);
@@ -189,28 +189,41 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* G-3: D+N을 메인 헤딩으로 격상 — 이별 회복 앱의 핵심 컨텍스트.
+        {/* G-3 → Tier 2-1: D+N 영웅 숫자 (Anz+ 잔액 패턴 강화).
             "reason · 그날 이후"는 컨텍스트 caption으로 위에 작게 배치.
-            Anz+ 잔액 디스플레이 패턴 — 핵심 수치 한 줄에 압도적인 위계로 노출. */}
+            "D+" 접두는 통화기호처럼 작은 회색으로 낮추고 숫자가 위계를 독점(64px).
+            아래 작은 회색 보조라인(이별 날짜)으로 숫자의 근거를 1줄 제공. */}
         <View className="px-6 pt-14 pb-8">
           <Caption className="text-gray-500 mb-2">reason · 그날 이후</Caption>
           <View
-            className="flex-row items-baseline gap-2"
+            className="flex-row items-baseline gap-0.5"
+            accessible
             accessibilityRole="text"
             accessibilityLabel={`이별 후 ${daysElapsed}일 경과`}
           >
             <Text
+              className="font-bold"
+              style={{ fontFamily: 'Pretendard', fontSize: 28, lineHeight: 34, letterSpacing: -0.5, color: colors.gray[400] }}
+              allowFontScaling={false}
+            >
+              D+
+            </Text>
+            <Text
               className="text-white font-bold"
-              style={{ fontFamily: 'Pretendard', fontSize: 56, lineHeight: 60, letterSpacing: -1.5 }}
+              style={{ fontFamily: 'Pretendard', fontSize: 64, lineHeight: 68, letterSpacing: -2, fontVariant: ['tabular-nums'], flexShrink: 1 }}
               numberOfLines={1}
               adjustsFontSizeToFit
               minimumFontScale={0.7}
               allowFontScaling={false}
             >
-              D+{daysElapsed}
+              {daysElapsed}
             </Text>
-            <Caption className="text-gray-500">일째</Caption>
           </View>
+          {breakupDate && (
+            <Caption className="text-gray-500 mt-1">
+              {breakupDate.getFullYear()}년 {breakupDate.getMonth() + 1}월 {breakupDate.getDate()}일부터
+            </Caption>
+          )}
           {/* DEV-ONLY: 페르소나 분류 결과 확인용 디버그 라벨. __DEV__ 가드로 production 자동 제거.
               사용자 노출 코드 아님 (개발자 검증용). 출시 전 제거 또는 디버그 패널로 이관. */}
           {__DEV__ && (

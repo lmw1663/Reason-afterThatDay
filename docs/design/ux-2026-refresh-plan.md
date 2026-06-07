@@ -77,7 +77,7 @@
 - [x] 1-2 위기 모달 전용 시각 variant (coral 헤더 아이콘·솔리드·햅틱, 본문 반말 유지) — Modal `variant="crisis"` + expo-haptics Warning + 전화 아이콘 bell→phone 정정
 
 ### Tier 2 — 레퍼런스식 고급감 🟢
-- [ ] 2-1 D+N 영웅 숫자 강화 (Anz+)
+- [x] 2-1 D+N 영웅 숫자 강화 (Anz+) — "D+" 접두 28px 회색(통화기호 패턴) + 숫자 64px tabular-nums + 이별날짜 보조라인 + a11y 단일 낭독
 - [ ] 2-2 감정온도 인라인 sparkline (Stocks, 저채도·신호등 금지)
 - [ ] 2-3 무드패드 업그레이드: 햅틱 + 탭 폴백 + 감정단어 점진공개
 - [ ] 2-4 매듭 카드 스택 적층 (Apple Pay Wallet)
