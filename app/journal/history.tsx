@@ -63,7 +63,7 @@ export default function JournalHistoryScreen() {
         {entries.length === 0 ? (
           <View className="flex-1 items-center justify-center">
             <Caption variant="subtle" className="text-base">
-              아직 일기가 없어. 오늘 첫 기록을 남겨봐.
+              아직 일기가 없어. 오늘 첫 기록을 남겨볼래?
             </Caption>
           </View>
         ) : (

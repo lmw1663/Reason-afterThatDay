@@ -17,7 +17,7 @@ export default function JournalDetailScreen() {
     return (
       <ScreenWrapper>
         <View className="flex-1 items-center justify-center">
-          <Caption>일기를 찾을 수 없어.</Caption>
+          <Caption>이 일기를 찾지 못했어.</Caption>
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"

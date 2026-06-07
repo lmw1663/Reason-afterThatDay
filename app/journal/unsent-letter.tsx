@@ -123,7 +123,7 @@ export default function UnsentLetterScreen() {
 
         {!loading && locked.length === 0 && unlocked.length === 0 && (
           <Caption className="text-gray-500 text-center mt-4">
-            아직 편지가 없어. 위에서 첫 편지를 적어봐.
+            아직 편지가 없어. 첫 편지를 적어볼래?
           </Caption>
         )}
       </ScrollView>

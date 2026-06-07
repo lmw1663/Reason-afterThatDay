@@ -124,7 +124,7 @@ export default function ReflectionCategoryScreen() {
         ? `${err.code}: ${err.message ?? ''}`
         : err.message ?? '알 수 없는 오류';
       console.warn('[about-me] save failed:', e);
-      setSaveError(`저장 실패 — ${detail}`);
+      setSaveError(`저장이 안 됐어 — ${detail}`);
     } finally {
       setSaving(false);
     }

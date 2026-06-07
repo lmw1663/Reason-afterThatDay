@@ -47,7 +47,7 @@ export default function CompassSummaryScreen() {
             tag="최근 7일 일기 방향"
             body={
               recentDirections.length === 0
-                ? '아직 일기를 쓰지 않았어.'
+                ? '아직 모인 일기가 없어.'
                 : `잡고 싶어 ${catchCount}회 · 보내고 싶어 ${letGoCount}회 · 모르겠어 ${recentDirections.length - catchCount - letGoCount}회`
             }
             accent="purple"

@@ -170,7 +170,8 @@ function StatCard({ icon, label, value }: { icon: IconName; label: string; value
 }
 
 function getReportSummary(count: number, avg: number, days: number): string {
-  if (count >= 20) return `${days}일 동안 ${count}번이나 마음을 기록했어. 그 성실함이 대단해. 감정을 외면하지 않고 마주한 거야.`;
+  // 과장 축하("~이나", "대단해") 대신 사실 진술 — Apple Pay 'Done' 미니멀 원칙
+  if (count >= 20) return `${days}일 동안 ${count}번 마음을 기록했어. 감정을 외면하지 않고 마주한 거야.`;
   if (avg >= 7) return `평균 감정 온도가 높아. 힘든 시간 속에서도 조금씩 올라왔구나. 그 변화가 진짜야.`;
   if (days >= 60) return `${days}일이라는 긴 시간이 흘렀어. 많이 버텼어. 그게 가장 어려운 부분이었을 거야.`;
   return `이 기간 동안 솔직하게 자신과 마주했어. 그것만으로도 충분히 잘 한 거야.`;
