@@ -15,9 +15,17 @@ const colors = {
   gray:   { 50: '#F1EFE8', 100: '#E6E3DB', 200: '#D2CFC5', 300: '#BBB8AE', 400: '#A8A6A0', 500: '#84827B', 600: '#5F5E5A', 700: '#4E4D49', 800: '#444441', 900: '#2B2B28' },
   white: '#FFFFFF',
   black: '#000000',
-  bg: '#15141B',
-  surface: '#201E2A',
+  // Tier 0-2: 4단계 다크 서피스 — 그림자 대신 톤 단차로 elevation 표현.
+  // 보라 틴트(hue~255°)를 유지한 채 단계가 올라갈수록 명도만 상승.
+  bg: '#15141B',              // L0 배경
+  surface: '#201E2A',         // L1 카드
+  surfaceElevated: '#2A2837', // L2 상승 — pressed/플로팅/다이얼로그
+  surfaceOverlay: '#353244',  // L3 오버레이 — 시트/메뉴 최상층
   border: '#34313F',
+  // 액센트 보더 틴트 — 카드 위 색 식별선. 즉석 rgba(…,0.18/0.22) 난립을 토큰으로 통일.
+  borderPurpleSoft: 'rgba(127,119,221,0.18)',
+  borderTealSoft: 'rgba(29,158,117,0.2)',
+  borderCoralSoft: 'rgba(216,90,48,0.2)',
   overlayPurpleSoft: 'rgba(127,119,221,0.1)',
   overlayPurpleWeak: 'rgba(127,119,221,0.08)',
   overlayGrayMuted: 'rgba(68,68,65,0.3)',
@@ -25,7 +33,10 @@ const colors = {
   overlayTealSoft: 'rgba(29,158,117,0.1)',
   overlayCoralSoft: 'rgba(216,90,48,0.1)',
   overlayAmberSoft: 'rgba(186,117,23,0.1)',
+  overlayWhiteSoft: 'rgba(255,255,255,0.14)',
+  overlayWhiteFaint: 'rgba(255,255,255,0.04)',
   overlayBackdropDark: 'rgba(21,20,27,0.85)',
+  scrimBgSoft: 'rgba(21,20,27,0.45)',
 };
 
 module.exports = { colors };

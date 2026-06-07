@@ -10,9 +10,9 @@ interface Props {
 }
 
 const accentMap = {
-  purple: { dot: colors.purple[400], tag: colors.purple[400], border: 'rgba(127,119,221,0.18)' },
-  teal:   { dot: colors.teal[400],   tag: colors.teal[400],   border: 'rgba(29,158,117,0.20)' },
-  coral:  { dot: colors.coral[400],  tag: colors.coral[400],  border: 'rgba(216,90,48,0.20)' },
+  purple: { dot: colors.purple[400], tag: colors.purple[400], border: colors.borderPurpleSoft },
+  teal:   { dot: colors.teal[400],   tag: colors.teal[400],   border: colors.borderTealSoft },
+  coral:  { dot: colors.coral[400],  tag: colors.coral[400],  border: colors.borderCoralSoft },
 };
 
 /**

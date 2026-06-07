@@ -69,7 +69,7 @@
 
 ### Tier 0 — 토대 🔴 (안 보이지만 전역, 최고 ROI)
 - [x] **0-1 gray ramp 100~900 + 누락 accent(purple 300/500/700, amber 700) 토큰 정의** (`colors.ts`/`colors.js` 동기화)
-- [ ] 0-2 4단계 다크 서피스 토큰 (배경/카드/상승/오버레이) — 그림자 대신 톤
+- [x] 0-2 4단계 다크 서피스 토큰 (배경/카드/상승/오버레이) — surfaceElevated/surfaceOverlay + 보더 틴트·스크림 토큰, 즉석 rgba 11곳 치환, Modal L2 승격
 - [ ] 0-3 spacing/radius/elevation 토큰 표준화
 
 ### Tier 1 — UX 정확성 🟠 (신뢰·안전)

@@ -76,8 +76,9 @@ export function Modal({
         onPress={dismissable ? onClose : noop}
       >
         <Pressable className="w-full" onPress={(e) => e.stopPropagation()}>
+          {/* 다이얼로그는 L2(상승) 서피스 — 페이지 카드(L1 surface)보다 한 단계 밝은 톤으로 부유감 */}
           <View
-            className="bg-surface rounded-2xl p-6"
+            className="bg-surface-elevated rounded-2xl p-6"
             style={isCrisis ? { borderWidth: 1, borderColor: colors.coral[600] } : undefined}
           >
             {isCrisis && (

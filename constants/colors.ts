@@ -23,9 +23,17 @@ export const colors = {
   // 순흑(#000)·near-black(#0E0E12)은 OLED에서 halation·답답함을 유발 → Material/2025
   // 가이드대로 살짝 들어올린 "편안한 다크"로 변경. 브랜드 보라(#7F77DD) 틴트를 미세하게
   // 유지(hue~255°)해 카드(surface)와 통일감. bg↔surface 명도차는 elevation 위해 보존.
-  bg: '#15141B',
-  surface: '#201E2A',
+  // Tier 0-2: 4단계 다크 서피스 — 그림자 대신 톤 단차로 elevation 표현.
+  // 보라 틴트(hue~255°)를 유지한 채 단계가 올라갈수록 명도만 상승.
+  bg: '#15141B',              // L0 배경
+  surface: '#201E2A',         // L1 카드
+  surfaceElevated: '#2A2837', // L2 상승 — pressed/플로팅/다이얼로그
+  surfaceOverlay: '#353244',  // L3 오버레이 — 시트/메뉴 최상층
   border: '#34313F',
+  // 액센트 보더 틴트 — 카드 위 색 식별선. 즉석 rgba(…,0.18/0.22) 난립을 토큰으로 통일.
+  borderPurpleSoft:    'rgba(127,119,221,0.18)',
+  borderTealSoft:      'rgba(29,158,117,0.2)',
+  borderCoralSoft:     'rgba(216,90,48,0.2)',
   overlayPurpleSoft:   'rgba(127,119,221,0.1)',
   overlayPurpleWeak:   'rgba(127,119,221,0.08)',
   overlayGrayMuted:    'rgba(68,68,65,0.3)',
@@ -33,5 +41,8 @@ export const colors = {
   overlayTealSoft:     'rgba(29,158,117,0.1)',
   overlayCoralSoft:    'rgba(216,90,48,0.1)',
   overlayAmberSoft:    'rgba(186,117,23,0.1)',
+  overlayWhiteSoft:    'rgba(255,255,255,0.14)',
+  overlayWhiteFaint:   'rgba(255,255,255,0.04)',
   overlayBackdropDark: 'rgba(21,20,27,0.85)',
+  scrimBgSoft:         'rgba(21,20,27,0.45)',
 } as const;

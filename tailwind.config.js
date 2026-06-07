@@ -18,6 +18,8 @@ module.exports = {
         gray: colors.gray,
         bg: colors.bg,
         surface: colors.surface,
+        'surface-elevated': colors.surfaceElevated,
+        'surface-overlay': colors.surfaceOverlay,
         border: colors.border,
       },
     },

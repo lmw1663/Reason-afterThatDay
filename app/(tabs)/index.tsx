@@ -322,7 +322,7 @@ export default function HomeScreen() {
                 <View className="flex-row items-center gap-3">
                   <View
                     className="rounded-full p-2.5"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.14)' }}
+                    style={{ backgroundColor: colors.overlayWhiteSoft }}
                   >
                     <Icon
                       name={miniIsPrimary ? 'thermometer' : 'pen'}

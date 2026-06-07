@@ -43,7 +43,7 @@ export function QuestionPoolCard({ question, variant, recommended, staggerIndex,
             backgroundColor: colors.surface,
             borderRadius: 24,
             borderWidth: 1,
-            borderColor: 'rgba(127,119,221,0.18)',
+            borderColor: colors.borderPurpleSoft,
             padding: 20,
           }}
         >
@@ -203,7 +203,7 @@ export function QuestionPoolCard({ question, variant, recommended, staggerIndex,
             width: 36,
             height: 36,
             borderRadius: 18,
-            backgroundColor: recommended ? theme.bgOverlay : 'rgba(255,255,255,0.04)',
+            backgroundColor: recommended ? theme.bgOverlay : colors.overlayWhiteFaint,
             alignItems: 'center',
             justifyContent: 'center',
           }}

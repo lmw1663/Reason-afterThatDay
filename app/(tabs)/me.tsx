@@ -193,7 +193,7 @@ function MeHero({ icon, title, subtitle, staggerIndex, onPress }: MeHeroProps) {
           backgroundColor: colors.surface,
           borderRadius: 24,
           borderWidth: 1,
-          borderColor: 'rgba(127,119,221,0.18)',
+          borderColor: colors.borderPurpleSoft,
           padding: 20,
           minHeight: 124,
           flexDirection: 'row',
