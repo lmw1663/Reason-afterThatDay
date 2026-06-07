@@ -79,9 +79,9 @@ const QUAD_PHRASE: Record<QuadKey, [string, string]> = {
 // 시그니처 색 RGB (rgba 조합용) — teal / purple / amber / coral
 const QUAD_RGB: Record<Exclude<QuadKey, 'undecided'>, string> = {
   tl: '29,158,117', // teal
-  tr: '127,119,221', // purple
-  bl: '186,117,23', // amber
-  br: '216,90,48', // coral
+  tr: '133,125,224', // purple
+  bl: '192,122,24', // amber
+  br: '222,98,56', // coral
 };
 
 function quadrantOf({ direction, affectionLevel }: MoodMatrixResult): QuadKey {

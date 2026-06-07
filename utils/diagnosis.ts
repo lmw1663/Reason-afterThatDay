@@ -1,5 +1,6 @@
 import type { RelationshipProfile } from '@/store/useRelationshipStore';
 import type { CompassVerdict } from '@/store/useDecisionStore';
+import { colors } from '@/constants/colors';
 
 export interface DiagnosisResult {
   reconnect: number; // 0~1
@@ -78,13 +79,15 @@ export const VERDICT_LABEL: Record<CompassVerdict, string> = {
   DANGER_OBSESSION:          '잡고 싶은 마음과 미운 마음이 동시에 있는 것 같아',
 };
 
+// strong 계열은 토큰 직참조 — 토큰 색 보정(WCAG 등) 시 자동 추종.
+// lean/undecided 계열의 중간 틴트는 verdict 전용 보간색 (토큰 램프에 없는 단계).
 export const VERDICT_COLOR: Record<CompassVerdict, string> = {
-  strong_catch:              '#7F77DD',
+  strong_catch:              colors.purple[400],
   lean_catch:                '#B8B4EE',
   undecided:                 '#888780',
   undecided_with_love:       '#B8B4EE',
   undecided_with_resentment: '#E87C7C',
   lean_let_go:               '#3DB58A',
-  strong_let_go:             '#1D9E75',
+  strong_let_go:             colors.teal[400],
   DANGER_OBSESSION:          '#E87C7C',
 };

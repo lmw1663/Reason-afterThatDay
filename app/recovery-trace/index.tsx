@@ -279,7 +279,7 @@ function TraceLine({ series, accentColor }: { series: TimePoint[]; accentColor: 
           backgroundGradientFrom: colors.surface,
           backgroundGradientTo: colors.surface,
           decimalPlaces: 0,
-          color: (opacity = 1) => `rgba(127, 119, 221, ${opacity})`,
+          color: (opacity = 1) => `rgba(133, 125, 224, ${opacity})`,
           labelColor: () => colors.gray[600],
           propsForDots: { r: '3.5', strokeWidth: '2', stroke: accentColor },
         }}

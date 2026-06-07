@@ -72,7 +72,7 @@ import { colors } from '@/constants/colors';
  * 단일 아이콘 시스템 (Lucide 기반).
  *
  * 정책:
- *  - 시그니처 색은 `colors.purple[400]` (#7F77DD). 다크 테마 위에서 가장 안정적.
+ *  - 시그니처 색은 `colors.purple[400]` (#857DE0). 다크 테마 위에서 가장 안정적.
  *  - 강조가 다른 맥락(teal/coral/amber/gray)은 `color` prop으로 명시 override.
  *  - 라인 두께 1.8 — 너무 얇지도 굵지도 않게.
  *  - 표준 size: 22 (탭/메뉴/Choice), 18 (인라인/헤더), 16 (보조), 56+ (Empty state).

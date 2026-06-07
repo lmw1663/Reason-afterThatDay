@@ -6,11 +6,16 @@
 const colors = {
   // ramp 누락 단계는 className(text-gray-500 등)에서 Tailwind 기본 팔레트로 폴백돼
   // 디자인 토큰과 다른 색이 섞이던 문제가 있었다 → 실사용 단계를 따뜻한 톤으로 채움.
-  purple: { 50: '#EEEDFE', 300: '#A8A2E6', 400: '#7F77DD', 500: '#6960C9', 600: '#534AB7', 700: '#473F9E', 800: '#3C3489' },
+  //
+  // Tier 3-2 — 7패밀리 역할 고정: purple=브랜드/액션, teal=회복/긍정, coral=위기/오류/파괴,
+  // amber=주의/시간성, pink=관계/애정 데이터, blue=저온 감정 데이터, gray=중립.
+  // 데이터 시각화(그라데이션·미터·칩)만 교차 허용. 400 단계는 surface 위 AA 4.5:1 보장.
+  // (역할 상세는 colors.ts 주석 참조 — 두 파일 값 동기화 필수)
+  purple: { 50: '#EEEDFE', 300: '#A8A2E6', 400: '#857DE0', 500: '#6960C9', 600: '#534AB7', 700: '#473F9E', 800: '#3C3489' },
   teal:   { 50: '#E1F5EE', 400: '#1D9E75', 600: '#0F6E56', 800: '#085041' },
-  coral:  { 50: '#FAECE7', 400: '#D85A30', 600: '#993C1D', 800: '#712B13' },
-  pink:   { 50: '#FBEAF0', 400: '#D4537E', 600: '#993556', 800: '#72243E' },
-  amber:  { 50: '#FAEEDA', 400: '#BA7517', 600: '#854F0B', 700: '#74460A', 800: '#633806' },
+  coral:  { 50: '#FAECE7', 400: '#DE6238', 600: '#993C1D', 800: '#712B13' },
+  pink:   { 50: '#FBEAF0', 400: '#D95E86', 600: '#993556', 800: '#72243E' },
+  amber:  { 50: '#FAEEDA', 400: '#C07A18', 600: '#854F0B', 700: '#74460A', 800: '#633806' },
   blue:   { 50: '#E5EEFB', 400: '#5B8FE8', 600: '#2E5DB8', 800: '#1B3F80' },
   gray:   { 50: '#F1EFE8', 100: '#E6E3DB', 200: '#D2CFC5', 300: '#BBB8AE', 400: '#A8A6A0', 500: '#84827B', 600: '#5F5E5A', 700: '#4E4D49', 800: '#444441', 900: '#2B2B28' },
   white: '#FFFFFF',
@@ -23,16 +28,16 @@ const colors = {
   surfaceOverlay: '#353244',  // L3 오버레이 — 시트/메뉴 최상층
   border: '#34313F',
   // 액센트 보더 틴트 — 카드 위 색 식별선. 즉석 rgba(…,0.18/0.22) 난립을 토큰으로 통일.
-  borderPurpleSoft: 'rgba(127,119,221,0.18)',
+  borderPurpleSoft: 'rgba(133,125,224,0.18)',
   borderTealSoft: 'rgba(29,158,117,0.2)',
-  borderCoralSoft: 'rgba(216,90,48,0.2)',
-  overlayPurpleSoft: 'rgba(127,119,221,0.1)',
-  overlayPurpleWeak: 'rgba(127,119,221,0.08)',
+  borderCoralSoft: 'rgba(222,98,56,0.2)',
+  overlayPurpleSoft: 'rgba(133,125,224,0.1)',
+  overlayPurpleWeak: 'rgba(133,125,224,0.08)',
   overlayGrayMuted: 'rgba(68,68,65,0.3)',
   overlayGrayStrong: 'rgba(68,68,65,0.4)',
   overlayTealSoft: 'rgba(29,158,117,0.1)',
-  overlayCoralSoft: 'rgba(216,90,48,0.1)',
-  overlayAmberSoft: 'rgba(186,117,23,0.1)',
+  overlayCoralSoft: 'rgba(222,98,56,0.1)',
+  overlayAmberSoft: 'rgba(192,122,24,0.1)',
   overlayWhiteSoft: 'rgba(255,255,255,0.14)',
   overlayWhiteFaint: 'rgba(255,255,255,0.04)',
   overlayBackdropDark: 'rgba(21,20,27,0.85)',
