@@ -8,6 +8,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { MoodChart } from '@/components/ui/MoodChart';
 import { BreathingGuide } from '@/components/BreathingGuide';
@@ -159,7 +160,8 @@ export default function CoolingDashboardScreen() {
               오늘은 아무것도 다시 결정하지 않아도 돼.
             </Body>
             <PrimaryButton
-              label="🫁 호흡 함께 하기 (36초)"
+              label="호흡 함께 하기 (36초)"
+              leftIcon="wind"
               onPress={() => setBreathingVisible(true)}
             />
           </Card>
@@ -172,9 +174,12 @@ export default function CoolingDashboardScreen() {
 
             {day2First && (
               <Card className="mb-3 border border-gray-700">
-                <Caption className="text-gray-500 mb-1">
-                  🌱 처음 — {new Date(day2First.createdAt).toLocaleDateString('ko-KR')}
-                </Caption>
+                <View className="flex-row items-center gap-1.5 mb-1">
+                  <Icon name="leaf" size={12} color={colors.gray[500]} />
+                  <Caption className="text-gray-500">
+                    처음 — {new Date(day2First.createdAt).toLocaleDateString('ko-KR')}
+                  </Caption>
+                </View>
                 <Body className="text-gray-300 text-sm mb-1">
                   {day2First.freeText || '감정만 기록했어'}
                 </Body>
@@ -183,9 +188,12 @@ export default function CoolingDashboardScreen() {
             )}
             {day2Last && day2Last.createdAt !== day2First?.createdAt && (
               <Card className="mb-3 border border-purple-800">
-                <Caption className="text-purple-400 mb-1">
-                  🍂 결심 전 — {new Date(day2Last.createdAt).toLocaleDateString('ko-KR')}
-                </Caption>
+                <View className="flex-row items-center gap-1.5 mb-1">
+                  <Icon name="flower-2" size={12} color={colors.purple[400]} />
+                  <Caption className="text-purple-400">
+                    결심 전 — {new Date(day2Last.createdAt).toLocaleDateString('ko-KR')}
+                  </Caption>
+                </View>
                 <Body className="text-gray-300 text-sm mb-1">
                   {day2Last.freeText || '감정만 기록했어'}
                 </Body>

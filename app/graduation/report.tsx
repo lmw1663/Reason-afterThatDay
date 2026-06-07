@@ -20,7 +20,6 @@ import { AnswerTimeline } from '@/components/ui/AnswerTimeline';
 
 const DIRECTION_LABEL: Record<Direction, string> = { catch: '잡고 싶어', let_go: '보내고 싶어', undecided: '모르겠어' };
 const DIRECTION_COLOR: Record<Direction, string> = { catch: colors.purple[400], let_go: colors.teal[400], undecided: colors.gray[400] };
-const DIRECTION_DOT: Record<Direction, string> = { catch: '💜', let_go: '🩵', undecided: '⚫' };
 
 export default function GraduationReportScreen() {
   const { userId, daysElapsed } = useUserStore();

@@ -6,6 +6,7 @@ import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 import { radius } from '@/constants/layout';
 import { PHYSICAL_SIGNALS, PHYSICAL_SIGNAL_LABELS } from '@/constants/emotionLabels';
@@ -131,18 +132,7 @@ export default function JournalPhysicalScreen() {
                     backgroundColor: checked ? colors.purple[400] : 'transparent',
                   }}
                 >
-                  {checked && (
-                    <Body
-                      style={{
-                        color: colors.white,
-                        fontSize: 12,
-                        fontWeight: '700',
-                        lineHeight: 14,
-                      }}
-                    >
-                      ✓
-                    </Body>
-                  )}
+                  {checked && <Icon name="check" size={12} color={colors.white} strokeWidth={3} />}
                 </View>
                 <Body className="text-gray-50 flex-1">{PHYSICAL_SIGNAL_LABELS[signal]}</Body>
               </Pressable>

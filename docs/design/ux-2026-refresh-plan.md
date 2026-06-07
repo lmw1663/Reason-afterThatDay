@@ -85,7 +85,7 @@
 - [x] 2-6 빈상태·완료 화법(따뜻+미니멀) — 비난 주어 제거·청유형 통일·"실패" 어휘 정리·과장 축하 미니멀화 (12곳)
 
 ### Tier 3 — 마감 일관성 🔵
-- [ ] 3-1 이모지 9곳 → Icon
+- [x] 3-1 이모지 9곳 → Icon — 📅✓📞🫧💜🩵⚫🫁🌱🍂 전부 Lucide Icon/leftIcon 치환 + DIRECTION_DOT 데드코드 삭제 (사용자 노출 이모지 0건)
 - [ ] 3-2 색 7패밀리 역할 정리 + teal/amber WCAG 보정
 - [ ] 3-3 인라인 카드 → `Card` pressable variant
 - [ ] 3-4 BackHeader 상단 고정 (ScrollView 밖)
