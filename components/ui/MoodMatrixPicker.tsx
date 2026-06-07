@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { colors } from '@/constants/colors';
 import { elevation } from '@/constants/layout';
 import { ChangeIndicator } from './ChangeIndicator';
@@ -18,6 +19,11 @@ import type { Direction } from '@/store/useJournalStore';
  * 세로축: 좋아(위) ↔ 미워(아래)
  *
  * 점(thumb)을 끌어 자기 마음 위치에 놓는다. 슬라이더 + 3지선다를 하나의 평면 선택으로 통합.
+ *
+ * 입력 채널 3중화 (Tier 2-3):
+ *  - 드래그: 연속 이동. 사분면/모르겠어 경계를 넘을 때 selection 햅틱 1틱.
+ *  - 탭 폴백: 패드 아무 곳이나 한 번 탭하면 그 자리에 점이 놓임 (grant→handle 경로).
+ *  - 보조기술: accessibilityActions 4방향 nudge.
  * 저장은 기존 스키마 그대로 분해(B안): 위치 → { direction, affectionLevel }.
  *   - direction: x 위치로 보내고/잡고/모르겠어(중앙 밴드) 결정
  *   - affectionLevel: y 위치로 0~10 연속 (위=10 좋아, 아래=0 미워)
@@ -128,6 +134,16 @@ export function MoodMatrixPicker({
   onChangeRef.current = onChange;
   const onActiveChangeRef = useRef(onActiveChange);
   onActiveChangeRef.current = onActiveChange;
+  // 마지막 사분면 — 경계를 넘는 순간에만 햅틱 1틱 (연속 진동 금지, Calm UI)
+  const lastQuadRef = useRef<QuadKey | null>(initial ? quadrantOf(initial) : null);
+
+  function tickIfQuadChanged(r: MoodMatrixResult) {
+    const q = quadrantOf(r);
+    if (lastQuadRef.current !== null && q !== lastQuadRef.current) {
+      Haptics.selectionAsync().catch(() => {});
+    }
+    lastQuadRef.current = q;
+  }
 
   const result = deriveResult(pos.x, pos.y);
   const accent = accentFor(result);
@@ -145,7 +161,9 @@ export function MoodMatrixPicker({
         touchedRef.current = true;
         setTouched(true);
       }
-      onChangeRef.current(deriveResult(nx, ny));
+      const next = deriveResult(nx, ny);
+      tickIfQuadChanged(next); // ref만 사용 — memo 클로저의 stale 식별자와 무관하게 안전
+      onChangeRef.current(next);
     };
     const end = () => {
       setActive(false);
@@ -159,6 +177,8 @@ export function MoodMatrixPicker({
       onPanResponderGrant: (e) => {
         setActive(true);
         onActiveChangeRef.current?.(true);
+        // 탭 폴백 포함 — 잡는 순간 가볍게 1틱 (점이 손에 잡혔다는 촉각 확인)
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
         handle(e);
       },
       onPanResponderMove: handle,
@@ -180,7 +200,9 @@ export function MoodMatrixPicker({
       touchedRef.current = true;
       setTouched(true);
     }
-    onChangeRef.current(deriveResult(nx, ny));
+    const next = deriveResult(nx, ny);
+    tickIfQuadChanged(next);
+    onChangeRef.current(next);
   }
 
   const thumbScale = active ? 1.18 : 1;
@@ -284,11 +306,11 @@ export function MoodMatrixPicker({
           style={{ position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, backgroundColor: colors.border }}
         />
 
-        {/* 사분면 라벨 */}
-        <QuadrantLabel position="tl" active={activeQuad === 'tl'} />
-        <QuadrantLabel position="tr" active={activeQuad === 'tr'} />
-        <QuadrantLabel position="bl" active={activeQuad === 'bl'} />
-        <QuadrantLabel position="br" active={activeQuad === 'br'} />
+        {/* 사분면 라벨 — 점진공개: 미터치 땐 은은한 지형도, 선택 후엔 현재 사분면만 또렷 */}
+        <QuadrantLabel position="tl" active={activeQuad === 'tl'} touched={touched} />
+        <QuadrantLabel position="tr" active={activeQuad === 'tr'} touched={touched} />
+        <QuadrantLabel position="bl" active={activeQuad === 'bl'} touched={touched} />
+        <QuadrantLabel position="br" active={activeQuad === 'br'} touched={touched} />
 
         {/* 중앙 '모르겠어' 라벨 */}
         <Text
@@ -301,7 +323,13 @@ export function MoodMatrixPicker({
             textAlign: 'center',
             fontSize: 11,
             fontWeight: '600',
-            color: activeQuad === null && touched ? colors.white : 'rgba(255,255,255,0.55)',
+            // 점진공개 — 모르겠어 밴드 위에 있을 때만 또렷, 다른 사분면 선택 중엔 한 단계 후퇴
+            color:
+              activeQuad === null && touched
+                ? colors.white
+                : touched
+                  ? 'rgba(255,255,255,0.45)' /* 0.46 틴트 위에서도 3:1 유지 */
+                  : 'rgba(255,255,255,0.55)',
           }}
         >
           모르겠어
@@ -386,14 +414,21 @@ function Quadrant({
 function QuadrantLabel({
   position,
   active,
+  touched,
 }: {
   position: Exclude<QuadKey, 'undecided'>;
   active: boolean;
+  touched: boolean;
 }) {
   const isRight = position === 'tr' || position === 'br';
   const isBottom = position === 'bl' || position === 'br';
   const [a, b] = QUAD_PHRASE[position];
-  const color = active ? colors.white : 'rgba(255,255,255,0.85)';
+  // 점진공개 3단계: 미터치(전체 은은) → 선택 사분면(흰색 700) → 비선택 사분면(후퇴)
+  const color = active
+    ? colors.white
+    : touched
+      ? 'rgba(255,255,255,0.45)' /* 0.46 틴트 위에서도 3:1 유지 */
+      : 'rgba(255,255,255,0.55)';
   const labelStyle = {
     fontSize: 13,
     fontWeight: (active ? '700' : '600') as '700' | '600',
