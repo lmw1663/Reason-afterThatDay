@@ -6,10 +6,9 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
-import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import { PressableCard } from '@/components/ui/PressableCard';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
-import { radius } from '@/constants/layout';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
@@ -163,21 +162,12 @@ function RecordHero({ icon, title, subtitle, staggerIndex, onPress }: RecordHero
   const enterStyle = useStaggerEntrance(staggerIndex);
   return (
     <Animated.View style={enterStyle}>
-      <AnimatedPressable
+      <PressableCard
         onPress={onPress}
-        accessibilityRole="button"
         accessibilityLabel={title}
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: radius.xl,
-          borderWidth: 1,
-          borderColor: colors.borderPurpleSoft,
-          padding: 20,
-          minHeight: 124,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 16,
-        }}
+        size="hero"
+        border="purple"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
       >
         <View
           style={{
@@ -194,7 +184,7 @@ function RecordHero({ icon, title, subtitle, staggerIndex, onPress }: RecordHero
           <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
         </View>
         <Icon name="chevron-right" size={20} color={colors.gray[600]} />
-      </AnimatedPressable>
+      </PressableCard>
     </Animated.View>
   );
 }
@@ -213,19 +203,10 @@ function RecordGridItem({ icon, title, subtitle, staggerIndex, onPress }: Record
     <Animated.View
       style={[{ width: '50%', paddingHorizontal: 6, marginBottom: 12 }, enterStyle]}
     >
-      <AnimatedPressable
+      <PressableCard
         onPress={onPress}
-        accessibilityRole="button"
         accessibilityLabel={title}
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: colors.border,
-          padding: 16,
-          minHeight: 132,
-          justifyContent: 'space-between',
-        }}
+        style={{ minHeight: 132, justifyContent: 'space-between' }}
       >
         <View
           style={{
@@ -241,7 +222,7 @@ function RecordGridItem({ icon, title, subtitle, staggerIndex, onPress }: Record
           <Body style={{ fontSize: 15, fontWeight: '600' }}>{title}</Body>
           <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
         </View>
-      </AnimatedPressable>
+      </PressableCard>
     </Animated.View>
   );
 }
@@ -250,21 +231,11 @@ function RecordKnotBanner({ staggerIndex, onPress }: { staggerIndex: number; onP
   const enterStyle = useStaggerEntrance(staggerIndex);
   return (
     <Animated.View style={enterStyle}>
-      <AnimatedPressable
+      <PressableCard
         onPress={onPress}
-        accessibilityRole="button"
         accessibilityLabel="매듭의 흔적"
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: colors.borderTealSoft,
-          padding: 16,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 14,
-          marginTop: 4,
-        }}
+        border="teal"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 }}
       >
         <View
           style={{
@@ -281,7 +252,7 @@ function RecordKnotBanner({ staggerIndex, onPress }: { staggerIndex: number; onP
           <Caption className="text-gray-500 mt-0.5">지나온 사이클들을 시간 순으로</Caption>
         </View>
         <Icon name="chevron-right" size={18} color={colors.gray[600]} />
-      </AnimatedPressable>
+      </PressableCard>
     </Animated.View>
   );
 }

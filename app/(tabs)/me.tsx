@@ -6,10 +6,9 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
-import { AnimatedPressable } from '@/components/ui/AnimatedPressable';
+import { PressableCard } from '@/components/ui/PressableCard';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
-import { radius } from '@/constants/layout';
 import { useUserStore } from '@/store/useUserStore';
 import { isAppLocked } from '@/api/safety';
 import { usePersonaStore } from '@/store/usePersonaStore';
@@ -186,21 +185,12 @@ function MeHero({ icon, title, subtitle, staggerIndex, onPress }: MeHeroProps) {
   const enterStyle = useStaggerEntrance(staggerIndex);
   return (
     <Animated.View style={enterStyle}>
-      <AnimatedPressable
+      <PressableCard
         onPress={onPress}
-        accessibilityRole="button"
         accessibilityLabel={title}
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: radius.xl,
-          borderWidth: 1,
-          borderColor: colors.borderPurpleSoft,
-          padding: 20,
-          minHeight: 124,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 16,
-        }}
+        size="hero"
+        border="purple"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
       >
         <View
           style={{
@@ -217,7 +207,7 @@ function MeHero({ icon, title, subtitle, staggerIndex, onPress }: MeHeroProps) {
           <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
         </View>
         <Icon name="chevron-right" size={20} color={colors.gray[600]} />
-      </AnimatedPressable>
+      </PressableCard>
     </Animated.View>
   );
 }
@@ -235,23 +225,11 @@ function MePairCard({ icon, title, subtitle, staggerIndex, onPress, disabled }: 
   const enterStyle = useStaggerEntrance(staggerIndex);
   return (
     <Animated.View style={enterStyle}>
-      <AnimatedPressable
+      <PressableCard
         onPress={onPress}
-        accessibilityRole="button"
         accessibilityLabel={title}
-        accessibilityState={{ disabled }}
         disabled={disabled}
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: colors.border,
-          padding: 16,
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 14,
-          opacity: disabled ? 0.5 : 1,
-        }}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}
       >
         <View
           style={{
@@ -268,7 +246,7 @@ function MePairCard({ icon, title, subtitle, staggerIndex, onPress, disabled }: 
           <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
         </View>
         {!disabled && <Icon name="chevron-right" size={18} color={colors.gray[600]} />}
-      </AnimatedPressable>
+      </PressableCard>
     </Animated.View>
   );
 }

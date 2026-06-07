@@ -34,9 +34,12 @@ export const AnimatedPressable = forwardRef<View, Props>(function AnimatedPressa
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
 
+  // disabled 흐림은 여기서 — animatedStyle이 style 배열 마지막이라 호출자의 정적
+  // opacity는 항상 덮여 무효였다(선재 버그). disabled면 press 애니메이션도 건너뛰므로
+  // opacity.value는 1에 머묾 → 0.5 고정이 안전.
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
+    opacity: disabled ? 0.5 : opacity.value,
   }));
 
   return (
