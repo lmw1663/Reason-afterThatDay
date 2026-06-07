@@ -131,13 +131,15 @@ export default function JournalMoodScreen() {
         onSecondary={handleDiscardDraft}
       />
 
+      <View style={{ paddingHorizontal: 24, paddingTop: 56 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <BackHeader />
         <Caption className="mb-2">이별 일기 · 1 / 4 · 감정 온도</Caption>
         <Heading className="mb-2">지금 감정 온도가 몇 도야?</Heading>
 

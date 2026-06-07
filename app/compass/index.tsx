@@ -25,12 +25,14 @@ export default function CompassSummaryScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <Caption className="mb-2">결정 나침반</Caption>
         <Heading className="mb-2">지금까지의 여정을 먼저 볼게</Heading>
         <Body className="text-gray-400 mb-8">

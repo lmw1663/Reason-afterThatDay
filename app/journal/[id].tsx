@@ -34,8 +34,10 @@ export default function JournalDetailScreen() {
 
   return (
     <ScreenWrapper>
-      <ScrollView className="flex-1 px-6 pt-14" showsVerticalScrollIndicator={false}>
+      <View className="px-6 pt-14">
         <BackHeader label="목록" />
+      </View>
+      <ScrollView className="flex-1 px-6" showsVerticalScrollIndicator={false}>
 
         <Caption className="mb-1">
           {date.getFullYear()}.{date.getMonth() + 1}.{date.getDate()}

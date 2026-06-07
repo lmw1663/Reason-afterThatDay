@@ -62,11 +62,13 @@ export default function KnotArchiveScreen() {
 
   return (
     <ScreenWrapper>
+      <View style={{ paddingHorizontal: 24, paddingTop: 64 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32 }}
       >
-        <BackHeader />
         <Caption className="mb-2">기록 · 사이클 타임라인</Caption>
         <Display className="mb-2">매듭의 흔적</Display>
         <Body className="text-gray-400 mb-8">

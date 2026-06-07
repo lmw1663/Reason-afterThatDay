@@ -74,13 +74,15 @@ export default function MemorySealScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <BackHeader />
 
         <Heading className="mb-2">있던 시간 그대로 두기</Heading>
         <Body className="text-gray-400 mb-3">

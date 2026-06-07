@@ -262,12 +262,14 @@ export default function DataSettingsScreen() {
   return (
     <ScreenWrapper>
       <ErrorToast visible={!!error} message={error ?? ''} onHide={() => setError(null)} />
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
 
         <Heading className="mb-2">내 데이터 관리</Heading>
         <Body className="text-gray-400 mb-3">

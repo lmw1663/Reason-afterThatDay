@@ -147,27 +147,27 @@ export default function AssessmentScreen() {
         onHide={() => setError(null)}
         action={{ label: '재시도', onPress: handleSave }}
       />
+      <View className="px-6 pt-14 flex-row items-center justify-between mb-2">
+        <BackHeader
+          label="이전 문항"
+          onPress={() => (step === 0 ? router.back() : setStep(step - 1))}
+        />
+        <Pressable
+          onPress={handleStop}
+          accessibilityRole="button"
+          accessibilityLabel="지금은 그만"
+          accessibilityHint="응답을 저장하지 않고 검사에서 나간다"
+          hitSlop={8}
+          className="active:opacity-60"
+        >
+          <Caption className="text-gray-500">지금은 그만</Caption>
+        </Pressable>
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row items-center justify-between mb-2">
-          <BackHeader
-            label="이전 문항"
-            onPress={() => (step === 0 ? router.back() : setStep(step - 1))}
-          />
-          <Pressable
-            onPress={handleStop}
-            accessibilityRole="button"
-            accessibilityLabel="지금은 그만"
-            accessibilityHint="응답을 저장하지 않고 검사에서 나간다"
-            hitSlop={8}
-            className="active:opacity-60"
-          >
-            <Caption className="text-gray-500">지금은 그만</Caption>
-          </Pressable>
-        </View>
 
         <Caption className="mb-1 text-purple-400">
           {bank.title} · {step + 1} / {total}

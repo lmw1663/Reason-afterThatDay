@@ -59,12 +59,14 @@ export default function RecoveryTraceScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader label="뒤로" />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader label="뒤로" />
         <Heading className="mb-1">회복의 결</Heading>
         <Caption className="text-gray-500 mb-6">
           짧은 심리검사 3개(우울·불안·자존감)로 시간에 따른 변화를 따라가 봐.

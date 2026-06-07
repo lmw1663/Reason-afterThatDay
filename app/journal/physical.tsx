@@ -88,13 +88,15 @@ export default function JournalPhysicalScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <View style={{ paddingHorizontal: 24, paddingTop: 56 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <BackHeader />
         <Caption className="mb-2">이별 일기 · 1 / 4 · 몸의 변화</Caption>
         <Heading className="mb-2">몸도 변화가 있었어?</Heading>
         <Caption className="text-gray-500 mb-6">선택사항이야, 건너뛰어도 돼</Caption>

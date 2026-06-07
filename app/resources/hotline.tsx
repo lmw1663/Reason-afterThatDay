@@ -22,12 +22,14 @@ export default function HotlineScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         {/* 이 화면은 정보 전달 목적 — 존댓말 예외 (CLAUDE.md 위기 안내 톤 규칙) */}
         <Heading className="mb-2">어려울 때 도움을 받을 수 있는 곳</Heading>
         <Body className="text-gray-400 mb-8">

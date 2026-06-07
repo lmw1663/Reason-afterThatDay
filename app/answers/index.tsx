@@ -91,12 +91,14 @@ export default function AnswersScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <Heading className="mb-1">내가 답한 질문</Heading>
         <Caption className="text-gray-500 mb-6">
           그동안 답해온 자유 질문들 — 최신순.

@@ -123,14 +123,16 @@ export default function TodayJournalEditScreen() {
         onHide={() => setSaveError(null)}
         action={{ label: '재시도', onPress: handleSave }}
       />
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         scrollEnabled={scrollEnabled}
       >
-        <BackHeader />
         <Heading className="mb-1">오늘 일기 이어쓰기</Heading>
         <Caption className="text-gray-500 mb-6">
           내용을 바꾸거나 더 적어도 돼. 같은 날엔 덮어써져.

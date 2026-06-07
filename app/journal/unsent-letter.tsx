@@ -54,13 +54,13 @@ export default function UnsentLetterScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <View className="mb-2" style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
       >
-        <View className="mb-2">
-          <BackHeader />
-        </View>
         <Caption className="mb-2">부치지 않을 편지</Caption>
         <Display className="mb-2">잠가두자</Display>
         <Body className="text-gray-400 mb-6 leading-6">

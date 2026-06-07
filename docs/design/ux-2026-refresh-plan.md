@@ -88,7 +88,7 @@
 - [x] 3-1 이모지 9곳 → Icon — 📅✓📞🫧💜🩵⚫🫁🌱🍂 전부 Lucide Icon/leftIcon 치환 + DIRECTION_DOT 데드코드 삭제 (사용자 노출 이모지 0건)
 - [x] 3-2 색 7패밀리 역할 정리 + WCAG 보정 — 400 4색(purple/coral/amber/pink) 상향으로 surface 위 전 액센트 AA 4.5:1, 역할 테이블 주석 고정, VERDICT_COLOR strong 계열 토큰화
 - [x] 3-3 인라인 카드 → `PressableCard` 신설 — records/me 인라인 surface 카드 5곳 단일화, AnimatedPressable disabled 흐림 선재 버그 해소
-- [ ] 3-4 BackHeader 상단 고정 (ScrollView 밖)
+- [x] 3-4 BackHeader 상단 고정 — 31개 화면에서 스크롤 컨테이너 밖으로 이동 (패딩 1:1 인계, 내부 잔존 0건)
 
 ---
 

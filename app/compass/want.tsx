@@ -52,13 +52,15 @@ export default function CompassWantScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 16 }}
         scrollEnabled={scrollEnabled}
       >
-        <BackHeader />
         <Caption className="mb-2">결정 나침반 · 1 / 5</Caption>
         <Heading className="mb-2">솔직하게, 지금 뭘 원해?</Heading>
         <Body className="text-gray-400 mb-3">

@@ -201,12 +201,14 @@ export default function QuestionPoolScreen() {
 
   return (
     <ScreenWrapper>
+      <View style={{ paddingHorizontal: 24, paddingTop: 56 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 32 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 4 }}>
           <View style={{ flex: 1 }}>
             <Caption className="mb-1">기록</Caption>

@@ -39,13 +39,15 @@ export default function JournalDirectionScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 16 }}
         scrollEnabled={scrollEnabled}
       >
-        <BackHeader />
         <Caption className="mb-2">이별 일기 · 2 / 4</Caption>
         <Heading className="mb-2">지금 마음은 어느 쪽이야?</Heading>
         <Body className="text-gray-400 mb-6">

@@ -133,12 +133,14 @@ export default function CoolingDashboardScreen() {
         <BreathingGuide pattern="deep" onComplete={() => setBreathingVisible(false)} />
       </Modal>
 
+      <View className="px-6 pt-14">
+        <BackHeader label="홈" onPress={() => router.replace('/(tabs)')} />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader label="홈" onPress={() => router.replace('/(tabs)')} />
         <Caption className="mb-3">유예 기간 · Day {coolingDay} / {coolingDays}</Caption>
         {/* Fi 스텝 인디케이터 패턴 — 페르소나별 N(7/14/30)이 가변이라 일별 도트는 비현실적.
             대신 3단계(시작/중간/마지막)로 추상화해 진행 단계를 시각화. */}

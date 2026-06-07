@@ -148,13 +148,15 @@ export default function ReflectionCategoryScreen() {
         onHide={() => setSaveError(null)}
         action={{ label: '재시도', onPress: handleSave }}
       />
+      <View className="px-6 pt-14">
+        <BackHeader label="나에 대해" />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
         keyboardShouldPersistTaps="handled"
       >
-        <BackHeader label="나에 대해" />
         <Heading className="mb-1">{mainQuestion}</Heading>
 
         {config.subQuestions?.map((q) => (
