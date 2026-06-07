@@ -46,7 +46,13 @@ export const useJournalStore = create<JournalState>((set) => ({
   setEntries: (entries) => set({ entries }),
   upsertEntry: (entry) =>
     set((state) => {
-      const filtered = state.entries.filter((e) => e.id !== entry.id);
+      // 서버 엔트리 도착 시 같은 저장 흐름의 낙관적 `local-` 임시 엔트리도 함께 제거.
+      // id가 달라 id 필터만으로는 안 걸러져 오늘 엔트리가 중복 적재되던 문제
+      // (홈 sparkline에서 끝 2점이 모두 오늘 값으로 보임).
+      const dropLocals = !entry.id.startsWith('local-');
+      const filtered = state.entries.filter(
+        (e) => e.id !== entry.id && !(dropLocals && e.id.startsWith('local-')),
+      );
       return { entries: [entry, ...filtered], todayEntry: entry };
     }),
   setStats: (stats) => set({ stats }),

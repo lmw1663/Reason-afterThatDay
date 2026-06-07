@@ -6,6 +6,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
+import { Sparkline } from '@/components/ui/Sparkline';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { IntrusiveMemoryFab } from '@/components/IntrusiveMemoryFab';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
@@ -31,7 +32,9 @@ import { trackEvent } from '@/api/telemetry';
 
 export default function HomeScreen() {
   const { daysElapsed, breakupDate, userId, refreshDaysElapsed } = useUserStore();
-  const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
+  const { todayEntry, entries, setTodayEntry, setEntries } = useJournalStore();
+  // Tier 2-2: 최근 7개 엔트리의 감정 온도 (과거→현재) — Stocks 인라인 sparkline용
+  const moodTrend = entries.slice(0, 7).map((e) => e.moodScore).reverse();
   const personaPrimary = usePersonaStore(s => s.primary);
   const personaSecondary = usePersonaStore(s => s.secondary);
   // C-2-G-3a: 회피형 페르소나면 일기 미니 모드를 primary 시각으로 강조 (매트릭스 §2 C3).
@@ -275,16 +278,24 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* 하단: 큰 수치(Apple Pay 잔액 패턴) + 방향 pill 칩 */}
+              {/* 하단: 큰 수치(Apple Pay 잔액 패턴) + 추이 sparkline(Stocks) + 방향 pill 칩.
+                  sparkline은 모양만 — 적/녹 판단색 금지, 단일 보라 저채도. */}
               <View className="flex-row items-end justify-between">
-                <View className="flex-row items-baseline gap-1.5">
-                  <Text
-                    className="text-white font-bold"
-                    style={{ fontFamily: 'Pretendard', fontSize: 40, lineHeight: 44, letterSpacing: -1 }}
-                  >
-                    {todayEntry.moodScore}
-                  </Text>
-                  <Caption className="text-gray-500" style={{ fontSize: 15 }}>/ 10</Caption>
+                <View className="flex-row items-end gap-3">
+                  <View className="flex-row items-baseline gap-1.5">
+                    <Text
+                      className="text-white font-bold"
+                      style={{ fontFamily: 'Pretendard', fontSize: 40, lineHeight: 44, letterSpacing: -1 }}
+                    >
+                      {todayEntry.moodScore}
+                    </Text>
+                    <Caption className="text-gray-500" style={{ fontSize: 15 }}>/ 10</Caption>
+                  </View>
+                  {moodTrend.length >= 2 && (
+                    <View className="mb-1.5">
+                      <Sparkline data={moodTrend} />
+                    </View>
+                  )}
                 </View>
                 <View
                   className="rounded-full px-3 py-1 mb-1"
