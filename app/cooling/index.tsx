@@ -3,6 +3,7 @@ import { Text, View, ScrollView, Alert, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { CoolingTimer } from '@/components/ui/CoolingTimer';
+import { CoolingStepIndicator } from '@/components/cooling/CoolingStepIndicator';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Card } from '@/components/ui/Card';
@@ -137,7 +138,10 @@ export default function CoolingDashboardScreen() {
         showsVerticalScrollIndicator={false}
       >
         <BackHeader label="홈" onPress={() => router.replace('/(tabs)')} />
-        <Caption className="mb-2">유예 기간 · Day {coolingDay} / {coolingDays}</Caption>
+        <Caption className="mb-3">유예 기간 · Day {coolingDay} / {coolingDays}</Caption>
+        {/* Fi 스텝 인디케이터 패턴 — 페르소나별 N(7/14/30)이 가변이라 일별 도트는 비현실적.
+            대신 3단계(시작/중간/마지막)로 추상화해 진행 단계를 시각화. */}
+        <CoolingStepIndicator currentDay={coolingDay} totalDays={coolingDays} finalLabel={label} />
         <Heading className="mb-6">마음을 다시 들여다봐</Heading>
 
         {/* D-N 카운트다운 */}
