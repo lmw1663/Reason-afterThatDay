@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Caption, Heading, renderEmphasis, stripEmphasis } from '@/components/ui/Typography';
 import { useJournalQueue } from '@/hooks/useJournalQueue';
 import { useQuestionStore } from '@/store/useQuestionStore';
@@ -122,7 +123,7 @@ export default function JournalQuestionScreen() {
       <ScreenWrapper>
         <View className="flex-1 px-6 pt-14">
           <BackHeader />
-          <Caption className="mb-2">이별 일기</Caption>
+          <Caption className="mb-2">이별 일기 · 3 / 4</Caption>
           <Heading className="mb-6 leading-snug">잠시만…</Heading>
         </View>
       </ScreenWrapper>
@@ -166,7 +167,7 @@ export default function JournalQuestionScreen() {
     <ScreenWrapper keyboardAvoiding>
       <View className="flex-1 px-6 pt-14">
         <BackHeader />
-        <Caption className="mb-2">이별 일기</Caption>
+        <Caption className="mb-2">이별 일기 · 3 / 4</Caption>
 
         <Heading className="mb-6 leading-snug">{renderEmphasis(header)}</Heading>
 
@@ -184,6 +185,7 @@ export default function JournalQuestionScreen() {
       </View>
 
       <View className="px-6 pb-10 gap-2">
+        <ProgressDots total={4} current={2} />
         <PrimaryButton label="다음" onPress={handleNext} disabled={!text.trim()} />
         {/* "다음에": 작은 회색 텍스트 링크 — 큐 항목 모두 선택형. 단일 primary CTA 원칙 유지.
             정책: AsyncStorage에 KST 자정 anchor로 누적, 다음날 우선노출 (useJournalQueue) */}

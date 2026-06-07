@@ -138,7 +138,7 @@ export default function JournalMoodScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <BackHeader />
-        <Caption className="mb-2">이별 일기 · 1 / 4 · 감정 온도 (1 / 3)</Caption>
+        <Caption className="mb-2">이별 일기 · 1 / 4 · 감정 온도</Caption>
         <Heading className="mb-2">지금 감정 온도가 몇 도야?</Heading>
 
         {/* D-5 분노 페르소나(P10) — 거칠게 모드 우회 옵션 */}

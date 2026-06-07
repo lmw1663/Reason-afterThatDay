@@ -121,7 +121,7 @@ export default function JournalEmotionScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <BackHeader />
-        <Caption className="mb-2">이별 일기 · 1 / 4 · 감정 라벨 (2 / 3)</Caption>
+        <Caption className="mb-2">이별 일기 · 1 / 4 · 감정 라벨</Caption>
         <Heading className="mb-2">어떤 감정인지 골라봐</Heading>
         <Caption className="text-gray-500 mb-6">여러 개 동시에 느껴도 돼</Caption>
 
