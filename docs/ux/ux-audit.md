@@ -244,7 +244,7 @@ A 패턴이 핵심 흐름에 박혀 있어서 **DB 저장 실패가 사용자에
 
 ## 검증 라운드 후 보완 (2026-04-30, follow-up)
 
-검증 결과 Cursor 세션 적용 보고서(`docs/ux-audit(cursor).md`)와 실제 코드 사이에 두 가지 잔존 결함을 발견하고 보완했다.
+검증 결과 Cursor 세션 적용 보고서(`docs/ux/ux-audit(cursor).md`)와 실제 코드 사이에 두 가지 잔존 결함을 발견하고 보완했다.
 
 ### 결함 1 — `disclaimer.meterReference` 토큰 미적용
 - 문서는 "메터 화면에 분산 적용" 으로 표기했지만 `components/ui/MeterBar.tsx:40` 에 하드코딩 카피가 그대로 남아 있었다.

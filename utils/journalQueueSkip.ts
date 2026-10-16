@@ -3,7 +3,7 @@
 // "다음에" 스킵된 항목은 KST 자정을 anchor로 *다음날 우선노출*된다.
 // 본 모듈은 store/네트워크 비의존 — 단위 테스트 가능.
 //
-// 정책 SSOT: docs/journal-unified-queue.md
+// 정책 SSOT: docs/features/journal-unified-queue.md
 
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
 
