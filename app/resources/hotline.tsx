@@ -4,6 +4,7 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { BackHeader } from '@/components/ui/BackHeader';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { colors } from '@/constants/colors';
 // 핫라인 정보는 하드코딩 금지 — utils/crisisHotlines가 JSON에서 로드
 import { getAllHotlines } from '@/utils/crisisHotlines';
@@ -21,12 +22,14 @@ export default function HotlineScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         {/* 이 화면은 정보 전달 목적 — 존댓말 예외 (CLAUDE.md 위기 안내 톤 규칙) */}
         <Heading className="mb-2">어려울 때 도움을 받을 수 있는 곳</Heading>
         <Body className="text-gray-400 mb-8">
@@ -48,9 +51,10 @@ export default function HotlineScreen() {
                 <Caption className="text-teal-400 ml-2">{h.available}</Caption>
               </View>
               {h.number && (
-                <Text className="text-purple-400 text-lg font-bold mb-1">
-                  📞 {h.number}
-                </Text>
+                <View className="flex-row items-center gap-1.5 mb-1">
+                  <Icon name="phone" size={16} color={colors.purple[400]} strokeWidth={2} />
+                  <Text className="text-purple-400 text-lg font-bold">{h.number}</Text>
+                </View>
               )}
               {h.url && (
                 <Text className="text-purple-400 text-sm mb-1">{h.url}</Text>
@@ -76,7 +80,8 @@ export default function HotlineScreen() {
 
       <View className="px-6 pb-10">
         <PrimaryButton
-          label="🫧 앱 안에서 호흡하기"
+          label="앱 안에서 호흡하기"
+          leftIcon="wind"
           variant="ghost"
           onPress={() => router.replace('/(tabs)' as never)}
         />

@@ -121,13 +121,15 @@ export default function RawModeScreen() {
           message={error ?? ''}
           onHide={() => setError(null)}
         />
+        <View className="px-6 pt-14">
+          <BackHeader />
+        </View>
         <ScrollView
-          className="flex-1 px-6 pt-14"
+          className="flex-1 px-6"
           contentContainerStyle={{ paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <BackHeader />
           <Heading className="mb-1">거칠게 써도 돼</Heading>
           <Caption className="text-gray-500 mb-6">
             욕도, 끊긴 문장도 괜찮아. 너만 읽는 글이야.
@@ -180,12 +182,14 @@ export default function RawModeScreen() {
         onHide={() => setError(null)}
         action={{ label: '재시도', onPress: handleSave }}
       />
+      <View className="px-6 pt-14">
+        <BackHeader onPress={() => setStep('vent')} />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader onPress={() => setStep('vent')} />
         <Heading className="mb-1">이 분노 아래에 어떤 마음이 있을까?</Heading>
         <Caption className="text-gray-500 mb-6">
           하나만 골라봐. 정답이 아니야 — 가장 가까운 걸로.

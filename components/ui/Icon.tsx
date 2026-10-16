@@ -1,4 +1,5 @@
 import {
+  Activity,
   Apple,
   Archive,
   Award,
@@ -13,14 +14,20 @@ import {
   CheckSquare,
   ChevronLeft,
   ChevronRight,
+  CircleDashed,
   ClipboardList,
+  Cloud,
   CloudFog,
+  CloudRain,
   Coffee,
   Compass,
   Feather,
+  Flame,
+  Flower2,
   Globe,
   GraduationCap,
   Heart,
+  HeartCrack,
   HeartHandshake,
   Home,
   Hourglass,
@@ -35,6 +42,7 @@ import {
   Pause,
   PauseCircle,
   PenLine,
+  Phone,
   Pin,
   Plus,
   Puzzle,
@@ -46,6 +54,8 @@ import {
   Shuffle,
   Smile,
   Sparkles,
+  Square,
+  Sunset,
   Thermometer,
   Trash2,
   TrendingUp,
@@ -54,6 +64,7 @@ import {
   Users,
   Wind,
   X,
+  Zap,
 } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 
@@ -61,7 +72,7 @@ import { colors } from '@/constants/colors';
  * 단일 아이콘 시스템 (Lucide 기반).
  *
  * 정책:
- *  - 시그니처 색은 `colors.purple[400]` (#7F77DD). 다크 테마 위에서 가장 안정적.
+ *  - 시그니처 색은 `colors.purple[400]` (#857DE0). 다크 테마 위에서 가장 안정적.
  *  - 강조가 다른 맥락(teal/coral/amber/gray)은 `color` prop으로 명시 override.
  *  - 라인 두께 1.8 — 너무 얇지도 굵지도 않게.
  *  - 표준 size: 22 (탭/메뉴/Choice), 18 (인라인/헤더), 16 (보조), 56+ (Empty state).
@@ -96,6 +107,9 @@ const iconMap = {
   hourglass: Hourglass,
   'bell-off': BellOff,
   bell: Bell,
+
+  // 위기 자원 — 전화 걸기 (bell은 알림 의미라 통화 액션에 오용 금지)
+  phone: Phone,
   undo: Undo2,
   save: Save,
 
@@ -146,6 +160,23 @@ const iconMap = {
   'check-square': CheckSquare,
   briefcase: Briefcase,
   calendar: Calendar,
+
+  // 감정 라벨 — EmotionPickerCard용 (15개)
+  flame:          Flame,         // 분노
+  'heart-crack':  HeartCrack,    // 배신감
+  'cloud-rain':   CloudRain,     // 슬픔
+  // moon (그리움)        ← 이미 위에 있음
+  // scale (죄책감)        ← 이미 위에 있음
+  // leaf (안도)           ← 이미 위에 있음
+  // feather (자유로움)    ← 이미 위에 있음
+  sunset:         Sunset,        // 외로움
+  zap:            Zap,           // 충격
+  cloud:          Cloud,         // 멍함
+  activity:       Activity,      // 자존감 흔들림 (심박)
+  // wind (혼란)           ← 이미 위에 있음
+  'circle-dashed': CircleDashed, // 허무 (점선 원 — 흐릿한 비어있음)
+  square:         Square,        // 공허 (속이 빈 사각형 — 점선 원과 모양 분리)
+  'flower-2':     Flower2,       // 시들음
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconMap;

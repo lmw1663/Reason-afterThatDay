@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { colors } from '@/constants/colors';
+import { elevation } from '@/constants/layout';
 
 interface Props {
   value: number;
@@ -212,7 +213,7 @@ export function MoodSlider({ value, onChange }: Props) {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: 'rgba(14,14,18,0.45)',
+                backgroundColor: colors.scrimBgSoft,
               }}
             />
           </View>
@@ -268,11 +269,7 @@ export function MoodSlider({ value, onChange }: Props) {
               backgroundColor: colors.white,
               alignItems: 'center',
               justifyContent: 'center',
-              shadowColor: '#000',
-              shadowOpacity: 0.35,
-              shadowRadius: 6,
-              shadowOffset: { width: 0, height: 2 },
-              elevation: 6,
+              ...elevation.thumb,
             }}
           >
             <View

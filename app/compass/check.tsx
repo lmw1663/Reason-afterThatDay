@@ -110,12 +110,14 @@ export default function CompassCheckScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <Caption className="mb-2">결정 나침반 · 2 / 5</Caption>
         <Heading className="mb-2">이성적으로 한번 체크해볼게</Heading>
         <Body className="text-gray-400 mb-8">

@@ -117,12 +117,14 @@ export default function JournalMiniScreen() {
 
   return (
     <ScreenWrapper>
+      <View style={{ paddingHorizontal: 24, paddingTop: 56 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 56, paddingBottom: 16 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <Caption className="mb-2">이별 일기 · 미니</Caption>
         <Heading className="mb-2">지금 기분이 어때?</Heading>
         <Caption className="mb-8 text-gray-500">

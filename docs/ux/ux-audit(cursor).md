@@ -1,13 +1,13 @@
 # UX Audit — Cursor 세션 적용 기록 (2026-04-30)
 
-> 작성 목적: `docs/ux-audit.md` 의 P0/P1/P2 권고를 코드에 반영하면서, 적용 도중 발견·해결한 런타임 버그까지 한 번에 정리한다.
+> 작성 목적: `docs/ux/ux-audit.md` 의 P0/P1/P2 권고를 코드에 반영하면서, 적용 도중 발견·해결한 런타임 버그까지 한 번에 정리한다.
 > 범위: 이 세션(2026-04-30, Cursor) 안에서 변경된 파일만.
 
 ---
 
 ## 0. 작업 흐름 요약
 
-1. `docs/ux-audit.md` 의 9개 권고(P0×3 / P1×3 / P2×3) 일괄 적용
+1. `docs/ux/ux-audit.md` 의 9개 권고(P0×3 / P1×3 / P2×3) 일괄 적용
 2. 적용 직후 발생한 런타임 `ReferenceError` 두 건 진단·수정 (모듈 해석 / Metro 캐시)
 3. `react-native-reanimated` 의 inline-style 경고 분석 (라이브러리 자체 경고로 결론, 무시 가능)
 4. **신규 버그 리포트 — "감정 일기를 작성해도 일기창에 기록되지 않음"** 의 근본 원인 추적·수정
@@ -165,8 +165,8 @@
 - `constants/copy.ts` (참조 정리)
 
 ### 문서
-- `docs/ux-audit.md` (적용 상태/후속 메모 갱신)
-- `docs/ux-audit(cursor).md` (본 문서, 신규)
+- `docs/ux/ux-audit.md` (적용 상태/후속 메모 갱신)
+- `docs/ux/ux-audit(cursor).md` (본 문서, 신규)
 
 ---
 

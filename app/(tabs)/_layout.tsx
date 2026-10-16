@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
-import { colors } from '@/constants/colors';
-import { Icon, type IconName } from '@/components/ui/Icon';
+import { TabBar } from '@/components/layout/TabBar';
 import { useKnotStore } from '@/store/useKnotStore';
 
 /**
@@ -15,37 +14,28 @@ import { useKnotStore } from '@/store/useKnotStore';
  *
  * F-4 매듭 탭(knot)은 *동적 노출* — useKnotStore.knotTabVisible이 true일 때만 제일
  * 오른쪽에 추가. 권유 모달 승낙(recordAccept) 시 true, 매듭 완료 시 hideKnotTab() 호출.
- * 평소(default false)엔 href: null로 탭바·라우트 모두 비노출.
+ *
+ * 탭바 UI: 커스텀 `<TabBar>` (floating capsule + spring). 아이콘·노출 SSOT는
+ * `components/layout/TabBar.tsx` — 매듭 탭의 *탭바 노출*도 거기서 knotTabVisible로 제어.
+ * 여기 `href: null`은 탭바가 아니라 *직접 내비게이션/딥링크* 차단용으로 유지
+ * (knot 비노출 시 /knot 라우트를 링크 불가 상태로 게이팅).
  */
 export default function TabLayout() {
   const knotTabVisible = useKnotStore((s) => s.knotTabVisible);
 
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-        tabBarActiveTintColor: colors.purple[400],
-        tabBarInactiveTintColor: colors.gray[600],
-        tabBarLabelStyle: { fontSize: 11 },
-      }}
+      tabBar={(props) => <TabBar {...props} />}
+      // 탭 전환 슬라이드는 각 탭 화면의 ScreenWrapper entrance="slide"가 담당.
+      // (bottom-tabs animation:'shift'는 가장자리 탭이 빈 화면으로 남는 문제가 있어 미사용)
+      screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen name="index"   options={{ title: '오늘', tabBarIcon: ({ color }) => <TabIcon name="home"    color={color} /> }} />
-      <Tabs.Screen name="records" options={{ title: '기록', tabBarIcon: ({ color }) => <TabIcon name="book"    color={color} /> }} />
-      <Tabs.Screen name="me"      options={{ title: '나',   tabBarIcon: ({ color }) => <TabIcon name="smile"   color={color} /> }} />
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="records" />
+      <Tabs.Screen name="me" />
 
       {/* F-4 매듭 탭 — 권유 모달 승낙 시에만 동적 노출. 가장 오른쪽 위치. */}
-      <Tabs.Screen
-        name="knot"
-        options={{
-          href: knotTabVisible ? '/knot' : null,
-          title: '매듭',
-          tabBarIcon: ({ color }) => <TabIcon name="link" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="knot" options={{ href: knotTabVisible ? '/knot' : null }} />
 
       {/* 기존 탭 — 탭바에서 숨김, URL은 A-4·A-5에서 정리. */}
       <Tabs.Screen name="analysis"   options={{ href: null }} />
@@ -53,8 +43,4 @@ export default function TabLayout() {
       <Tabs.Screen name="graduation" options={{ href: null }} />
     </Tabs>
   );
-}
-
-function TabIcon({ name, color }: { name: IconName; color: string }) {
-  return <Icon name={name} color={color} size={22} strokeWidth={1.8} />;
 }

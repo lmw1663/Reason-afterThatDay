@@ -103,13 +103,15 @@ export default function MemoryEncounterPlanScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <BackHeader />
 
         <Heading className="mb-2">마주칠 일상 정리</Heading>
         <Body className="text-gray-400 mb-3">

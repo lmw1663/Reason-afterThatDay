@@ -1,6 +1,8 @@
 import { View } from 'react-native';
 import { Modal } from './ui/Modal';
 import { Caption } from './ui/Typography';
+import { Icon } from './ui/Icon';
+import { colors } from '@/constants/colors';
 
 export interface CoolingOffWarningModalProps {
   visible: boolean;
@@ -52,10 +54,9 @@ export function CoolingOffWarningModal({
       secondaryLabel="잠깐, 돌아갈게"
       onSecondary={onCancel}
     >
-      <View className="mb-2">
-        <Caption className="text-purple-400">
-          ✓ 이 분석은 7일째에 정확해질 거야.
-        </Caption>
+      <View className="mb-2 flex-row items-center gap-1.5">
+        <Icon name="check" size={13} color={colors.purple[400]} strokeWidth={2.5} />
+        <Caption className="text-purple-400">이 분석은 7일째에 정확해질 거야.</Caption>
       </View>
     </Modal>
   );

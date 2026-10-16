@@ -104,13 +104,15 @@ export default function MemoryDeclutterScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <BackHeader />
 
         <Heading className="mb-2">물건 정리 워크시트</Heading>
         <Body className="text-gray-400 mb-3">

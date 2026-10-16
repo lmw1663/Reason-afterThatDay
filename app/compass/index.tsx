@@ -25,12 +25,14 @@ export default function CompassSummaryScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <Caption className="mb-2">결정 나침반</Caption>
         <Heading className="mb-2">지금까지의 여정을 먼저 볼게</Heading>
         <Body className="text-gray-400 mb-8">
@@ -47,7 +49,7 @@ export default function CompassSummaryScreen() {
             tag="최근 7일 일기 방향"
             body={
               recentDirections.length === 0
-                ? '아직 일기를 쓰지 않았어.'
+                ? '아직 모인 일기가 없어.'
                 : `잡고 싶어 ${catchCount}회 · 보내고 싶어 ${letGoCount}회 · 모르겠어 ${recentDirections.length - catchCount - letGoCount}회`
             }
             accent="purple"

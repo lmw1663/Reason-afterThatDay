@@ -55,13 +55,15 @@ export default function MemoryWriteScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
+        <View className="px-6 pt-14">
+          <BackHeader />
+        </View>
         <ScrollView
-          className="flex-1 px-6 pt-14"
+          className="flex-1 px-6"
           contentContainerStyle={{ paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <BackHeader />
           <Caption className="mb-2" style={{ color: meta.color }}>{meta.label}</Caption>
           <Heading className="mb-2">기억을 꺼내봐</Heading>
           <Body className="text-gray-400 mb-8">{meta.prompt}</Body>

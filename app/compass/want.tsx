@@ -3,14 +3,15 @@ import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { BackHeader } from '@/components/ui/BackHeader';
-import { DirectionPicker } from '@/components/ui/DirectionPicker';
-import { AffectionSlider } from '@/components/ui/AffectionSlider';
+import {
+  MoodMatrixPicker,
+  type MoodMatrixResult,
+} from '@/components/ui/MoodMatrixPicker';
 import { PreviousAnswerHint } from '@/components/ui/PreviousAnswerHint';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
 import type { Direction } from '@/store/useJournalStore';
-import { useDecisionStore } from '@/store/useDecisionStore';
 import { useUserStore } from '@/store/useUserStore';
 import { useQuestionStore } from '@/store/useQuestionStore';
 import { upsertQuestionResponse } from '@/api/questions';
@@ -24,18 +25,16 @@ const DIRECTION_LABEL: Record<Direction, string> = {
 };
 
 export default function CompassWantScreen() {
-  const [selected, setSelected] = useState<Direction | null>(null);
-  const [affectionLevel, setAffectionLevel] = useState(5);
-  const { history } = useDecisionStore();
+  const [pick, setPick] = useState<MoodMatrixResult | null>(null);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
   const { userId } = useUserStore();
   const markAnswered = useQuestionStore((s) => s.markAnswered);
-  const prevDirection = history[0]?.direction ?? null;
 
   function handleNext() {
-    if (!selected) return;
+    if (!pick) return;
     // Phase H — c_honest_want 응답 기록. PreviousAnswerHint·시간차 후속(c_check_fear)
     // 발화 anchor. store(낙관적 갱신) + 서버(history archive 트리거) 양쪽.
-    const label = DIRECTION_LABEL[selected];
+    const label = DIRECTION_LABEL[pick.direction];
     markAnswered('c_honest_want', label);
     if (userId) {
       upsertQuestionResponse({
@@ -47,18 +46,21 @@ export default function CompassWantScreen() {
     }
     router.push({
       pathname: '/compass/check',
-      params: { want: selected, affectionLevel: String(affectionLevel) },
+      params: { want: pick.direction, affectionLevel: String(pick.affectionLevel) },
     });
   }
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 16 }}
+        scrollEnabled={scrollEnabled}
       >
-        <BackHeader />
         <Caption className="mb-2">결정 나침반 · 1 / 5</Caption>
         <Heading className="mb-2">솔직하게, 지금 뭘 원해?</Heading>
         <Body className="text-gray-400 mb-3">
@@ -66,23 +68,15 @@ export default function CompassWantScreen() {
         </Body>
         <PreviousAnswerHint questionId="c_honest_want" className="mb-3" />
 
-        <DirectionPicker
-          value={selected}
-          onChange={setSelected}
-          prevDirection={prevDirection}
-          changePrefix="저번엔"
-          changeSuffix="지금은?"
+        <MoodMatrixPicker
+          onChange={setPick}
+          onActiveChange={(a) => setScrollEnabled(!a)}
         />
-
-        <View className="mt-10">
-          <Body className="text-gray-300 mb-4">지금 상대를 어떻게 느껴?</Body>
-          <AffectionSlider value={affectionLevel} onChange={setAffectionLevel} />
-        </View>
       </ScrollView>
 
       <View className="px-6 pb-10 gap-4">
         <ProgressDots total={5} current={0} />
-        <PrimaryButton label="다음" onPress={handleNext} disabled={!selected} />
+        <PrimaryButton label="다음" onPress={handleNext} disabled={!pick} />
       </View>
     </ScreenWrapper>
   );

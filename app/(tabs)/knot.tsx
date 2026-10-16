@@ -34,13 +34,13 @@ export default function KnotEntry() {
   }
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper entrance="slide">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <Caption className="mb-2">D+{daysElapsed}</Caption>
+        <Caption className="mb-2 text-white">D+{daysElapsed}</Caption>
         <Display className="mb-3">{label}</Display>
         <Body className="text-gray-400 mb-8 leading-relaxed">
           여기까지 와줘서 고마워.{'\n'}

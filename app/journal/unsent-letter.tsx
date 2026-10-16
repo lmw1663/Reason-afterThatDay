@@ -54,13 +54,13 @@ export default function UnsentLetterScreen() {
 
   return (
     <ScreenWrapper keyboardAvoiding>
+      <View className="mb-2" style={{ paddingHorizontal: 24, paddingTop: 16 }}>
+        <BackHeader />
+      </View>
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: 24 }}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
       >
-        <View className="mb-2">
-          <BackHeader />
-        </View>
         <Caption className="mb-2">부치지 않을 편지</Caption>
         <Display className="mb-2">잠가두자</Display>
         <Body className="text-gray-400 mb-6 leading-6">
@@ -123,7 +123,7 @@ export default function UnsentLetterScreen() {
 
         {!loading && locked.length === 0 && unlocked.length === 0 && (
           <Caption className="text-gray-500 text-center mt-4">
-            아직 편지가 없어. 위에서 첫 편지를 적어봐.
+            아직 편지가 없어. 첫 편지를 적어볼래?
           </Caption>
         )}
       </ScrollView>

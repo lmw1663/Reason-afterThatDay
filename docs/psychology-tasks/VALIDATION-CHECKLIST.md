@@ -147,9 +147,9 @@
 
 - [ ] 항목 번호/파일 경로 변경 시 다음 문서들 검색 후 갱신:
   - `CLAUDE.md`
-  - `docs/psychology-analysis.md`
+  - `docs/psychology-logic/psychology-analysis.md`
   - `docs/research.md`
-  - `docs/user-flow.md`
+  - `docs/ux/user-flow.md`
 - [ ] 검색 명령: `grep -r "6-N\|psychology-tasks/" docs/ CLAUDE.md`
 - [ ] 라인 번호 참조 X — 항목 번호(6-1) 또는 파일 경로로 참조
 

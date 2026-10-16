@@ -94,12 +94,14 @@ export default function AboutMeScreen() {
         onCancel={() => router.back()}
       />
 
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <BackHeader />
         <Heading className="mb-1">나에 대해 알아가기</Heading>
         <Caption className="text-gray-500 mb-8">
           답하고 싶은 것만 답해도 돼. 언제든 수정할 수 있어.

@@ -27,6 +27,19 @@ export function isRawModeAllowed(p: PersonaCode | null): boolean {
   return p !== null && RAW_MODE_PERSONAS.includes(p);
 }
 
+/**
+ * 자극성 시각 효과(번개 flash 등) 비활성 페르소나.
+ *
+ * P10(분노 우세)에게 폭풍·번개 같은 시각 자극은 격앙·소진 트리거가 될 수 있음 —
+ * 매트릭스 §2 C3에 따라 WeatherScene의 LightningLayer를 끔. 추후 다른 분노/소진
+ * 페르소나가 추가되면 본 배열에 합치면 됨.
+ */
+const VISUAL_STIMULUS_BLOCKED_PERSONAS: PersonaCode[] = ['P10'];
+
+export function isVisualStimulusBlockedByPersona(p: PersonaCode | null): boolean {
+  return p !== null && VISUAL_STIMULUS_BLOCKED_PERSONAS.includes(p);
+}
+
 /** 감정 라벨에 "공허/멍함/시들음" 우선 노출 (매트릭스 §2 C3 P08) */
 const EMPTINESS_LABELS_PRIORITY: PersonaCode[] = ['P08'];
 
@@ -368,7 +381,7 @@ export function isEncounterPlanRecommended(p: PersonaCode | null): boolean {
  * 일기 통합 큐 — 일기 3/N 단계에 [장단점 / 스마트Q / about-me / memory] 풀에서
  * 페르소나·D+N·최근 응답 가중치로 다음 항목을 1개씩 라우팅. SSOT는 본 섹션.
  *
- * 정책 문서: docs/journal-unified-queue.md
+ * 정책 문서: docs/features/journal-unified-queue.md
  *
  * 핵심 룰:
  *  1. 큐 길이 상한: D+0~7 = 3, D+8+ = 5
@@ -403,7 +416,7 @@ export function isJournalProsConsBlocked(p: PersonaCode | null): boolean {
 /**
  * 페르소나·D+N별 단점 질문 비율 (0~1). 1 - ratio = 장점 비율.
  *
- * 곡선 설계 — docs/journal-unified-queue.md 정책표:
+ * 곡선 설계 — docs/features/journal-unified-queue.md 정책표:
  *  - default (P02·P04·P06·P08): 0~7=0.7 / 8~30=0.6 / 30+=0.5 (초기 단점 ↑, 후기 균형)
  *    임상 근거:
  *      · P02 회피형 — 단점 질문은 회피 깨기(emotional contact 자극) 통로. about-me 트랙에선
@@ -463,28 +476,6 @@ export function getJournalProsConsRatio(
 }
 
 // ───────── Ref-6 연락 충동 보고 칩 노출 차단 (G-6 보조 카드) ─────────
-
-/**
- * 연락 충동 보고 칩(`ContactUrgeChip`) 노출 차단 페르소나.
- *
- * 칩의 본래 목적은 *충동 자가 인식 + 7일 추세*이지만, 일부 페르소나에서는
- * 매일 노출 자체가 임상적으로 역효과:
- *  - P14 외도 가해: 가해자→피해자 연락 충동 +1 카운트는 *행동 권장* 톤이 됨
- *  - P16 결혼·이혼: 자녀 양육·법적 사유로 *필수 연락*이 존재 → 충동 vs 의무 구분 모호
- *  - P17 강제 이별: 사별·접근금지·실종 등 — 연락 자체가 불가능해 노출이 잔인
- *  - P19 ROCD: 매일 "오늘 연락하고 싶었어?" 자체가 강박 도구화 자극
- *  - P20 트라우마 본딩: 연락 = 재희생 위험. +1 누적 표시가 충동 정상화로 흐름
- *
- * 그 외 페르소나는 노출 — 특히 P03·P06·P10은 핵심 타겟.
- *
- * appliesGuard 패턴(R5 "부의 금기만 추가")으로 검사 — effective·overlay 한 쪽이라도
- * 차단 페르소나면 숨김. (예: 주 P03 + 부 P14 → P14 보호 우선으로 숨김.)
- */
-const CONTACT_URGE_CHIP_BLOCKED: PersonaCode[] = ['P14', 'P16', 'P17', 'P19', 'P20'];
-
-export function isContactUrgeChipBlocked(p: PersonaCode | null): boolean {
-  return p !== null && CONTACT_URGE_CHIP_BLOCKED.includes(p);
-}
 
 // ───────── Ref-3 새벽 푸시 차단 (참고용 §2 P03) ─────────
 

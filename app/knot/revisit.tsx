@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BackHandler, View, ActivityIndicator } from 'react-native';
+import { BackHandler, View, ActivityIndicator, Text } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
@@ -109,7 +109,9 @@ export default function KnotRevisitScreen() {
     <ScreenWrapper>
       <Stack.Screen options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">D+{daysElapsed} · {copy.caption}</Caption>
+        <Caption className="mb-2">
+          <Text className="text-white">D+{daysElapsed}</Text> · {copy.caption}
+        </Caption>
         <Heading className="mb-6">{copy.heading}</Heading>
 
         <Card variant="subtle" accent="purple" className="mb-6">

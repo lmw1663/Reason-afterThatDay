@@ -7,6 +7,7 @@ import { BreathingGuide } from './BreathingGuide';
 import { addIntrusiveMemoryResponse } from '@/api/intrusiveMemory';
 import { useUserStore } from '@/store/useUserStore';
 import { colors } from '@/constants/colors';
+import { radius } from '@/constants/layout';
 
 interface IntrusiveMemoryModalProps {
   visible: boolean;
@@ -120,7 +121,7 @@ export function IntrusiveMemoryModal({ visible, onClose }: IntrusiveMemoryModalP
                   backgroundColor: colors.bg ?? '#0A0A0B',
                   borderWidth: 1,
                   borderColor: colors.border,
-                  borderRadius: 12,
+                  borderRadius: radius.sm,
                   padding: 12,
                 }}
               />

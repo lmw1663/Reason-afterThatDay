@@ -91,7 +91,7 @@ export default function DataSettingsScreen() {
       // ON→OFF 전환은 next=false라 본 호출도 실제로 옵트인 OFF에 막혀 silent skip되는 race가 정합.
       if (next) trackEvent('preference_toggled', { key: 'telemetry_opted_in', next });
     } catch {
-      setError('텔레메트리 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
+      setError('텔레메트리 설정 변경이 안 됐어. 잠시 후 다시 시도해줘.');
     } finally {
       setTogglingTelemetry(false);
     }
@@ -107,7 +107,7 @@ export default function DataSettingsScreen() {
       setSuspension({ ...suspension, notificationsSuspended: next, updatedAt: new Date().toISOString() });
       trackEvent('preference_toggled', { key: 'notifications_suspended', next });
     } catch {
-      setError('알림 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
+      setError('알림 설정 변경이 안 됐어. 잠시 후 다시 시도해줘.');
     } finally {
       setTogglingNotif(false);
     }
@@ -123,7 +123,7 @@ export default function DataSettingsScreen() {
       setSuspension({ ...suspension, aiAnalysisSuspended: next, updatedAt: new Date().toISOString() });
       trackEvent('preference_toggled', { key: 'ai_analysis_suspended', next });
     } catch {
-      setError('AI 분석 설정 변경이 실패했어. 잠시 후 다시 시도해줘.');
+      setError('AI 분석 설정 변경이 안 됐어. 잠시 후 다시 시도해줘.');
     } finally {
       setTogglingAi(false);
     }
@@ -174,7 +174,7 @@ export default function DataSettingsScreen() {
         await Share.share({ message: json, title: 'reason 데이터 반출' });
       }
     } catch {
-      setError('내보내기가 실패했어. 잠시 후 다시 시도해줘.');
+      setError('내보내기가 안 됐어. 잠시 후 다시 시도해줘.');
     } finally {
       setExporting(false);
     }
@@ -236,12 +236,13 @@ export default function DataSettingsScreen() {
         ? '계정과 모든 기록이 영구 삭제됐어. 그동안 함께해줘서 고마워.'
         : `${fallbackResult?.deletedTables.length ?? 0}개 항목 기록을 지웠어.${
             (fallbackResult?.failedTables.length ?? 0) > 0
-              ? `\n실패한 ${fallbackResult?.failedTables.length}개 항목과 계정 자체는 운영팀 후속 처리.`
+              ? `\n남은 ${fallbackResult?.failedTables.length}개 항목과 계정 자체는 운영팀이 마저 처리할 거야.`
               : '\n계정 자체 삭제는 운영팀 후속 처리가 필요해.'
           }`;
 
       Alert.alert(
-        '삭제 완료',
+        // 부분 정리(fallback)일 땐 완료를 과장하지 않음 — 제목과 본문 모순 방지
+        accountDeleted ? '다 정리했어' : '거의 다 정리했어',
         `${message}\n로그아웃됐어.`,
         // '/' 가 아닌 /onboarding/login 명시 — store reset 됐어도 useAuth 의 익명
         // 가입 useEffect 는 마운트 시 1회라 재발사 안 됨. 사용자가 OAuth 로그인할
@@ -261,12 +262,14 @@ export default function DataSettingsScreen() {
   return (
     <ScreenWrapper>
       <ErrorToast visible={!!error} message={error ?? ''} onHide={() => setError(null)} />
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
 
         <Heading className="mb-2">내 데이터 관리</Heading>
         <Body className="text-gray-400 mb-3">

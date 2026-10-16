@@ -59,12 +59,14 @@ export default function AnalysisReasonScreen() {
 
   return (
     <ScreenWrapper>
+      <View className="px-6 pt-14">
+        <BackHeader />
+      </View>
       <ScrollView
-        className="flex-1 px-6 pt-14"
+        className="flex-1 px-6"
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
       >
-        <BackHeader />
         <Caption className="mb-2">관계 분석 · 1 / 5</Caption>
         <Heading className="mb-2">왜 헤어졌어?</Heading>
         <Body className="text-gray-400 mb-8">

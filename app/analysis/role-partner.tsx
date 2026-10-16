@@ -25,13 +25,15 @@ export default function AnalysisRolePartnerScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
+        <View className="px-6 pt-14">
+          <BackHeader />
+        </View>
         <ScrollView
-          className="flex-1 px-6 pt-14"
+          className="flex-1 px-6"
           contentContainerStyle={{ paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <BackHeader />
           <Caption className="mb-2">관계 분석 · 3 / 5</Caption>
           <Heading className="mb-2">마음속 두 목소리</Heading>
           <Body className="text-gray-400 mb-8">

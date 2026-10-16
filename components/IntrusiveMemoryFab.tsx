@@ -2,6 +2,7 @@ import { Pressable, View, StyleSheet } from 'react-native';
 import { Caption } from './ui/Typography';
 import { Icon } from './ui/Icon';
 import { colors } from '@/constants/colors';
+import { elevation } from '@/constants/layout';
 
 interface Props {
   onPress: () => void;
@@ -18,8 +19,7 @@ interface Props {
  * purple border + 약한 shadow로 격하. 발견 가능하되 평상시 시선을 빼앗지 않음.
  *
  * 페르소나 게이팅 없음 — 침투사고는 이별 초기 누구나 겪을 수 있어 전 페르소나 동일 노출.
- * (참고: ContactUrgeChip은 임상 안전상 5종 차단 — `docs/persona-contact-urge-policy.md`.
- *  본 FAB는 "기록·외현화 의식"이라 모든 페르소나 안전.)
+ * 본 FAB는 "기록·외현화 의식"이라 모든 페르소나 안전.
  *
  * 배치: ScreenWrapper(SafeAreaView) 내부 absolute → 탭바 위에 자연스럽게 떠 있음.
  */
@@ -53,10 +53,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.purple[400],
-    shadowColor: '#000',
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    ...elevation.floating,
   },
 });

@@ -22,9 +22,7 @@ export type EventKind =
   // 사용자 토글 변경 (suspension·telemetry)
   | 'preference_toggled'
   // A/B 실험 할당 (X-4-3) — payload: { experiment_id, variant }
-  | 'experiment_assigned'
-  // D-4 자가 보고 연락 충동 1탭 — payload: {} (개인 식별 정보 0)
-  | 'contact_urge_reported';
+  | 'experiment_assigned';
 
 export interface TelemetryStatus {
   optedIn: boolean;
@@ -64,7 +62,7 @@ export async function setTelemetryOptIn(userId: string, optIn: boolean): Promise
  *    경고로만 — 사용자 흐름을 절대 막지 않음 (telemetry 실패-안전 원칙)
  *  · 신규 키 추가는 *반드시* 본 맵 갱신 + 코드 리뷰. 키 추가 자체가 PII 위험 검토 트리거
  *  · persona는 *카테고리* (anonymizePersona 결과)만 — P-코드 raw는 차단
- *  · 빈 배열 = payload 미허용 (예: contact_urge_reported)
+ *  · 빈 배열 = payload 미허용
  */
 const PAYLOAD_ALLOWLIST: Record<EventKind, readonly string[]> = {
   screen_view: [
@@ -86,7 +84,6 @@ const PAYLOAD_ALLOWLIST: Record<EventKind, readonly string[]> = {
   crisis_modal_shown:     ['type'],
   preference_toggled:     ['key', 'next'],
   experiment_assigned:    ['experiment_id', 'variant'],
-  contact_urge_reported:  [],
 };
 
 export function sanitizePayload(

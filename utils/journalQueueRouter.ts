@@ -5,7 +5,7 @@
 //
 // 순수 함수 — store/네트워크 비의존. 호출처(useJournalQueue 훅)에서 데이터를 모아 전달.
 //
-// 정책 SSOT: docs/journal-unified-queue.md
+// 정책 SSOT: docs/features/journal-unified-queue.md
 // 헬퍼 SSOT: constants/personaBranches.ts Ref-7 (`isJournalProsConsBlocked` 등)
 
 import type { PersonaCode } from './personaClassifier';

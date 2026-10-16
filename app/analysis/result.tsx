@@ -8,6 +8,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { ErrorToast } from '@/components/ui/ErrorToast';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
 import { useJournalStore } from '@/store/useJournalStore';
@@ -108,7 +109,10 @@ export default function AnalysisResultScreen() {
 
         {/* 6-7: 시간성 명시 — 고정 마인드셋 방지 */}
         <Card className="mt-4 border border-amber-700/50">
-          <Caption className="text-amber-400 mb-1">📅 지금 이 시점의 너야</Caption>
+          <View className="flex-row items-center gap-1.5 mb-1">
+            <Icon name="calendar" size={13} color={colors.amber[400]} />
+            <Caption className="text-amber-400">지금 이 시점의 너야</Caption>
+          </View>
           <Body className="text-gray-300 text-sm">
             이 수치는 D+{daysElapsed} 시점의 너야.{'\n'}한 달 뒤엔 다른 결과가 나올 거야.
           </Body>

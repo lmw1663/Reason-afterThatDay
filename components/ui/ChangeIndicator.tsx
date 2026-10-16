@@ -12,10 +12,19 @@ interface Props {
   current: Direction;
   prefix?: string;
   suffix?: string;
+  /** true면 prev===current 여도 항상 노출 (변화 없어도 어제 응답을 상기) */
+  alwaysShow?: boolean;
 }
 
-export function ChangeIndicator({ prev, current, prefix = '어제는', suffix = '오늘은?' }: Props) {
-  if (!prev || prev === current) return null;
+export function ChangeIndicator({
+  prev,
+  current,
+  prefix = '어제는',
+  suffix = '오늘은?',
+  alwaysShow = false,
+}: Props) {
+  if (!prev) return null;
+  if (!alwaysShow && prev === current) return null;
   return (
     <Text className="text-gray-400 text-sm mb-4 text-center">
       {prefix}{' '}

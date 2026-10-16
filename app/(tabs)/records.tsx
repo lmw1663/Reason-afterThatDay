@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { Body, Caption, Display } from '@/components/ui/Typography';
 import { Icon, type IconName } from '@/components/ui/Icon';
 import { Card } from '@/components/ui/Card';
+import { PressableCard } from '@/components/ui/PressableCard';
+import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import { colors } from '@/constants/colors';
 import { useUserStore } from '@/store/useUserStore';
 import { usePersonaStore } from '@/store/usePersonaStore';
@@ -18,17 +21,17 @@ import { trackEvent } from '@/api/telemetry';
 /**
  * [기록] 탭 — A-3
  *
- * 일기·회복 곡선·추억 archive를 한 곳에 모아 보는 화면.
- * 본 placeholder는 진입 카드만 두고, 본 구현은 다음 단계에서 채운다:
- *  - 일기 history는 기존 /journal/history로 redirect
- *  - 회복 곡선 / 사이클 타임라인(P06)은 Phase C
- *  - 추억은 기존 /memories
+ * 6개 동일 패턴 카드의 단조로움 해소. 사용 빈도 기반 시각 위계로 재구성:
+ *  - Hero: 일기 모아보기 (가장 자주 진입)
+ *  - 2x2 Grid: 추억 · 회복의 결 · 질문통 · 내가 답한 질문 (동등한 위계)
+ *  - Footer: 매듭의 흔적 (조건부, teal accent로 톤 분리)
+ *
+ * 절대 규칙: 채팅 UI 금지·페르소나 라벨 비노출·D+N 표시 모두 무관 (디자인만).
  */
 export default function RecordsScreen() {
   const { userId } = useUserStore();
   const personaPrimary = usePersonaStore(s => s.primary);
   const showIntrusiveTrend = shouldShowIntrusiveTrend(personaPrimary);
-  // F-10 매듭 사이클 카드 — 매듭 경험 있을 때만 노출
   const lastKnotAt = useRelationshipStore((s) => s.profile.lastKnotAt);
   const hasKnotHistory = lastKnotAt !== null;
 
@@ -43,17 +46,17 @@ export default function RecordsScreen() {
     }
   }, [showIntrusiveTrend, personaPrimary]);
 
-  // C-2-G-7b: P09 떠올랐어 카운터·추세 (헌신 소진형 회복 진전 시각화)
+  // C-2-G-7b: P09 떠올랐어 카운터·추세
   const [trend, setTrend] = useState<{ recent: number; previous: number } | null>(null);
   useEffect(() => {
     if (!userId || !showIntrusiveTrend) return;
     void getIntrusiveMemoryTrend(userId, 7)
       .then(setTrend)
-      .catch(() => {/* fail open — 위젯 미노출 */});
+      .catch(() => {/* fail open */});
   }, [userId, showIntrusiveTrend]);
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper entrance="slide">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 64, paddingBottom: 24 }}
@@ -66,7 +69,7 @@ export default function RecordsScreen() {
 
         {/* C-2-G-7b: P09 떠올랐어 추세 카드 — 헌신 소진형만 노출 */}
         {showIntrusiveTrend && trend && (
-          <Card className="p-4 mb-3">
+          <Card className="p-4 mb-4">
             <View className="flex-row items-start gap-3">
               <Icon name="trending-up" size={20} color={colors.purple[400]} />
               <View className="flex-1">
@@ -85,80 +88,171 @@ export default function RecordsScreen() {
           </Card>
         )}
 
-        <View className="gap-3">
-          <RecordCard
+        {/* Hero — 일기 모아보기 (사용 빈도 1위) */}
+        <View className="mb-3">
+          <RecordHero
             icon="pen"
             title="일기 모아보기"
             subtitle="오늘까지 적은 일기"
+            staggerIndex={0}
             onPress={() => router.push('/journal/history' as never)}
           />
-          <RecordCard
+        </View>
+
+        {/* 2x2 Grid — 동등한 위계의 4개 카드 (stagger 1~4) */}
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            marginHorizontal: -6,
+            marginBottom: hasKnotHistory ? 12 : 0,
+          }}
+        >
+          <RecordGridItem
             icon="archive"
             title="추억"
-            subtitle="사진·메시지·장소 정리"
+            subtitle="사진·메시지·장소"
+            staggerIndex={1}
             onPress={() => router.push('/memories' as never)}
           />
-          <RecordCard
+          <RecordGridItem
             icon="chart"
             title="회복의 결"
-            subtitle="처음과 지금의 마음 결을 비교해봐"
+            subtitle="처음과 지금 비교"
+            staggerIndex={2}
             onPress={() => router.push('/recovery-trace' as never)}
           />
-          <RecordCard
+          <RecordGridItem
             icon="leaf"
             title="질문통"
-            subtitle="미리 준비된 질문 중에서 골라 답해봐"
+            subtitle="골라 답해봐"
+            staggerIndex={3}
             onPress={() => router.push('/question-pool' as never)}
           />
-          <RecordCard
+          <RecordGridItem
             icon="message-circle"
-            title="내가 답한 질문"
-            subtitle="그동안 답해온 자유 질문 모아보기"
+            title="답한 질문"
+            subtitle="자유 질문 모음"
+            staggerIndex={4}
             onPress={() => router.push('/answers' as never)}
           />
-          {hasKnotHistory && (
-            <RecordCard
-              icon="link"
-              title="매듭의 흔적"
-              subtitle="지나온 사이클들을 시간 순으로"
-              onPress={() => router.push('/knot/archive' as never)}
-            />
-          )}
         </View>
+
+        {/* Footer — 매듭의 흔적 (조건부, teal로 톤 분리) */}
+        {hasKnotHistory && (
+          <RecordKnotBanner
+            staggerIndex={5}
+            onPress={() => router.push('/knot/archive' as never)}
+          />
+        )}
       </ScrollView>
     </ScreenWrapper>
   );
 }
 
-interface RecordCardProps {
+interface RecordHeroProps {
   icon: IconName;
   title: string;
   subtitle: string;
+  staggerIndex: number;
   onPress: () => void;
-  comingSoon?: boolean;
 }
 
-function RecordCard({ icon, title, subtitle, onPress, comingSoon }: RecordCardProps) {
+function RecordHero({ icon, title, subtitle, staggerIndex, onPress }: RecordHeroProps) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityState={{ disabled: comingSoon }}
-      disabled={comingSoon}
-      className="active:opacity-80"
-      style={{ opacity: comingSoon ? 0.5 : 1 }}
-    >
-      <Card className="flex-row items-center gap-4 p-4">
-        <Icon name={icon} size={22} color={colors.purple[400]} />
-        <View className="flex-1">
-          <Body className="font-medium">{title}</Body>
-          <Caption className="text-gray-500 mt-0.5">
-            {comingSoon ? '준비 중' : subtitle}
-          </Caption>
+    <Animated.View style={enterStyle}>
+      <PressableCard
+        onPress={onPress}
+        accessibilityLabel={title}
+        size="hero"
+        border="purple"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}
+      >
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name={icon} size={34} color={colors.purple[400]} />
         </View>
-        {!comingSoon ? <Icon name="chevron-right" size={18} color={colors.gray[600]} /> : null}
-      </Card>
-    </Pressable>
+        <View style={{ flex: 1 }}>
+          <Body style={{ fontSize: 18, fontWeight: '700' }}>{title}</Body>
+          <Caption className="text-gray-500 mt-1">{subtitle}</Caption>
+        </View>
+        <Icon name="chevron-right" size={20} color={colors.gray[600]} />
+      </PressableCard>
+    </Animated.View>
+  );
+}
+
+interface RecordGridProps {
+  icon: IconName;
+  title: string;
+  subtitle: string;
+  staggerIndex: number;
+  onPress: () => void;
+}
+
+function RecordGridItem({ icon, title, subtitle, staggerIndex, onPress }: RecordGridProps) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
+  return (
+    <Animated.View
+      style={[{ width: '50%', paddingHorizontal: 6, marginBottom: 12 }, enterStyle]}
+    >
+      <PressableCard
+        onPress={onPress}
+        accessibilityLabel={title}
+        style={{ minHeight: 132, justifyContent: 'space-between' }}
+      >
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name={icon} size={28} color={colors.purple[400]} />
+        </View>
+        <View style={{ marginTop: 16 }}>
+          <Body style={{ fontSize: 15, fontWeight: '600' }}>{title}</Body>
+          <Caption className="text-gray-500 mt-0.5">{subtitle}</Caption>
+        </View>
+      </PressableCard>
+    </Animated.View>
+  );
+}
+
+function RecordKnotBanner({ staggerIndex, onPress }: { staggerIndex: number; onPress: () => void }) {
+  const enterStyle = useStaggerEntrance(staggerIndex);
+  return (
+    <Animated.View style={enterStyle}>
+      <PressableCard
+        onPress={onPress}
+        accessibilityLabel="매듭의 흔적"
+        border="teal"
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 14, marginTop: 4 }}
+      >
+        <View
+          style={{
+            width: 40,
+            height: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icon name="link" size={28} color={colors.teal[400]} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Body className="font-medium">매듭의 흔적</Body>
+          <Caption className="text-gray-500 mt-0.5">지나온 사이클들을 시간 순으로</Caption>
+        </View>
+        <Icon name="chevron-right" size={18} color={colors.gray[600]} />
+      </PressableCard>
+    </Animated.View>
   );
 }

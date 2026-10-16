@@ -3,7 +3,7 @@ import { BackHandler, View } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
-import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Body, Caption, Heading, renderEmphasis } from '@/components/ui/Typography';
 import { Card } from '@/components/ui/Card';
 import { useUserStore } from '@/store/useUserStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
@@ -121,7 +121,7 @@ export default function KnotCyclePromptScreen() {
     <ScreenWrapper>
       <Stack.Screen options={{ headerShown: false, presentation: 'fullScreenModal' }} />
       <View className="flex-1 px-6 pt-14">
-        <Caption className="mb-2">D+{daysElapsed}</Caption>
+        <Caption className="mb-2 text-white">D+{daysElapsed}</Caption>
         <Heading className="mb-6">다시 일기를 쓰러 왔구나</Heading>
 
         <Card variant="subtle" accent="purple" className="mb-6">
@@ -133,7 +133,7 @@ export default function KnotCyclePromptScreen() {
 
         <Card className="mb-6">
           <Caption className="text-gray-400 leading-relaxed">
-            새로 시작해도, 이어 써도 *돌아온 게 아니라 사이클의 일부*야.{'\n'}
+            {renderEmphasis('새로 시작해도, 이어 써도 *돌아온 게 아니라 사이클의 일부*야.')}{'\n'}
             정답이 아니야. 네 속도가 맞아.
           </Caption>
         </Card>

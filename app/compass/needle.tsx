@@ -7,6 +7,7 @@ import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { ProgressDots } from '@/components/ui/ProgressDots';
 import { Card } from '@/components/ui/Card';
 import { Body, Caption, Heading } from '@/components/ui/Typography';
+import { Icon } from '@/components/ui/Icon';
 import { usePersonaStore } from '@/store/usePersonaStore';
 import { getCompassVerdictFooter } from '@/constants/personaBranches';
 import { ErrorToast } from '@/components/ui/ErrorToast';
@@ -158,7 +159,10 @@ export default function CompassNeedleScreen() {
 
         {/* 6-7: 시간성 명시 — 고정 마인드셋 방지 */}
         <Card className="mb-4 border border-amber-700/50">
-          <Caption className="text-amber-400 mb-1">📅 지금 이 시점의 너야</Caption>
+          <View className="flex-row items-center gap-1.5 mb-1">
+            <Icon name="calendar" size={13} color={colors.amber[400]} />
+            <Caption className="text-amber-400">지금 이 시점의 너야</Caption>
+          </View>
           <Body className="text-gray-300 text-sm">
             이 나침반은 D+{daysElapsed} 시점의 너를 가리키고 있어.{'\n'}한 달 뒤엔 다르게 가리킬 수도 있어.
           </Body>

@@ -3,7 +3,7 @@
 // `buildQueueSequence` 라우터에 데이터를 모아 전달하고, 큐 진행 상태를 관리.
 // "다음에" 스킵은 AsyncStorage에 KST 날짜 단위로 저장 → 다음날 진입 시 우선 노출.
 //
-// 정책 SSOT: docs/journal-unified-queue.md
+// 정책 SSOT: docs/features/journal-unified-queue.md
 // 라우터: utils/journalQueueRouter.ts
 
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
@@ -16,6 +16,7 @@ import { resolvePersona } from '@/utils/personaResolver';
 import {
   buildQueueSequence,
   type QueueItem,
+  type JournalMemoryCategory,
 } from '@/utils/journalQueueRouter';
 import {
   todayKstString,
@@ -23,6 +24,11 @@ import {
   appendSkippedId,
   type SkipRecord,
 } from '@/utils/journalQueueSkip';
+import {
+  loadMemoryServed,
+  recentMemoryCategories,
+  clearMemoryServed,
+} from '@/utils/journalQueueMemoryServed';
 import {
   fetchCurrentReflections,
   type ReflectionCategory,
@@ -65,6 +71,7 @@ async function saveSkipRecord(userId: string, record: SkipRecord): Promise<void>
 
 interface FetchedQueueContext {
   recentlyServedAboutMe: ReflectionCategory[];
+  recentlyServedMemory: JournalMemoryCategory[];
   prosConsAnsweredToday: { pros: boolean; cons: boolean };
 }
 
@@ -73,9 +80,10 @@ const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 async function fetchQueueContext(userId: string, now: number): Promise<FetchedQueueContext> {
   const today = todayKstString(now);
 
-  const [reflectionsResult, profileResult] = await Promise.allSettled([
+  const [reflectionsResult, profileResult, memoryServedResult] = await Promise.allSettled([
     fetchCurrentReflections(userId),
     fetchRelationshipProfile(userId),
+    loadMemoryServed(userId),
   ]);
 
   const recentlyServedAboutMe: ReflectionCategory[] = [];
@@ -89,6 +97,12 @@ async function fetchQueueContext(userId: string, now: number): Promise<FetchedQu
     }
   }
 
+  // memory는 도메인 테이블이 없어 AsyncStorage 로컬 기록으로 7일 회전 — journalQueueMemoryServed.ts
+  const recentlyServedMemory: JournalMemoryCategory[] =
+    memoryServedResult.status === 'fulfilled'
+      ? recentMemoryCategories(memoryServedResult.value, now)
+      : [];
+
   let prosConsAnsweredToday = { pros: false, cons: false };
   if (profileResult.status === 'fulfilled' && profileResult.value) {
     const { prosByDate, consByDate } = profileResult.value;
@@ -98,7 +112,7 @@ async function fetchQueueContext(userId: string, now: number): Promise<FetchedQu
     };
   }
 
-  return { recentlyServedAboutMe, prosConsAnsweredToday };
+  return { recentlyServedAboutMe, recentlyServedMemory, prosConsAnsweredToday };
 }
 
 export interface UseJournalQueueResult {
@@ -131,6 +145,7 @@ export function useJournalQueue(currentDirection: Direction): UseJournalQueueRes
   const [contextLoaded, setContextLoaded] = useState(false);
   const [fetchedContext, setFetchedContext] = useState<FetchedQueueContext>({
     recentlyServedAboutMe: [],
+    recentlyServedMemory: [],
     prosConsAnsweredToday: { pros: false, cons: false },
   });
   const [queue, setQueue] = useState<QueueItem[]>([]);
@@ -153,6 +168,7 @@ export function useJournalQueue(currentDirection: Direction): UseJournalQueueRes
     const prevUserId = prevUserIdRef.current;
     if (prevUserId && prevUserId !== userId) {
       clearSkipRecord(prevUserId).catch(() => {/* silent */});
+      clearMemoryServed(prevUserId).catch(() => {/* silent */});
     }
     prevUserIdRef.current = userId;
     loadSkipRecord(userId).then((rec) => {
@@ -191,8 +207,8 @@ export function useJournalQueue(currentDirection: Direction): UseJournalQueueRes
       decisionLocked: lockState === 'locked',
       smartQ: smartQResult?.question ?? null,
       recentlyServedAboutMe: fetchedContext.recentlyServedAboutMe,
-      // memory는 도메인 테이블이 없어 7일 추적 불가 — 알려진 한계 (docs/journal-unified-queue.md)
-      recentlyServedMemory: [],
+      // memory 7일 회전 — AsyncStorage 로컬 기록 기반 (journalQueueMemoryServed.ts)
+      recentlyServedMemory: fetchedContext.recentlyServedMemory,
       prosConsAnsweredToday: fetchedContext.prosConsAnsweredToday,
       prioritySkippedIds,
       seed: daysElapsed,

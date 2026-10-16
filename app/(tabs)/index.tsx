@@ -6,15 +6,14 @@ import { ScreenWrapper } from '@/components/layout/ScreenWrapper';
 import { InsightCard } from '@/components/ui/InsightCard';
 import { Caption, Heading } from '@/components/ui/Typography';
 import { Icon } from '@/components/ui/Icon';
+import { Sparkline } from '@/components/ui/Sparkline';
 import { IntrusiveMemoryModal } from '@/components/IntrusiveMemoryModal';
 import { IntrusiveMemoryFab } from '@/components/IntrusiveMemoryFab';
 import { EmotionalCheckModal } from '@/components/EmotionalCheckModal';
 import { PersonaPriorityCard } from '@/components/PersonaPriorityCard';
-import { ContactUrgeChip } from '@/components/ContactUrgeChip';
 import { AssessmentRecommendationCard } from '@/components/AssessmentRecommendationCard';
 import { usePersonaStore } from '@/store/usePersonaStore';
-import { isMiniJournalFirst, isContactUrgeChipBlocked } from '@/constants/personaBranches';
-import { resolvePersona, appliesGuard } from '@/utils/personaResolver';
+import { isMiniJournalFirst } from '@/constants/personaBranches';
 import { useUserStore } from '@/store/useUserStore';
 import { useJournalStore } from '@/store/useJournalStore';
 import { useRelationshipStore } from '@/store/useRelationshipStore';
@@ -32,15 +31,14 @@ import { anonymizePersona } from '@/utils/telemetryHelpers';
 import { trackEvent } from '@/api/telemetry';
 
 export default function HomeScreen() {
-  const { daysElapsed, userId, refreshDaysElapsed } = useUserStore();
-  const { todayEntry, setTodayEntry, setEntries } = useJournalStore();
+  const { daysElapsed, breakupDate, userId, refreshDaysElapsed } = useUserStore();
+  const { todayEntry, entries, setTodayEntry, setEntries } = useJournalStore();
+  // Tier 2-2: 최근 7개 엔트리의 감정 온도 (과거→현재) — Stocks 인라인 sparkline용
+  const moodTrend = entries.slice(0, 7).map((e) => e.moodScore).reverse();
   const personaPrimary = usePersonaStore(s => s.primary);
   const personaSecondary = usePersonaStore(s => s.secondary);
   // C-2-G-3a: 회피형 페르소나면 일기 미니 모드를 primary 시각으로 강조 (매트릭스 §2 C3).
   const miniIsPrimary = isMiniJournalFirst(personaPrimary);
-  // G-6: 연락 충동 보고 칩 — P14·P16·P17·P19·P20은 임상 안전상 미노출.
-  const resolvedPersona = resolvePersona(personaPrimary, personaSecondary);
-  const contactUrgeChipBlocked = appliesGuard(resolvedPersona, isContactUrgeChipBlocked);
   const [dailyQuote, setDailyQuote] = useState<string>('');
   const [showIntrusiveModal, setShowIntrusiveModal] = useState(false);
   const [safetyAlert, setSafetyAlert] = useState<'consecutive_low' | 'late_night' | null>(null);
@@ -177,7 +175,7 @@ export default function HomeScreen() {
   }, [userId]);
 
   return (
-    <ScreenWrapper>
+    <ScreenWrapper entrance="slide">
       <IntrusiveMemoryModal
         visible={showIntrusiveModal}
         onClose={() => setShowIntrusiveModal(false)}
@@ -194,18 +192,41 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* G-3: D+N을 메인 헤딩으로 격상 — 이별 회복 앱의 핵심 컨텍스트.
-            "reason · 그날 이후"는 컨텍스트 caption으로 위에 작게 배치. */}
-        <View className="px-6 pt-14 pb-6">
-          <Caption className="text-gray-500 mb-1">reason · 그날 이후</Caption>
+        {/* G-3 → Tier 2-1: D+N 영웅 숫자 (Anz+ 잔액 패턴 강화).
+            "reason · 그날 이후"는 컨텍스트 caption으로 위에 작게 배치.
+            "D+" 접두는 통화기호처럼 작은 회색으로 낮추고 숫자가 위계를 독점(64px).
+            아래 작은 회색 보조라인(이별 날짜)으로 숫자의 근거를 1줄 제공. */}
+        <View className="px-6 pt-14 pb-8">
+          <Caption className="text-gray-500 mb-2">reason · 그날 이후</Caption>
           <View
-            className="flex-row items-baseline gap-2"
+            className="flex-row items-baseline gap-0.5"
+            accessible
             accessibilityRole="text"
             accessibilityLabel={`이별 후 ${daysElapsed}일 경과`}
           >
-            <Heading className="text-purple-400">D+{daysElapsed}</Heading>
-            <Caption className="text-gray-500">일째</Caption>
+            <Text
+              className="font-bold"
+              style={{ fontFamily: 'Pretendard', fontSize: 28, lineHeight: 34, letterSpacing: -0.5, color: colors.gray[400] }}
+              allowFontScaling={false}
+            >
+              D+
+            </Text>
+            <Text
+              className="text-white font-bold"
+              style={{ fontFamily: 'Pretendard', fontSize: 64, lineHeight: 68, letterSpacing: -2, fontVariant: ['tabular-nums'], flexShrink: 1 }}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+              allowFontScaling={false}
+            >
+              {daysElapsed}
+            </Text>
           </View>
+          {breakupDate && (
+            <Caption className="text-gray-500 mt-1">
+              {breakupDate.getFullYear()}년 {breakupDate.getMonth() + 1}월 {breakupDate.getDate()}일부터
+            </Caption>
+          )}
           {/* DEV-ONLY: 페르소나 분류 결과 확인용 디버그 라벨. __DEV__ 가드로 production 자동 제거.
               사용자 노출 코드 아님 (개발자 검증용). 출시 전 제거 또는 디버그 패널로 이관. */}
           {__DEV__ && (
@@ -240,40 +261,53 @@ export default function HomeScreen() {
               onPress={() => router.push('/journal/today')}
               accessibilityRole="button"
               accessibilityLabel="오늘 일기 이어쓰기 또는 수정하기"
-              className="active:opacity-80 rounded-2xl p-4"
-              style={{ backgroundColor: colors.surface }}
+              className="active:opacity-80 rounded-2xl p-5"
+              style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
             >
-              <View className="flex-row items-center justify-between">
-                <View className="flex-1">
-                  {/* 완료 배지 */}
-                  <View
-                    className="flex-row items-center self-start gap-1 rounded-full px-2 py-0.5 mb-2"
-                    style={{ backgroundColor: colors.overlayPurpleSoft }}
-                  >
-                    <Icon name="check" size={11} color={colors.purple[400]} strokeWidth={2.5} />
-                    <Caption style={{ color: colors.purple[400], fontSize: 11, fontWeight: '600' }}>
-                      오늘 일기 작성 완료
-                    </Caption>
-                  </View>
+              {/* 상단: 완료 라벨(체크) + 이어쓰기 — 군더더기 문장 대신 체크로 상태 압축 */}
+              <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-row items-center gap-1.5">
+                  <Icon name="check" size={13} color={colors.purple[400]} strokeWidth={2.5} />
+                  <Caption style={{ color: colors.purple[400], fontSize: 12, fontWeight: '600' }}>
+                    오늘 감정 온도
+                  </Caption>
+                </View>
+                <View className="flex-row items-center gap-1">
+                  <Caption className="text-gray-400">이어쓰기</Caption>
+                  <Icon name="chevron-right" size={16} color={colors.gray[400]} />
+                </View>
+              </View>
 
-                  {/* 감정 온도 */}
+              {/* 하단: 큰 수치(Apple Pay 잔액 패턴) + 추이 sparkline(Stocks) + 방향 pill 칩.
+                  sparkline은 모양만 — 적/녹 판단색 금지, 단일 보라 저채도. */}
+              <View className="flex-row items-end justify-between">
+                <View className="flex-row items-end gap-3">
                   <View className="flex-row items-baseline gap-1.5">
-                    <Text className="text-white text-2xl font-bold">{todayEntry.moodScore}</Text>
-                    <Caption className="text-gray-500">/ 10</Caption>
+                    <Text
+                      className="text-white font-bold"
+                      style={{ fontFamily: 'Pretendard', fontSize: 40, lineHeight: 44, letterSpacing: -1 }}
+                    >
+                      {todayEntry.moodScore}
+                    </Text>
+                    <Caption className="text-gray-500" style={{ fontSize: 15 }}>/ 10</Caption>
                   </View>
-
-                  <Caption className="text-gray-400 mt-1">
+                  {moodTrend.length >= 2 && (
+                    <View className="mb-1.5">
+                      <Sparkline data={moodTrend} />
+                    </View>
+                  )}
+                </View>
+                <View
+                  className="rounded-full px-3 py-1 mb-1"
+                  style={{ backgroundColor: colors.overlayPurpleSoft }}
+                >
+                  <Caption style={{ color: colors.purple[400], fontSize: 12, fontWeight: '600' }}>
                     {
                       todayEntry.direction === 'catch' ? '잡고 싶어'
                       : todayEntry.direction === 'let_go' ? '보내고 싶어'
                       : '아직 모르겠어'
                     }
                   </Caption>
-                </View>
-
-                <View className="flex-row items-center gap-1">
-                  <Caption className="text-gray-500">이어쓰기</Caption>
-                  <Icon name="chevron-right" size={18} color={colors.gray[400]} />
                 </View>
               </View>
             </Pressable>
@@ -297,17 +331,28 @@ export default function HomeScreen() {
                 style={{ backgroundColor: colors.purple[600] }}
               >
                 <View className="flex-row items-center gap-3">
-                  <Icon
-                    name={miniIsPrimary ? 'thermometer' : 'pen'}
-                    size={24}
-                    color={colors.white}
-                  />
+                  <View
+                    className="rounded-full p-2.5"
+                    style={{ backgroundColor: colors.overlayWhiteSoft }}
+                  >
+                    <Icon
+                      name={miniIsPrimary ? 'thermometer' : 'pen'}
+                      size={20}
+                      color={colors.white}
+                    />
+                  </View>
                   <View className="flex-1">
-                    <Text className="text-white text-lg font-bold">
+                    <Text
+                      className="text-white text-lg font-bold"
+                      style={{ fontFamily: 'Pretendard' }}
+                    >
                       {miniIsPrimary ? '오늘은 감정 온도만' : '오늘 일기 쓰기'}
                     </Text>
-                    <Text className="text-purple-50 text-sm opacity-80 mt-0.5">
-                      {miniIsPrimary ? '힘든 날엔 이만큼이면 돼' : '4단계로 차근차근 풀어볼게'}
+                    <Text
+                      className="text-purple-50 text-sm opacity-80 mt-0.5"
+                      style={{ fontFamily: 'Pretendard' }}
+                    >
+                      {miniIsPrimary ? '힘든 날엔 이만큼이면 돼' : '감정·방향까지 4단계'}
                     </Text>
                   </View>
                   <Icon name="chevron-right" size={20} color={colors.white} />
@@ -329,15 +374,10 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* G-6: 보조 카드 묶음.
-            - AssessmentRecommendationCard: 조건부(D+7/14/30) — 권유 없으면 자체 null 반환
-            - ContactUrgeChip: 페르소나 게이팅 — P14·P16·P17·P19·P20은 임상 안전상 미노출
-              (자세한 근거: docs/persona-contact-urge-policy.md)
-            두 카드의 px·간격을 통일해 *하나의 묶음*으로 시각 인식되게. 매일 같은 자리에
-            같은 종류가 있어야 학습이 됨 (Predictable layout). */}
+        {/* 보조 카드 — AssessmentRecommendationCard: 조건부(D+7/14/30), 권유 없으면 자체 null 반환.
+            매일 같은 자리에 같은 종류가 있어야 학습이 됨 (Predictable layout). */}
         <View className="px-6 mb-6 gap-2">
           <AssessmentRecommendationCard />
-          {!contactUrgeChipBlocked && <ContactUrgeChip />}
         </View>
 
       </ScrollView>
